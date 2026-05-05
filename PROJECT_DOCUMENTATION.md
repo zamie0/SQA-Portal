@@ -1,0 +1,652 @@
+# QE Automation Hub
+
+## Project Title
+
+QE Automation Hub
+
+## Project Description
+
+QE Automation Hub is a modern web-based dashboard designed for quality engineering teams to manage test automation projects, RPA bots, execution schedules, results, and team collaboration from a single unified workspace.
+
+---
+
+## Table of Contents
+
+1. Introduction
+   - Purpose of the project
+   - Objectives
+2. System Overview
+   - General description of the system
+   - Key features
+3. System Design / Architecture
+   - Explanation of how the system works
+   - Components and structure
+4. Technical Documentation
+   - Technologies used
+   - Code structure
+   - System workflow and data model
+5. Installation Guide
+   - Prerequisites
+   - Step-by-step setup instructions
+6. User Guide
+   - How to use the system
+   - Features explanation
+7. Process / Workflow
+   - How the system operates step-by-step
+8. Conclusion
+   - Summary of the project
+   - Future improvements
+9. Appendix
+   - File structure summary
+   - Route mapping
+   - UI component references
+   - Data model references
+
+---
+
+## 1. Introduction
+
+### Purpose of the project
+
+The purpose of QE Automation Hub is to provide a single interface for quality engineering professionals to manage, monitor, and execute test automation and robotic process automation workflows. It is built for distributed teams that need visibility into project status, execution results, schedules, and collaboration.
+
+### Objectives
+
+- Provide a modern dashboard for automation project management.
+- Support both test automation and RPA project types.
+- Offer navigation through projects, runs, schedules, and settings.
+- Make it easy to review results and monitor automation health.
+- Provide a reusable UI design with high usability.
+- Enable developers to extend the platform easily with TypeScript and React.
+
+---
+
+## 2. System Overview
+
+### General description of the system
+
+QE Automation Hub is a single-page application built with React, TypeScript, and TanStack Router. It is structured around project management and reporting for quality engineering work.
+
+The application presents a navigation sidebar, dashboard view, project listing, project detail pages with multiple tabs, run history, schedule calendar, and settings panel.
+
+### Key features
+
+- Dashboard overview with metrics, pass/fail trends, and activity.
+- Project list with filtering, search, and status summaries.
+- Project detail pages with tabs for overview, test cases, APIs, scripts, mobile, web, execution, results, files, discussion, and settings.
+- Run history with run statistics and filtering options.
+- Schedule page with a weekly view of upcoming automation runs.
+- Settings page for workspace and user preferences.
+- Help content with AI assistant, FAQ, tutorial, and contact links.
+- Reusable Radix UI-based components for consistent design.
+- Mock data and local client-side project handling for demo use.
+
+---
+
+## 3. System Design / Architecture
+
+### Explanation of how the system works
+
+QE Automation Hub works as a browser-based frontend that renders different views based on route state. The routing system loads data for each page and renders content inside a top-level layout wrapper called `Shell`.
+
+Every page is represented by a route definition under `src/routes`. The router maps URL paths to components and optionally provides loader and error components.
+
+Typical user interactions include:
+
+- Navigating between dashboard, projects, runs, schedule, help, and settings.
+- Opening a project detail to view project-specific tabs.
+- Switching tabs inside a project to see cases, APIs, scripts, mobile settings, etc.
+- Triggering actions like run execution, schedule creation, or settings updates.
+
+### Components and structure
+
+The application structure is organized as:
+
+- `src/router.tsx`: Router creation and default error handling.
+- `src/routeTree.gen.ts`: Generated route tree used by TanStack Router.
+- `src/components/Shell.tsx`: Main layout with persistent sidebar and profile menu.
+- `src/routes/**/*.tsx`: Route components for each page.
+- `src/components/project/*`: Project detail tabs and related project UI.
+- `src/components/ui/*`: Reusable UI primitives built on Radix UI.
+- `src/lib/mock-data.ts`: Mock project data and sample object definitions.
+- `src/lib/user-projects.ts`: User project persistence and tab configuration.
+- `src/lib/notifications.ts`: Notification sample data.
+- `src/lib/utils.ts`: Utility functions and class name helpers.
+- `src/hooks/use-mobile.tsx`: Mobile viewport detection hook.
+- `src/styles.css`: Global CSS and theme customizations.
+
+### Architecture patterns
+
+- Single-page application (SPA) with client-side routing.
+- Modular component-based design with reusable UI building blocks.
+- Separation of layout (`Shell`) from page content.
+- Route-level data loading and error handling.
+- Mock data used for demonstration, with infrastructure ready for backend integration.
+- Local storage event tick mechanism for project tabs and persistence.
+- Responsive UI that supports desktop and larger tablet layouts.
+
+---
+
+## 4. Technical Documentation
+
+### Technologies used
+
+- React 19
+- TypeScript
+- Vite 7
+- TanStack Start
+- TanStack Router
+- Tailwind CSS v4
+- Radix UI
+- Recharts
+- React Hook Form
+- Zod
+- Lucide React icons
+- Prettier and ESLint
+
+### Code structure (high-level explanation)
+
+#### Root files
+
+- `package.json`: Contains scripts, dependencies, and devDependencies.
+- `vite.config.ts`: Vite build configuration.
+- `tsconfig.json`: TypeScript configuration.
+- `eslint.config.js`: ESLint rules.
+- `README.md`: Project overview and commands.
+- `Dockerfile`: Container build instructions.
+- `vercel.json`: Deployment configuration.
+
+#### Application entrypoints
+
+- `src/router.tsx`: Creates and configures the TanStack router, including error handling.
+- `src/routeTree.gen.ts`: Generated route tree.
+- `src/styles.css`: Global CSS definitions and theme tokens.
+
+#### Layout and navigation
+
+- `src/components/Shell.tsx`: Sidebar navigation, help menu, profile menu, and layout wrapper.
+- `src/components/StatusBadge.tsx`: Reusable badge for status display.
+
+#### UI primitives
+
+- `src/components/ui/*`: Shared UI components for forms, buttons, dialogs, navigation, tables, and more.
+
+#### Project view components
+
+- `src/routes/projects.$projectId.tsx`: Project detail route with tab switching and project data resolution.
+- `src/components/project/OverviewTab.tsx`: Displays project metrics and trends.
+- `src/components/project/CasesTab.tsx`: Manages test cases.
+- `src/components/project/ApiTab.tsx`: Displays API endpoints and health.
+- `src/components/project/MobileTabElements/MobileTab.tsx`: Mobile device and build management.
+- `src/components/project/WebTabElements/WebTab.tsx`: Web automation and suites.
+- `src/components/project/ExecutionTab.tsx`: Execution history.
+- `src/components/project/ResultsTab.tsx`: Detailed test results.
+- `src/components/project/RpaTab.tsx`: RPA flow builder.
+- `src/components/project/DiscussionTab.tsx`: Team collaboration.
+- `src/components/project/SettingsTab.tsx`: Project-specific settings.
+- `src/components/project/FilesTab.tsx`: File explorer for project assets.
+- `src/components/project/CustomTabContent.tsx`: Placeholder content for dynamic tabs.
+
+#### Routes
+
+- `src/routes/__root.tsx`: Root route with layout wrapper.
+- `src/routes/index.tsx`: Main dashboard route.
+- `src/routes/projects.tsx`: Project list route.
+- `src/routes/runs.tsx`: Runs history route.
+- `src/routes/schedule.tsx`: Schedule route.
+- `src/routes/settings.tsx`: Workspace settings route.
+- `src/routes/help.*.tsx`: Help pages for chat, contact, FAQ, tutorial.
+- `src/routes/notifications.tsx`: Notification center.
+- `src/routes/profile.tsx`: User profile route.
+
+### Database or system workflow
+
+#### Data model overview
+
+The current system uses a local in-memory/mock-data model for demonstration. Key models include:
+
+- Project
+- Test Case
+- Script
+- RPA Flow
+- Run Record
+- API Endpoint
+- Mobile Device
+- Mobile Build
+- Environment
+- Test Suite
+- Discussion Post
+
+#### Request and state workflow
+
+1. User navigates to a route.
+2. The router loads any required data via route loaders.
+3. The component renders using mock data or local persisted user data.
+4. UI state updates happen in React component state and local storage.
+5. Actions such as switching tabs or opening dialogs update local UI state.
+
+#### Typical project page workflow
+
+- Load project from `mock-data.ts` or local user projects.
+- Determine enabled tabs for project type.
+- Render the `Shell` around page content.
+- Render tab navigation buttons.
+- Render active tab component.
+- Update page metadata and error handlers as needed.
+
+---
+
+## 5. Installation Guide
+
+### Prerequisites
+
+- Node.js 20 or later
+- npm 10 or later
+- A code editor such as Visual Studio Code
+- Git (optional) for cloning
+- A modern browser for local development
+
+### Setup instructions
+
+#### 1. Clone repository
+
+```bash
+git clone <repository-url>
+cd "QE Automation Hub"
+```
+
+#### 2. Install dependencies
+
+```bash
+npm install
+```
+
+#### 3. Run development server
+
+```bash
+npm run dev
+```
+
+Open the browser at the URL shown in the terminal, usually `http://localhost:5173`.
+
+#### 4. Build for production
+
+```bash
+npm run build
+```
+
+#### 5. Preview production build locally
+
+```bash
+npm run preview
+```
+
+#### 6. Lint the code
+
+```bash
+npm run lint
+```
+
+#### 7. Format the codebase
+
+```bash
+npm run format
+```
+
+### Environment variables
+
+This repository does not require a backend API by default, but it can be extended to use environment variables for service keys and endpoints.
+
+If you add backend integration, store secrets in a `.env` file and update Vite configuration accordingly.
+
+### Deployment notes
+
+- This app is compatible with Vercel deployment.
+- Use `npm run build` to create production assets.
+- The output directory is managed by Vite.
+
+---
+
+## 6. User Guide
+
+### How to use the system
+
+The system is designed for two main user roles:
+
+- Quality engineer / automation owner
+- Team member / viewer
+
+#### Dashboard
+
+The Dashboard is the entry point. It shows:
+
+- Overview metrics
+- Recent activity
+- Trending success rates
+- Quick links to active projects
+
+Use the navigation sidebar to move between:
+
+- Dashboard
+- Projects
+- Runs
+- Schedule
+- Settings
+- Help
+
+#### Projects
+
+The Projects page lists available projects. For each project card, you can see:
+
+- Project type (Test Automation or RPA)
+- Project status and pass rate
+- Number of cases and team members
+
+Click a project to open its detail page.
+
+#### Project Detail Tabs
+
+Each project opens with a tabbed interface. The tabs typically include:
+
+- Overview
+- Test Cases
+- API Testing
+- Scripts
+- Mobile
+- Web & Suites
+- Execution
+- Results
+- Files
+- Discussion
+- Settings
+
+Switch tabs to inspect project data and take actions.
+
+#### Runs
+
+The Runs page shows a list of executions across all projects. It is useful to:
+
+- Review historical runs
+- Compare pass/fail numbers
+- Identify recurring failures
+
+#### Schedule
+
+The Schedule page presents a weekly view of scheduled automation. It helps you:
+
+- Monitor upcoming runs
+- See which projects are scheduled
+- Check next run countdowns
+
+#### Settings
+
+The Settings page allows workspace management:
+
+- Update team roles
+- Configure integrations
+- Manage notification preferences
+- Edit project defaults
+
+#### Help section
+
+Use the Help menu for:
+
+- AI Assistant
+- FAQ
+- Tutorial
+- Contact support
+
+### Features explanation
+
+#### Project Overview
+
+In the Overview tab, you can see:
+
+- Summary counters
+- Success trend charts
+- Recent runs
+- Project activity feed
+
+This tab is ideal for managers who need a high-level view.
+
+#### Test Cases
+
+In the Cases tab, you can review test cases by:
+
+- Priority
+- Status
+- Last run date
+- Linked scripts or APIs
+
+This tab is ideal for test planners and execution coordinators.
+
+#### API Testing
+
+The API tab contains endpoints and recent health checks. It is valuable for API testers and back-end validation.
+
+#### Scripts
+
+The Scripts tab stores automation scripts, including sample content for frameworks such as Selenium, Cypress, Playwright, Robot Framework, Python, and JavaScript.
+
+#### Mobile and Web
+
+Mobile and Web tabs contain device management, build artifacts, and automation suite configuration.
+
+#### Execution and Results
+
+The Execution tab shows run history. The Results tab shows detailed outcomes, logs, and attachments.
+
+#### RPA
+
+The RPA tab is specific to robotic process automation workflows. Use it to view flows, schedules, and run status.
+
+#### Discussion
+
+The Discussion tab is for collaboration. Team members can post comments, link cases, or discuss results.
+
+#### Files
+
+The Files tab stores artifacts, screenshots, logs, and support documents.
+
+#### Settings
+
+Use Settings to control project and workspace options, including what tabs are enabled for a given project.
+
+---
+
+## 7. Process / Workflow
+
+### System operation flow
+
+The system operates in the following flow:
+
+1. User opens the application.
+2. The router determines the requested path.
+3. Route loaders fetch mock or persisted data.
+4. The `Shell` wraps the page content with navigation.
+5. The requested page content renders.
+6. User interacts with UI controls.
+7. Component state updates and UI re-renders.
+8. Local storage updates may persist user project configuration.
+
+### Project creation and management workflow
+
+1. Open the Projects page.
+2. Select a project card or create a new project entry.
+3. Enter project metadata such as name, description, and type.
+4. Configure tabs and workflow settings.
+5. Use the Overview tab to validate metrics.
+6. Add or update test cases, API endpoints, scripts, mobile devices, or RPA flows.
+7. Schedule automation runs and track results.
+
+### Execution workflow
+
+1. From a project or runs page, choose an execution trigger.
+2. Execute manually or review scheduled run details.
+3. The run generates a record with pass, fail, and skipped counts.
+4. Results are stored and displayed in the Results tab.
+5. Use the Discussion tab to collaborate on failed or flaky cases.
+
+### Scheduling workflow
+
+1. Open the Schedule page.
+2. Review the weekly calendar and next run details.
+3. Identify projects with scheduled automations.
+4. Adjust timing or settings as needed.
+5. Confirm the schedule and monitor future run status.
+
+### Collaboration workflow
+
+1. Use the Help sidebar to access AI Assistant or FAQ.
+2. Post discussion entries in the Discussion tab.
+3. Link posts to specific test cases, APIs, or runs.
+4. Share project progress with team members.
+5. Update workspace settings for role-based access.
+
+---
+
+## 8. Conclusion
+
+### Summary of the project
+
+QE Automation Hub is a polished quality engineering interface for managing automation projects and results. It combines project tracking, execution history, RPA orchestration, API testing, and team collaboration under a modern, scalable interface.
+
+### Future improvements
+
+Potential future improvements include:
+
+- Backend API integration for real data persistence.
+- Authentication and role-based access control.
+- Real-time updates and live notifications.
+- Enhanced mobile/responsive support.
+- Custom dashboard widgets and reporting.
+- Exportable test reports and analytics.
+- Integration with CI/CD systems and test runners.
+- Built-in script editing and version control.
+
+---
+
+## 9. Appendix
+
+### File structure summary
+
+- `bunfig.toml`
+- `Dockerfile`
+- `package.json`
+- `README.md`
+- `tsconfig.json`
+- `vite.config.ts`
+- `vercel.json`
+- `wrangler.jsonc`
+- `src/router.tsx`
+- `src/routeTree.gen.ts`
+- `src/styles.css`
+- `src/components/Shell.tsx`
+- `src/components/StatusBadge.tsx`
+- `src/components/project/*`
+- `src/components/ui/*`
+- `src/hooks/use-mobile.tsx`
+- `src/lib/*`
+- `src/routes/*`
+
+### Route mapping
+
+- `/` — Dashboard
+- `/projects` — Projects list
+- `/projects/$projectId` — Project detail page with tabs
+- `/runs` — Runs history
+- `/schedule` — Schedule view
+- `/settings` — Workspace settings
+- `/help/chat` — AI Assistant
+- `/help/faq` — FAQ page
+- `/help/tutorial` — Tutorial page
+- `/help/contact` — Contact page
+- `/notifications` — Notification center
+- `/profile` — User profile
+
+### UI component reference
+
+The app uses Radix UI primitives wrapped in local component files under `src/components/ui`.
+
+Common UI elements:
+
+- Buttons
+- Cards
+- Alerts
+- Dialogs
+- Dropdown menus
+- Forms and inputs
+- Pagination
+- Sidebar
+- Tables
+- Tabs
+- Tooltips
+
+### Data model references
+
+#### Project object
+
+- `id`
+- `name`
+- `description`
+- `type`
+- `color`
+- `initials`
+- `cases`
+- `passRate`
+- `lastRun`
+- `members`
+- `scripts`
+- `flows`
+- `testCases`
+- `runs`
+- `apis`
+- `devices`
+- `builds`
+- `environments`
+- `suites`
+- `discussions`
+- `flaky`
+- `coverage`
+- `trend`
+
+#### Test case object
+
+- `id`
+- `title`
+- `steps`
+- `expected`
+- `priority`
+- `status`
+- `lastRun`
+- `durationMs`
+- `tags`
+- `linkedApi`
+- `linkedScript`
+- `attachments`
+
+#### Run record object
+
+- `id`
+- `name`
+- `date`
+- `duration`
+- `passed`
+- `failed`
+- `skipped`
+- `trigger`
+
+### Sample commands
+
+- `npm install`
+- `npm run dev`
+- `npm run build`
+- `npm run preview`
+- `npm run lint`
+- `npm run format`
+
+---
+
+## Notes
+
+This documentation is intended to serve both developers and end users with a complete overview of QE Automation Hub. It summarizes the current repository structure, user flows, and technical foundations.

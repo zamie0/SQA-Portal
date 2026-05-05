@@ -1,0 +1,16 @@
+export { ApiTab } from "@/components/project/ApiTab";
+export { CasesTab } from "@/components/project/CasesTab";
+export { CustomTabContent } from "@/components/project/CustomTabContent";
+export { DiscussionTab } from "@/components/project/DiscussionTab";
+export { ExecutionTab } from "@/components/project/ExecutionTab";
+export { FilesTab } from "@/components/project/FilesTab";
+export { MiniFilesPanel } from "@/components/project/MiniFilesPanel";
+export { MobileTab } from "@/components/project/MobileTab";
+export { OverviewTab } from "@/components/project/OverviewTab";
+export { ProjectTabsToggle } from "@/components/project/ProjectTabsToggle";
+export { ResultsTab } from "@/components/project/ResultsTab";
+export { RpaTab } from "@/components/project/RpaTab";
+export { RunResultsPanel } from "@/components/project/RunResultsPanel";
+export { ScriptsTab } from "@/components/project/ScriptsTab";
+export { SettingsTab } from "@/components/project/SettingsTab";
+export { WebTab } from "@/components/project/WebTab";
