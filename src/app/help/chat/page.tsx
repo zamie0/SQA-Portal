@@ -190,13 +190,13 @@ function ChatPage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold flex items-center gap-2">
-                AI Assistant
+                SQA Copilot
                 <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-success/15 text-success font-semibold">
                   Live
                 </span>
               </h1>
               <p className="mt-1 text-sm text-muted-foreground max-w-xl">
-                Multi-chat with saved history. Suggest fixes, generate test cases, draft scripts.
+                Your friendly assistant for testing, automation, and QA workflows.
               </p>
             </div>
           </div>
@@ -370,7 +370,7 @@ function EmptyState({ onPick }: { onPick: (s: string) => void }) {
       <div className="h-16 w-16 rounded-3xl bg-[image:var(--gradient-primary)] grid place-items-center shadow-lg">
         <MessageCircle className="h-7 w-7 text-white" />
       </div>
-      <h2 className="mt-4 text-xl font-semibold">How can I help with QE today?</h2>
+      <h2 className="mt-4 text-xl font-semibold">How can SQA Copilot help today?</h2>
       <p className="mt-1 text-sm text-muted-foreground max-w-md">
         Ask about projects, generate test cases, draft scripts, or paste a failing log to get fix
         suggestions.
@@ -445,4 +445,4 @@ function TypingIndicator() {
   );
 }
 
-export default uid;
+export default ChatPage;

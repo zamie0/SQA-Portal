@@ -236,15 +236,6 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
-// Validate ../../src/app/tools/orca/logs/page.tsx
-{
-  type __IsExpected<Specific extends AppPageConfig<"/tools/orca/logs">> = Specific
-  const handler = {} as typeof import("../../src/app/tools/orca/logs/page.js")
-  type __Check = __IsExpected<typeof handler>
-  // @ts-ignore
-  type __Unused = __Check
-}
-
 // Validate ../../src/app/tools/orca/page.tsx
 {
   type __IsExpected<Specific extends AppPageConfig<"/tools/orca">> = Specific

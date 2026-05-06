@@ -1,4 +1,4 @@
-// File: C:\Users\zamic\Desktop\SQA-Portal\src\app\layout.tsx
+// File: C:\Users\TMRND\Desktop\Intern Dev\SQA Portal\SQA-Portal\src\app\layout.tsx
 import * as entry from '../../../src/app/layout.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

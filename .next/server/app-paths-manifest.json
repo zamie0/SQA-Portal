@@ -1,4 +1,6 @@
 {
-  "/portal/tools/page": "app/portal/tools/page.js",
-  "/page": "app/page.js"
+  "/api/chat/route": "app/api/chat/route.js",
+  "/portal/admin/page": "app/portal/admin/page.js",
+  "/help/chat/page": "app/help/chat/page.js",
+  "/help/page": "app/help/page.js"
 }
