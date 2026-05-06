@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Shell } from "@/components/Shell";
-import { RequireAuth } from "@/components/RequireAuth";
-import { projects } from "@/lib/mock-data";
-import { StatusBadge } from "@/components/StatusBadge";
+import { Shell } from "@/shared/components/layout/Shell";
+import { RequireAuth } from "@/shared/components/RequireAuth";
+import { projects } from "@/shared/lib/mock-data";
+import { StatusBadge } from "@/shared/components/StatusBadge";
 import { Clock, Play, Filter } from "lucide-react";
 
 export const Route = createFileRoute("/runs")({

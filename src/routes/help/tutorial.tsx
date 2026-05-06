@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Shell } from "@/components/Shell";
+import { Shell } from "@/shared/components/layout/Shell";
 import { useEffect, useState } from "react";
 import { GraduationCap, CheckCircle2, ChevronRight, ChevronLeft, RotateCcw } from "lucide-react";
-import { tutorialSteps } from "@/lib/help-content";
+import { tutorialSteps } from "@/shared/lib/help-content";
 import ReactMarkdown from "react-markdown";
 
 export const Route = createFileRoute("/help/tutorial")({

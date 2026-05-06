@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Shell } from "@/components/Shell";
-import { RequireAuth } from "@/components/RequireAuth";
+import { Shell } from "@/shared/components/layout/Shell";
+import { RequireAuth } from "@/shared/components/RequireAuth";
 import {
   FolderKanban,
   Server,
@@ -12,7 +12,7 @@ import {
   ShieldCheck,
   ArrowUpRight,
 } from "lucide-react";
-import { useAuth } from "@/lib/use-auth";
+import { useAuth } from "@/shared/lib/use-auth";
 
 export const Route = createFileRoute("/")({
   head: () => ({

@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Shell } from "@/components/Shell";
+import { Shell } from "@/shared/components/layout/Shell";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Send,
@@ -16,8 +16,8 @@ import {
   X,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
-import { sendChat, type ChatMessage } from "@/lib/chat-server";
-import { useLocalStorage } from "@/lib/use-storage";
+import { sendChat, type ChatMessage } from "@/shared/lib/chat-server";
+import { useLocalStorage } from "@/shared/lib/use-storage";
 
 export const Route = createFileRoute("/help/chat")({
   head: () => ({

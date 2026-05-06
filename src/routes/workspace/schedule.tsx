@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Shell } from "@/components/Shell";
-import { RequireAuth } from "@/components/RequireAuth";
-import { projects } from "@/lib/mock-data";
-import { listUserProjects } from "@/lib/user-projects";
-import { useEventTick, useLocalStorage } from "@/lib/use-storage";
+import { Shell } from "@/shared/components/layout/Shell";
+import { RequireAuth } from "@/shared/components/RequireAuth";
+import { projects } from "@/shared/lib/mock-data";
+import { listUserProjects } from "@/shared/lib/user-projects";
+import { useEventTick, useLocalStorage } from "@/shared/lib/use-storage";
 import { useMemo, useState } from "react";
 import {
   Calendar as CalendarIcon,

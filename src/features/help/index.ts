@@ -1,1 +1,1 @@
-export * from "@/lib/help-content";
+export * from "@/modules/help";

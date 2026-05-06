@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Shell } from "@/components/Shell";
-import { RequireAuth } from "@/components/RequireAuth";
+import { Shell } from "@/shared/components/layout/Shell";
+import { RequireAuth } from "@/shared/components/RequireAuth";
 import { useState } from "react";
 import {
   Bell,
@@ -10,7 +10,7 @@ import {
   CalendarClock,
   Check,
 } from "lucide-react";
-import { seedNotifications, type Notification } from "@/lib/notifications";
+import { seedNotifications, type Notification } from "@/shared/lib/notifications";
 
 export const Route = createFileRoute("/notifications")({
   head: () => ({

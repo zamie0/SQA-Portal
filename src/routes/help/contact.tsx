@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Shell } from "@/components/Shell";
+import { Shell } from "@/shared/components/layout/Shell";
 import { Phone, Mail, Clock, Briefcase, MessageCircle, Github, Linkedin } from "lucide-react";
 
 export const Route = createFileRoute("/help/contact")({

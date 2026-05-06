@@ -1,1 +1,1 @@
-export { AuthLayout, Banner, Field } from "@/components/auth/auth-layout";
+export { AuthLayout, Banner, Field } from "@/modules/auth/components";

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Shell } from "@/components/Shell";
-import { RequireAuth } from "@/components/RequireAuth";
+import { Shell } from "@/shared/components/layout/Shell";
+import { RequireAuth } from "@/shared/components/RequireAuth";
 
 export const Route = createFileRoute("/tools/orca/swarms")({
   head: () => ({ meta: [{ title: "Swarms — Orca" }] }),

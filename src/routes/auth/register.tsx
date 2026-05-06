@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { register } from "@/lib/auth";
+import { register } from "@/shared/lib/auth";
 import { AuthLayout, Banner, Field } from "./login";
 
 export const Route = createFileRoute("/register")({

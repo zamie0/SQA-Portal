@@ -102,17 +102,19 @@ Typical user interactions include:
 
 The application structure is organized as:
 
-- `src/router.tsx`: Router creation and default error handling.
-- `src/routeTree.gen.ts`: Generated route tree used by TanStack Router.
-- `src/components/Shell.tsx`: Main layout with persistent sidebar and profile menu.
-- `src/routes/**/*.tsx`: Route components for each page.
-- `src/components/project/*`: Project detail tabs and related project UI.
-- `src/components/ui/*`: Reusable UI primitives built on Radix UI.
-- `src/lib/mock-data.ts`: Mock project data and sample object definitions.
-- `src/lib/user-projects.ts`: User project persistence and tab configuration.
-- `src/lib/notifications.ts`: Notification sample data.
-- `src/lib/utils.ts`: Utility functions and class name helpers.
-- `src/hooks/use-mobile.tsx`: Mobile viewport detection hook.
+- `src/app`: Active Next.js App Router URLs, layouts, and API routes.
+- `src/modules`: Feature-owned implementation folders.
+- `src/modules/projects`: Project pages and project workspace components.
+- `src/modules/tools`: Tool-specific modules such as Orca, QA Genius, QE, and Performance.
+- `src/modules/portal`: Portal modules such as admin, projects, testbeds, and tools.
+- `src/shared/components/layout/Shell.tsx`: Main layout with persistent sidebar and profile menu.
+- `src/shared/components/ui/*`: Reusable UI primitives built on Radix UI.
+- `src/shared/lib/mock-data.ts`: Mock project data and sample object definitions.
+- `src/shared/lib/user-projects.ts`: User project persistence and tab configuration.
+- `src/shared/lib/notifications.ts`: Notification sample data.
+- `src/shared/lib/utils.ts`: Utility functions and class name helpers.
+- `src/shared/hooks/use-mobile.tsx`: Mobile viewport detection hook.
+- `src/routes`, `src/router.tsx`, and `src/routeTree.gen.ts`: Legacy TanStack routing artifacts.
 - `src/styles.css`: Global CSS and theme customizations.
 
 ### Architecture patterns
@@ -158,34 +160,37 @@ The application structure is organized as:
 
 #### Application entrypoints
 
-- `src/router.tsx`: Creates and configures the TanStack router, including error handling.
-- `src/routeTree.gen.ts`: Generated route tree.
+- `src/app`: Active Next.js App Router route entrypoints.
+- `src/app/api`: Active API route handlers.
+- `src/router.tsx`: Legacy TanStack router configuration.
+- `src/routeTree.gen.ts`: Legacy generated route tree.
 - `src/styles.css`: Global CSS definitions and theme tokens.
 
 #### Layout and navigation
 
-- `src/components/Shell.tsx`: Sidebar navigation, help menu, profile menu, and layout wrapper.
-- `src/components/StatusBadge.tsx`: Reusable badge for status display.
+- `src/shared/components/layout/Shell.tsx`: Sidebar navigation, help menu, profile menu, and layout wrapper.
+- `src/shared/components/StatusBadge.tsx`: Reusable badge for status display.
 
 #### UI primitives
 
-- `src/components/ui/*`: Shared UI components for forms, buttons, dialogs, navigation, tables, and more.
+- `src/shared/components/ui/*`: Shared UI components for forms, buttons, dialogs, navigation, tables, and more.
 
 #### Project view components
 
-- `src/routes/projects.$projectId.tsx`: Project detail route with tab switching and project data resolution.
-- `src/components/project/OverviewTab.tsx`: Displays project metrics and trends.
-- `src/components/project/CasesTab.tsx`: Manages test cases.
-- `src/components/project/ApiTab.tsx`: Displays API endpoints and health.
-- `src/components/project/MobileTabElements/MobileTab.tsx`: Mobile device and build management.
-- `src/components/project/WebTabElements/WebTab.tsx`: Web automation and suites.
-- `src/components/project/ExecutionTab.tsx`: Execution history.
-- `src/components/project/ResultsTab.tsx`: Detailed test results.
-- `src/components/project/RpaTab.tsx`: RPA flow builder.
-- `src/components/project/DiscussionTab.tsx`: Team collaboration.
-- `src/components/project/SettingsTab.tsx`: Project-specific settings.
-- `src/components/project/FilesTab.tsx`: File explorer for project assets.
-- `src/components/project/CustomTabContent.tsx`: Placeholder content for dynamic tabs.
+- `src/app/projects/[projectId]/page.tsx`: Thin route entrypoint for project detail.
+- `src/modules/projects/pages/project-detail-page.tsx`: Project detail page with tab switching and project data resolution.
+- `src/modules/projects/components/OverviewTab.tsx`: Displays project metrics and trends.
+- `src/modules/projects/components/CasesTab.tsx`: Manages test cases.
+- `src/modules/projects/components/ApiTab.tsx`: Displays API endpoints and health.
+- `src/modules/projects/components/MobileTab.tsx`: Mobile device and build management.
+- `src/modules/projects/components/WebTab.tsx`: Web automation and suites.
+- `src/modules/projects/components/ExecutionTab.tsx`: Execution history.
+- `src/modules/projects/components/ResultsTab.tsx`: Detailed test results.
+- `src/modules/projects/components/RpaTab.tsx`: RPA flow builder.
+- `src/modules/projects/components/DiscussionTab.tsx`: Team collaboration.
+- `src/modules/projects/components/SettingsTab.tsx`: Project-specific settings.
+- `src/modules/projects/components/FilesTab.tsx`: File explorer for project assets.
+- `src/modules/projects/components/CustomTabContent.tsx`: Placeholder content for dynamic tabs.
 
 #### Routes
 
@@ -541,12 +546,14 @@ Potential future improvements include:
 - `src/router.tsx`
 - `src/routeTree.gen.ts`
 - `src/styles.css`
-- `src/components/Shell.tsx`
-- `src/components/StatusBadge.tsx`
-- `src/components/project/*`
-- `src/components/ui/*`
-- `src/hooks/use-mobile.tsx`
-- `src/lib/*`
+- `src/app/*`
+- `src/modules/*`
+- `src/shared/components/layout/Shell.tsx`
+- `src/shared/components/StatusBadge.tsx`
+- `src/modules/projects/components/*`
+- `src/shared/components/ui/*`
+- `src/shared/hooks/use-mobile.tsx`
+- `src/shared/lib/*`
 - `src/routes/*`
 
 ### Route mapping
@@ -566,7 +573,7 @@ Potential future improvements include:
 
 ### UI component reference
 
-The app uses Radix UI primitives wrapped in local component files under `src/components/ui`.
+The app uses Radix UI primitives wrapped in local component files under `src/shared/components/ui`.
 
 Common UI elements:
 

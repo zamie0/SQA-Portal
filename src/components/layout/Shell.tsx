@@ -1,1 +1,1 @@
-export { Shell } from "@/components/Shell";
+export { Shell } from "@/shared/components/layout/Shell";

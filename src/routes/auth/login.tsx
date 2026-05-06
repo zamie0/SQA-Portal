@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Sparkles, AlertCircle, Clock, CheckCircle2 } from "lucide-react";
-import { login } from "@/lib/auth";
+import { login } from "@/shared/lib/auth";
 
 export const Route = createFileRoute("/login")({
   head: () => ({

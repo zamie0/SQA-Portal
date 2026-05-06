@@ -1,17 +1,3 @@
-import { Shell } from "@/components/layout/Shell";
-import { RequireAuth } from "@/components/shared/RequireAuth";
+import Page from "@/modules/tools/orca/pages/swarms-page";
 
-export default function OrcaSwarmsPage() {
-  return (
-    <RequireAuth>
-      <Shell>
-        <section className="rounded-3xl glass-strong p-8">
-          <h1 className="text-3xl font-bold font-display">Swarms</h1>
-          <p className="text-muted-foreground mt-2">
-            Coordinated agent groups running test suites.
-          </p>
-        </section>
-      </Shell>
-    </RequireAuth>
-  );
-}
+export default Page;

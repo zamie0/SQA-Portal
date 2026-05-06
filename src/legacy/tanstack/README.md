@@ -11,6 +11,7 @@ Current legacy files still in root `src`:
 They are excluded from active Next.js build/lint flow.
 
 Next cleanup step:
+
 1. Move the files listed above into this folder.
 2. Remove old dependencies/imports that are no longer used.
 3. Delete this folder when migration is fully complete.

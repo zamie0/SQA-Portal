@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { requestPasswordReset } from "@/lib/auth";
+import { requestPasswordReset } from "@/shared/lib/auth";
 import { AuthLayout, Banner, Field } from "./login";
 
 export const Route = createFileRoute("/forgot-password")({

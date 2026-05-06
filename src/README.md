@@ -1,24 +1,30 @@
 ## Source Layout
 
-This project is now organized around the active Next.js App Router, with feature-first entry points for future moves.
+This project is organized around thin Next.js route entrypoints and feature-owned modules.
 
-- `app/`: active Next.js routes and layouts
-- `components/ui/`: shared, framework-agnostic UI primitives
-- `components/layout/`: app shell/navigation wrappers
-- `components/shared/`: shared cross-feature components
-- `features/`: domain-oriented modules (`auth`, `projects`, `help`, ...)
-- `services/`: API/server integrations
-- `state/`: storage/event-driven client state
-- `utils/`: pure utility helpers
+- `app/`: active Next.js routes, layouts, and API routes
+- `modules/`: feature-owned implementation folders
+- `modules/tools/`: tool modules such as `orca`, `performance`, `qa-genius`, and `qe`
+- `modules/portal/`: portal modules such as `admin`, `projects`, `testbeds`, and `tools`
+- `modules/projects/`: project list, detail pages, and project workspace components
+- `modules/workspace/`: dashboard, runs, schedule, notifications, profile, and settings pages
+- `shared/components/`: shared UI, layout, and cross-feature components
+- `shared/lib/`: reusable data, storage, auth, notification, and helper logic
+- `shared/state/`: state entrypoint exports
+- `shared/services/`: service/API entrypoint exports
+- `shared/utils/`: utility entrypoint exports
+- `components/` and `features/`: compatibility forwards for old imports
 - `legacy/tanstack/`: old TanStack router code (migration parking area)
 
 ### Migration Notes
 
-Current runtime still imports some files from old paths (for compatibility). New code should prefer:
+New code should prefer:
 
-- `@/components/layout/*`
-- `@/components/shared/*`
-- `@/features/*`
-- `@/services/*`
-- `@/state/*`
-- `@/utils/*`
+- `@/modules/*`
+- `@/shared/components/*`
+- `@/shared/lib/*`
+- `@/shared/state`
+- `@/shared/services`
+- `@/shared/utils`
+
+Keep `src/app` files small. A route page should normally import and export a page from `src/modules`.

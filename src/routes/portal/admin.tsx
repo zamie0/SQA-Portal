@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Shell } from "@/components/Shell";
-import { RequireAuth } from "@/components/RequireAuth";
+import { Shell } from "@/shared/components/layout/Shell";
+import { RequireAuth } from "@/shared/components/RequireAuth";
 import {
   AUTH_EVENT,
   approveReset,
@@ -12,7 +12,7 @@ import {
   setUserStatus,
   type PortalUser,
   type ResetRequest,
-} from "@/lib/auth";
+} from "@/shared/lib/auth";
 import { Check, X, ShieldCheck, KeyRound, Users as UsersIcon, Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/portal/admin")({

@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Shell } from "@/components/Shell";
+import { Shell } from "@/shared/components/layout/Shell";
 import { useMemo, useState } from "react";
 import { Search, HelpCircle, ChevronDown, MessageCircle } from "lucide-react";
-import { faqGroups } from "@/lib/help-content";
+import { faqGroups } from "@/shared/lib/help-content";
 import ReactMarkdown from "react-markdown";
 
 export const Route = createFileRoute("/help/faq")({

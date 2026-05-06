@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { RequireAuth } from "@/components/shared/RequireAuth";
+import { RequireAuth } from "@/shared/components/RequireAuth";
 
 function HelpLayout({ children }: { children: ReactNode }) {
   return <RequireAuth>{children}</RequireAuth>;

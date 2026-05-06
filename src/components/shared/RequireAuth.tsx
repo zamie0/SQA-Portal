@@ -1,1 +1,1 @@
-export { RequireAuth } from "@/components/RequireAuth";
+export { RequireAuth } from "@/shared/components/RequireAuth";

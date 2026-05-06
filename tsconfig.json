@@ -39,10 +39,5 @@
       }
     ]
   },
-  "exclude": [
-    "node_modules",
-    "src/router.tsx",
-    "src/routeTree.gen.ts",
-    "src/routes"
-  ]
+  "exclude": ["node_modules", "src/router.tsx", "src/routeTree.gen.ts", "src/routes"]
 }

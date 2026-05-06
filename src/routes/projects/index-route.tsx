@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Shell } from "@/components/Shell";
-import { projects } from "@/lib/mock-data";
+import { Shell } from "@/shared/components/layout/Shell";
+import { projects } from "@/shared/lib/mock-data";
 import {
   listUserProjects,
   createUserProject,
@@ -8,8 +8,8 @@ import {
   ALL_TABS,
   defaultTabsFor,
   type ProjectTabId,
-} from "@/lib/user-projects";
-import { useEventTick } from "@/lib/use-storage";
+} from "@/shared/lib/user-projects";
+import { useEventTick } from "@/shared/lib/use-storage";
 import { useRef, useState } from "react";
 import { Plus, Search, Users, FolderOpen, Upload, X, Trash2, Check } from "lucide-react";
 

@@ -37,24 +37,42 @@ It combines dashboarding, project workspaces, notifications, team settings, and 
 
 ```text
 src/
-  app/                      # Active Next.js App Router pages/layouts/api
-  components/
-    ui/                     # Reusable UI primitives
-    layout/                 # Layout wrappers (Shell entrypoint)
-    shared/                 # Shared wrappers (RequireAuth, StatusBadge entrypoints)
-    auth/                   # Legacy auth component location (compat)
-    project/                # Legacy project component location (compat)
-  features/
-    auth/components/        # Feature-first auth component entrypoints
-    projects/components/    # Feature-first project component entrypoints
-    help/                   # Help content entrypoint
-  state/                    # App state/auth/storage/data entrypoints
-  services/                 # Service/API entrypoints
-  utils/                    # Utility entrypoints
-  lib/                      # Existing implementation modules (gradual migration source)
-  routes/                   # Legacy TanStack routes (now grouped by functionality)
+  app/                      # Active Next.js App Router URLs, layouts, and API routes
+  modules/                  # Owned feature areas and page implementations
+    auth/
+    help/
+    portal/
+      admin/
+      projects/
+      testbeds/
+      tools/
+    projects/
+    tools/
+      orca/
+      performance/
+      qa-genius/
+      qe/
+    workspace/
+  shared/                   # Cross-feature reusable code
+    components/
+      layout/
+      ui/
+    hooks/
+    lib/
+    services/
+    state/
+    utils/
+  components/               # Compatibility forwards to shared modules
+  features/                 # Compatibility forwards to feature modules
+  routes/                   # Legacy TanStack routes
   legacy/                   # Legacy migration notes
 ```
+
+## Development Ownership
+
+Use `src/modules` as the first place to look for product work. If a developer changes QA Genius, they should usually work under `src/modules/tools/qa-genius`. If they change admin controls, they should usually work under `src/modules/portal/admin`.
+
+Use `src/shared` only for code that is reused by multiple modules. Route files in `src/app` should stay thin and only import the module page they expose.
 
 ## Legacy Routes Folder (Organized by Functionality)
 
@@ -102,7 +120,6 @@ Open [http://localhost:3000](http://localhost:3000).
 - Active runtime: **Next.js App Router** (`src/app`)
 - Legacy TanStack artifacts remain for reference in `src/routes`, `src/router.tsx`, and `src/routeTree.gen.ts`
 - New development should target:
-  - `src/app`
-  - `src/features`
-  - `src/components/layout`, `src/components/shared`, `src/components/ui`
-  - `src/state`, `src/services`, `src/utils`
+  - `src/app` for route entrypoints only
+  - `src/modules` for feature-owned code
+  - `src/shared` for reusable components, state, services, hooks, and utilities

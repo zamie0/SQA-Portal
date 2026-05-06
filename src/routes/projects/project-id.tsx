@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound, useRouter } from "@tanstack/react-router";
-import { Shell } from "@/components/Shell";
-import { getProject, type Project } from "@/lib/mock-data";
+import { Shell } from "@/shared/components/layout/Shell";
+import { getProject, type Project } from "@/shared/lib/mock-data";
 import {
   getUserProject,
   getProjectTabs,
@@ -8,8 +8,8 @@ import {
   ALL_TABS,
   type ProjectTabId,
   type UserProject,
-} from "@/lib/user-projects";
-import { useEventTick } from "@/lib/use-storage";
+} from "@/shared/lib/user-projects";
+import { useEventTick } from "@/shared/lib/use-storage";
 import { useState } from "react";
 import {
   ArrowLeft,
@@ -28,19 +28,19 @@ import {
   TrendingUp,
   FolderOpen,
 } from "lucide-react";
-import { OverviewTab } from "@/components/project/OverviewTab";
-import { CasesTab } from "@/components/project/CasesTab";
-import { ApiTab } from "@/components/project/ApiTab";
-import { ScriptsTab } from "@/components/project/ScriptsTab";
-import { MobileTab } from "@/components/project/MobileTab";
-import { WebTab } from "@/components/project/WebTab";
-import { ExecutionTab } from "@/components/project/ExecutionTab";
-import { ResultsTab } from "@/components/project/ResultsTab";
-import { RpaTab } from "@/components/project/RpaTab";
-import { DiscussionTab } from "@/components/project/DiscussionTab";
-import { SettingsTab } from "@/components/project/SettingsTab";
-import { FilesTab } from "@/components/project/FilesTab";
-import { CustomTabContent } from "@/components/project/CustomTabContent";
+import { OverviewTab } from "@/modules/projects/components/OverviewTab";
+import { CasesTab } from "@/modules/projects/components/CasesTab";
+import { ApiTab } from "@/modules/projects/components/ApiTab";
+import { ScriptsTab } from "@/modules/projects/components/ScriptsTab";
+import { MobileTab } from "@/modules/projects/components/MobileTab";
+import { WebTab } from "@/modules/projects/components/WebTab";
+import { ExecutionTab } from "@/modules/projects/components/ExecutionTab";
+import { ResultsTab } from "@/modules/projects/components/ResultsTab";
+import { RpaTab } from "@/modules/projects/components/RpaTab";
+import { DiscussionTab } from "@/modules/projects/components/DiscussionTab";
+import { SettingsTab } from "@/modules/projects/components/SettingsTab";
+import { FilesTab } from "@/modules/projects/components/FilesTab";
+import { CustomTabContent } from "@/modules/projects/components/CustomTabContent";
 
 type ProjectLike = { kind: "mock"; project: Project } | { kind: "user"; project: UserProject };
 
@@ -345,14 +345,14 @@ export function TabsToggle({
     if (id === "overview" || id === "settings") return;
     const next = current.includes(id) ? current.filter((t) => t !== id) : [...current, id];
     setCurrent(next);
-    void import("@/lib/user-projects").then(({ setProjectTabs }) =>
+    void import("@/shared/lib/user-projects").then(({ setProjectTabs }) =>
       setProjectTabs(projectId, next),
     );
   }
 
   function reset() {
     setCurrent(fallback);
-    void import("@/lib/user-projects").then(({ setProjectTabs }) =>
+    void import("@/shared/lib/user-projects").then(({ setProjectTabs }) =>
       setProjectTabs(projectId, fallback),
     );
   }
