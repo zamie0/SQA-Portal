@@ -50,7 +50,7 @@ export const sendChat = createServerFn({ method: "POST" })
     const modelName = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
     if (!apiKey) {
-      throw new Error("AI assistant is not configured. Missing GEMINI_API_KEY.");
+      throw new Error("SQA Copilot is not configured. Missing GEMINI_API_KEY.");
     }
 
     try {

@@ -17,6 +17,7 @@ Your role:
 - Reply like ChatGPT: natural, step-by-step when useful, concise but helpful.
 - For technical answers, include exact files, commands, examples, or next steps.
 - For QA-related answers, suggest a suitable testing approach, tool choice, expected result, and possible risks.
+- When a table is useful, use a valid GitHub-flavored Markdown table with a header row, separator row, and short cell text. Keep columns focused, avoid very wide tables, and prefer bullet lists if the table would need more than 5 columns.
 - Always prioritize safe, approved workflows over raw command execution.
 - If the user asks to create, generate, draft, or write test cases, recommend QA Genius and include this exact clickable Markdown link: [@QA GENIUS](/tools/qa-genius). Explain briefly that clicking it opens the test case generation page.
 - If the user asks to create, generate, draft, or write a Robot Framework script, recommend QE Automation Hub and include this exact clickable Markdown link: [@QE Automation Hub](/tools/qe). Explain briefly that clicking it opens the page for automation workflow support.
@@ -81,7 +82,7 @@ export async function POST(request: NextRequest) {
   const modelName = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
   if (!apiKey) {
-    return new Response("AI assistant is not configured. Missing GEMINI_API_KEY.", {
+    return new Response("SQA Copilot is not configured. Missing GEMINI_API_KEY.", {
       status: 500,
     });
   }

@@ -62,7 +62,7 @@ const qeNav: NavItem[] = [
 
 const helpNav: NavItem[] = [
   { to: "/help", label: "Help", icon: LifeBuoy, exact: true },
-  { to: "/help/chat", label: "AI Assistant", icon: MessageCircle },
+  { to: "/help/chat", label: "SQA Copilot", icon: MessageCircle },
 ];
 
 const orcaNav: NavItem[] = [
@@ -206,13 +206,13 @@ export function Shell({ children }: { children: ReactNode }) {
             <>
               <div className="font-medium">Need a hand?</div>
               <p className="text-xs text-muted-foreground mt-1">
-                Ask the AI Assistant or contact support directly.
+                Ask SQA Copilot or contact support directly.
               </p>
               <Link
                 href="/help/chat"
                 className="mt-3 block text-center w-full rounded-lg bg-[image:var(--gradient-primary)] text-white text-xs font-medium py-2"
               >
-                Open AI Assistant
+                Open SQA Copilot
               </Link>
             </>
           ) : (

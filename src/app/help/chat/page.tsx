@@ -18,6 +18,7 @@ import {
   X,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import type { ChatMessage } from "@/lib/chat-types";
 import { useLocalStorage } from "@/state";
 
@@ -120,7 +121,7 @@ function ChatPage() {
       });
       if (!response.ok) {
         const text = await response.text();
-        throw new Error(text || "AI assistant failed");
+        throw new Error(text || "SQA Copilot failed");
       }
       const data = (await response.json()) as { reply: string };
       setConversations((prev) =>
@@ -423,12 +424,32 @@ function Bubble({ message }: { message: UiMessage }) {
         ) : (
           <div className="prose prose-sm max-w-none prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5 prose-a:font-semibold prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-strong:text-foreground prose-code:text-foreground prose-code:bg-white/80 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none prose-pre:bg-foreground prose-pre:text-background">
             <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
               components={{
                 a: ({ href, children }) => (
                   <Link href={href ?? "#"} className="rounded-md bg-primary/10 px-1.5 py-0.5">
                     {children}
                   </Link>
                 ),
+                table: ({ children }) => (
+                  <div className="my-3 w-full overflow-x-auto rounded-xl border border-white/70 bg-white/70">
+                    <table className="m-0 w-full min-w-max border-collapse text-left text-xs">
+                      {children}
+                    </table>
+                  </div>
+                ),
+                thead: ({ children }) => <thead className="bg-foreground/5">{children}</thead>,
+                th: ({ children }) => (
+                  <th className="whitespace-nowrap border-b border-white/70 px-3 py-2 font-semibold text-foreground">
+                    {children}
+                  </th>
+                ),
+                td: ({ children }) => (
+                  <td className="max-w-[240px] border-b border-white/60 px-3 py-2 align-top text-foreground/80">
+                    {children}
+                  </td>
+                ),
+                tr: ({ children }) => <tr className="last:[&_td]:border-b-0">{children}</tr>,
               }}
             >
               {message.content}
