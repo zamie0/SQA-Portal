@@ -60,10 +60,7 @@ const qeNav: NavItem[] = [
   { to: "/settings", label: "Settings", icon: SettingsIcon },
 ];
 
-const helpNav: NavItem[] = [
-  { to: "/help", label: "Help", icon: LifeBuoy, exact: true },
-  { to: "/help/chat", label: "SQA Copilot", icon: MessageCircle },
-];
+const helpNav: NavItem[] = [{ to: "/help/chat", label: "SQA Copilot", icon: MessageCircle }];
 
 const orcaNav: NavItem[] = [
   { to: "/tools/orca", label: "Overview", icon: Bot, exact: true },
@@ -177,9 +174,6 @@ export function Shell({ children }: { children: ReactNode }) {
 
           {user?.role === "admin" && ctx === "portal" && <AdminLink path={path} />}
 
-          <div className="mt-5 mb-1.5 px-3 flex items-center gap-2 text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
-            <LifeBuoy className="h-3.5 w-3.5" /> Help
-          </div>
           {helpNav.map((item) => {
             const active = path.startsWith(item.to);
             const Icon = item.icon;

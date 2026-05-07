@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import type { Content } from "@google/generative-ai";
+import type { Content, Part } from "@google/generative-ai";
 import type { ChatMessage } from "@/lib/chat-types";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -8,7 +8,7 @@ const SYSTEM_PROMPT = `You are SQA Copilot, a friendly AI assistant inside the S
 
 Your role:
 - Help testers with software quality assurance tasks.
-- Assist with API testing, automation testing, performance testing, test case generation, log analysis, debugging, and QA documentation.
+- Assist with API testing, automation testing, performance testing, test case generation, log analysis, debugging, QA documentation, and uploaded screenshots/files/audio.
 - Act as an intelligent coordinator for SQA Portal tools such as ORCA, QA Genius, JMeter, Robot Framework, Postman/API testing tools, and other QA utilities.
 - Do not claim you have executed a tool unless the backend actually provides that action.
 - Do not invent features, menus, results, reports, or tool integrations that do not exist.
@@ -17,6 +17,7 @@ Your role:
 - Reply like ChatGPT: natural, step-by-step when useful, concise but helpful.
 - For technical answers, include exact files, commands, examples, or next steps.
 - For QA-related answers, suggest a suitable testing approach, tool choice, expected result, and possible risks.
+- If the user uploads an image, file, or voice recording, inspect it as part of the request and mention the relevant observations in the answer.
 - When a table is useful, use a valid GitHub-flavored Markdown table with a header row, separator row, and short cell text. Keep columns focused, avoid very wide tables, and prefer bullet lists if the table would need more than 5 columns.
 - Always prioritize safe, approved workflows over raw command execution.
 - If the user asks to create, generate, draft, or write test cases, recommend QA Genius and include this exact clickable Markdown link: [@QA GENIUS](/tools/qa-genius). Explain briefly that clicking it opens the test case generation page.
@@ -49,16 +50,85 @@ function cleanMessages(messages: unknown): ChatMessage[] | null {
         typeof (m as ChatMessage).content === "string",
     )
     .filter((m) => m.role === "user" || m.role === "assistant")
+    .map((m) => ({
+      role: m.role,
+      content: m.content,
+      attachments: cleanAttachments((m as ChatMessage).attachments),
+    }))
     .slice(-20);
 
   return cleaned.length > 0 ? cleaned : null;
 }
 
+function cleanAttachments(attachments: unknown): ChatMessage["attachments"] {
+  if (!Array.isArray(attachments)) return undefined;
+
+  const cleaned = attachments
+    .filter(
+      (attachment): attachment is NonNullable<ChatMessage["attachments"]>[number] =>
+        !!attachment &&
+        typeof attachment === "object" &&
+        typeof (attachment as { name?: unknown }).name === "string" &&
+        typeof (attachment as { mimeType?: unknown }).mimeType === "string" &&
+        typeof (attachment as { size?: unknown }).size === "number" &&
+        typeof (attachment as { data?: unknown }).data === "string",
+    )
+    .slice(0, 4);
+
+  return cleaned.length > 0 ? cleaned : undefined;
+}
+
 function toGeminiContents(messages: ChatMessage[]): Content[] {
-  return messages.map((message) => ({
-    role: message.role === "assistant" ? "model" : "user",
-    parts: [{ text: message.content }],
-  }));
+  return messages.map((message) => {
+    const parts: Part[] = [];
+    if (message.content) {
+      parts.push({ text: message.content });
+    }
+
+    for (const attachment of message.attachments ?? []) {
+      parts.push({
+        text: `Uploaded file: ${attachment.name} (${attachment.mimeType}, ${Math.round(
+          attachment.size / 1024,
+        )} KB)`,
+      });
+
+      if (isTextAttachment(attachment.mimeType, attachment.name)) {
+        parts.push({
+          text: decodeAttachmentText(attachment.data ?? ""),
+        });
+      } else {
+        parts.push({
+          inlineData: {
+            mimeType: attachment.mimeType,
+            data: attachment.data ?? "",
+          },
+        });
+      }
+    }
+
+    return {
+      role: message.role === "assistant" ? "model" : "user",
+      parts: parts.length > 0 ? parts : [{ text: "" }],
+    };
+  });
+}
+
+function isTextAttachment(mimeType: string, name: string) {
+  const ext = name.split(".").pop()?.toLowerCase();
+  return (
+    mimeType.startsWith("text/") ||
+    ["json", "xml", "yaml", "yml", "md", "log", "robot", "js", "ts", "tsx", "py", "java"].includes(
+      ext ?? "",
+    )
+  );
+}
+
+function decodeAttachmentText(data: string) {
+  try {
+    return Buffer.from(data, "base64").toString("utf8").slice(0, 120_000);
+  } catch {
+    return "";
+  }
 }
 
 function getErrorStatus(error: unknown): number | undefined {
