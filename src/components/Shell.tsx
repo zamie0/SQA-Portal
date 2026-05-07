@@ -106,6 +106,7 @@ function getContext(path: string): Ctx {
 export function Shell({ children }: { children: ReactNode }) {
   const path = usePathname() ?? "/";
   const helpOpen = path.startsWith("/help");
+  const lockPageScroll = path === "/help/chat";
   const ctx = getContext(path);
   const user = useAuth();
 
@@ -147,7 +148,7 @@ export function Shell({ children }: { children: ReactNode }) {
               : "Quality Assurance";
 
   return (
-    <div className="min-h-screen flex">
+    <div className={lockPageScroll ? "h-screen overflow-hidden flex" : "min-h-screen flex"}>
       <aside className="hidden lg:flex flex-col w-64 m-4 mr-0 rounded-3xl glass p-5 sticky top-4 self-start h-[calc(100vh-2rem)] overflow-y-auto">
         <SmartLogo heading={heading} subheading={subheading} />
 
@@ -225,8 +226,8 @@ export function Shell({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col min-w-0">
-        <header className="sticky top-0 z-30 m-4 rounded-3xl glass px-4 py-3 flex items-center gap-3">
+      <div className="flex-1 flex flex-col min-w-0 min-h-0">
+        <header className="sticky top-0 z-30 m-4 rounded-3xl glass px-4 py-3 flex items-center gap-3 shrink-0">
           <div className="lg:hidden h-9 w-9 rounded-xl bg-[image:var(--gradient-primary)] grid place-items-center">
             <Sparkles className="h-4 w-4 text-white" />
           </div>
@@ -234,7 +235,13 @@ export function Shell({ children }: { children: ReactNode }) {
           <ProfileMenu />
         </header>
 
-        <main className="px-4 pb-10 flex-1">{children}</main>
+        <main
+          className={
+            lockPageScroll ? "px-4 pb-4 flex-1 min-h-0 overflow-hidden" : "px-4 pb-10 flex-1"
+          }
+        >
+          {children}
+        </main>
       </div>
     </div>
   );

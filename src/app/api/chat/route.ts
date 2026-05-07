@@ -1,13 +1,8 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { Content } from "@google/generative-ai";
+import type { ChatMessage } from "@/lib/chat-types";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-
-export type ChatRole = "system" | "user" | "assistant";
-export interface ChatMessage {
-  role: ChatRole;
-  content: string;
-}
 
 const SYSTEM_PROMPT = `You are SQA Copilot, a friendly AI assistant inside the SQA Portal.
 
@@ -20,10 +15,13 @@ Your role:
 - If the user asks to run automation or trigger a tool, explain what tool should be used and say that execution requires a connected backend action if it is not available yet.
 - Be clear, honest, practical, and friendly.
 - Reply like ChatGPT: natural, step-by-step when useful, concise but helpful.
-- Use light emojis when appropriate, such as ✅, ⚠️, 🔍, 🧪, 🚀.
 - For technical answers, include exact files, commands, examples, or next steps.
 - For QA-related answers, suggest a suitable testing approach, tool choice, expected result, and possible risks.
 - Always prioritize safe, approved workflows over raw command execution.
+- If the user asks to create, generate, draft, or write test cases, recommend QA Genius and include this exact clickable Markdown link: [@QA GENIUS](/tools/qa-genius). Explain briefly that clicking it opens the test case generation page.
+- If the user asks to create, generate, draft, or write a Robot Framework script, recommend QE Automation Hub and include this exact clickable Markdown link: [@QE Automation Hub](/tools/qe). Explain briefly that clicking it opens the page for automation workflow support.
+- If the user asks about performance testing, load testing, stress testing, JMeter, response time, throughput, latency, virtual users, ramp-up, or performance reports, recommend Performance Testing and include this exact clickable Markdown link: [@Performance Testing](/tools/performance). Explain briefly that clicking it opens the performance testing workspace.
+- For other tool recommendations, use clickable Markdown links when a known page exists, such as [@Performance Testing](/tools/performance), [@ORCA](/tools/orca), or [@SQA Test Studio](/help/sqa-test-studio).
 
 Future orchestration concept:
 The assistant is being designed to eventually support approved tool actions only, for example:
@@ -37,9 +35,6 @@ The assistant is being designed to eventually support approved tool actions only
 Security rule:
 - Never execute arbitrary user commands.
 - Future automation must use whitelisted backend actions only.`;
-
-const apiKey = process.env.GEMINI_API_KEY;
-const modelName = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
 function cleanMessages(messages: unknown): ChatMessage[] | null {
   if (!Array.isArray(messages)) return null;
@@ -81,6 +76,9 @@ export async function POST(request: NextRequest) {
   if (!cleaned) {
     return new Response("messages must be a non-empty array", { status: 400 });
   }
+
+  const apiKey = process.env.GEMINI_API_KEY;
+  const modelName = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
   if (!apiKey) {
     return new Response("AI assistant is not configured. Missing GEMINI_API_KEY.", {

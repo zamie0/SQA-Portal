@@ -1,27 +1,31 @@
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import type { Content } from "@google/generative-ai";
 import { createServerFn } from "@tanstack/react-start";
+import type { ChatMessage } from "@/lib/chat-types";
 
-export type ChatRole = "system" | "user" | "assistant";
-export interface ChatMessage {
-  role: ChatRole;
-  content: string;
-}
-
-const SYSTEM_PROMPT = `You are the QE Automation Hub assistant — an in-app guide for QA engineers using a web platform that organizes test automation suites and RPA bots.
+const SYSTEM_PROMPT = `You are the QE Automation Hub assistant - an in-app guide for QA engineers using a web platform that organizes test automation suites and RPA bots.
 
 The product has these main areas:
 - Dashboard: KPIs, pass-rate trend, recent activity.
-- Projects: folder-style workspaces. Two project types — "Test Automation" (Playwright / Cypress / Selenium / Robot Framework / Python) and "RPA" (visual flow builder).
+- Projects: folder-style workspaces. Two project types - "Test Automation" (Playwright / Cypress / Selenium / Robot Framework / Python) and "RPA" (visual flow builder).
 - Project workspace tabs: Overview, Test Cases, API Testing, Scripts (or RPA Builder), Mobile, Web & Suites, Execution, Results, Discussion, Settings.
 - Runs: global execution log with filters and triggers (Manual / Scheduled / CI/CD).
 - Schedule: cron-style scheduling for suites and bots.
 - Settings: team roles (Admin / QE / Viewer), CI/CD integrations (Jenkins, GitHub Actions, GitLab CI), environment variables.
 
 Guidelines:
-- Be concise, friendly, and practical. Default to short answers (≤4 short paragraphs) with small bullet lists when helpful.
+- Be concise, friendly, and practical. Default to short answers with small bullet lists when helpful.
 - Use Markdown: **bold** for UI labels, \`code\` for file names and identifiers, bullet lists for steps.
 - When a user asks "how do I X", give numbered steps that match the actual UI tabs above.
 - If a question is outside QE / testing / this product, answer briefly and steer back to QE topics.
 - Never invent features that don't exist. If unsure, say so and suggest the closest existing tab.`;
+
+function toGeminiContents(messages: ChatMessage[]): Content[] {
+  return messages.map((message) => ({
+    role: message.role === "assistant" ? "model" : "user",
+    parts: [{ text: message.content }],
+  }));
+}
 
 export const sendChat = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => {
@@ -37,45 +41,45 @@ export const sendChat = createServerFn({ method: "POST" })
           typeof (m as ChatMessage).content === "string",
       )
       .filter((m) => m.role === "user" || m.role === "assistant")
-      .slice(-20); // cap context
+      .slice(-20);
     if (cleaned.length === 0) throw new Error("messages cannot be empty");
     return { messages: cleaned };
   })
   .handler(async ({ data }) => {
-    const apiKey = process.env.LOVABLE_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
+    const modelName = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+
     if (!apiKey) {
-      throw new Error("AI assistant is not configured. Missing LOVABLE_API_KEY.");
+      throw new Error("AI assistant is not configured. Missing GEMINI_API_KEY.");
     }
 
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [{ role: "system", content: SYSTEM_PROMPT }, ...data.messages],
-      }),
-    });
+    try {
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({
+        model: modelName,
+        systemInstruction: SYSTEM_PROMPT,
+      });
+      const result = await model.generateContent({
+        contents: toGeminiContents(data.messages),
+      });
+      const reply = result.response.text().trim();
 
-    if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      if (res.status === 429) {
-        throw new Error("The assistant is rate-limited right now. Please try again in a moment.");
-      }
-      if (res.status === 402) {
+      if (!reply) throw new Error("Empty response from Gemini");
+      return { reply };
+    } catch (error) {
+      const status =
+        error &&
+        typeof error === "object" &&
+        typeof (error as { status?: unknown }).status === "number"
+          ? (error as { status: number }).status
+          : undefined;
+
+      if (status === 429) {
         throw new Error(
-          "AI credits are exhausted. Add credits in Lovable workspace settings to continue.",
+          "Gemini quota is currently exceeded for this API key. Please try again later.",
         );
       }
-      throw new Error(`AI gateway error (${res.status}): ${text.slice(0, 200) || "unknown error"}`);
-    }
 
-    const json = (await res.json()) as {
-      choices?: { message?: { content?: string } }[];
-    };
-    const reply = json.choices?.[0]?.message?.content?.trim();
-    if (!reply) throw new Error("Empty response from AI gateway");
-    return { reply };
+      throw new Error("Failed to generate Gemini response");
+    }
   });
