@@ -1,4 +1,4 @@
-# Logs
+# logs
 logs
 *.log
 npm-debug.log*
@@ -7,12 +7,21 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# environment files
+# env
 .env
+.env.local
 .env.*
 !.env.example
 
+# dependencies
 node_modules
+
+# nextjs
+.next
+
+# typescript
+*.tsbuildinfo
+
 dist
 dist-ssr
 .output

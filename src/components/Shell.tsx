@@ -60,10 +60,7 @@ const qeNav: NavItem[] = [
   { to: "/settings", label: "Settings", icon: SettingsIcon },
 ];
 
-const helpNav: NavItem[] = [
-  { to: "/help", label: "Help", icon: LifeBuoy, exact: true },
-  { to: "/help/chat", label: "AI Assistant", icon: MessageCircle },
-];
+const helpNav: NavItem[] = [{ to: "/help/chat", label: "SQA Copilot", icon: MessageCircle }];
 
 const orcaNav: NavItem[] = [
   { to: "/tools/orca", label: "Overview", icon: Bot, exact: true },
@@ -106,6 +103,7 @@ function getContext(path: string): Ctx {
 export function Shell({ children }: { children: ReactNode }) {
   const path = usePathname() ?? "/";
   const helpOpen = path.startsWith("/help");
+  const lockPageScroll = path === "/help/chat";
   const ctx = getContext(path);
   const user = useAuth();
 
@@ -147,7 +145,7 @@ export function Shell({ children }: { children: ReactNode }) {
               : "Quality Assurance";
 
   return (
-    <div className="min-h-screen flex">
+    <div className={lockPageScroll ? "h-screen overflow-hidden flex" : "min-h-screen flex"}>
       <aside className="hidden lg:flex flex-col w-64 m-4 mr-0 rounded-3xl glass p-5 sticky top-4 self-start h-[calc(100vh-2rem)] overflow-y-auto">
         <SmartLogo heading={heading} subheading={subheading} />
 
@@ -176,9 +174,6 @@ export function Shell({ children }: { children: ReactNode }) {
 
           {user?.role === "admin" && ctx === "portal" && <AdminLink path={path} />}
 
-          <div className="mt-5 mb-1.5 px-3 flex items-center gap-2 text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
-            <LifeBuoy className="h-3.5 w-3.5" /> Help
-          </div>
           {helpNav.map((item) => {
             const active = path.startsWith(item.to);
             const Icon = item.icon;
@@ -205,13 +200,13 @@ export function Shell({ children }: { children: ReactNode }) {
             <>
               <div className="font-medium">Need a hand?</div>
               <p className="text-xs text-muted-foreground mt-1">
-                Ask the AI Assistant or contact support directly.
+                Ask SQA Copilot or contact support directly.
               </p>
               <Link
                 href="/help/chat"
                 className="mt-3 block text-center w-full rounded-lg bg-[image:var(--gradient-primary)] text-white text-xs font-medium py-2"
               >
-                Open AI Assistant
+                Open SQA Copilot
               </Link>
             </>
           ) : (
@@ -225,8 +220,8 @@ export function Shell({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col min-w-0">
-        <header className="sticky top-0 z-30 m-4 rounded-3xl glass px-4 py-3 flex items-center gap-3">
+      <div className="flex-1 flex flex-col min-w-0 min-h-0">
+        <header className="sticky top-0 z-30 m-4 rounded-3xl glass px-4 py-3 flex items-center gap-3 shrink-0">
           <div className="lg:hidden h-9 w-9 rounded-xl bg-[image:var(--gradient-primary)] grid place-items-center">
             <Sparkles className="h-4 w-4 text-white" />
           </div>
@@ -234,7 +229,13 @@ export function Shell({ children }: { children: ReactNode }) {
           <ProfileMenu />
         </header>
 
-        <main className="px-4 pb-10 flex-1">{children}</main>
+        <main
+          className={
+            lockPageScroll ? "px-4 pb-4 flex-1 min-h-0 overflow-hidden" : "px-4 pb-10 flex-1"
+          }
+        >
+          {children}
+        </main>
       </div>
     </div>
   );

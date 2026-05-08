@@ -56,7 +56,7 @@ export default function HelpPage() {
             href="/help/chat"
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[image:var(--gradient-primary)] text-white text-sm font-medium shadow-lg"
           >
-            <MessageCircle className="h-4 w-4" /> Ask the AI Assistant
+            <MessageCircle className="h-4 w-4" /> Ask SQA Copilot
           </Link>
         </div>
       </section>

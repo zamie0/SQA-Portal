@@ -32,7 +32,7 @@ function Page() {
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Paste a user story or requirement…"
+            placeholder="Paste a user story or requirement..."
             className="w-full h-40 rounded-2xl border border-border bg-white/60 p-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
           />
           <div className="mt-3 flex justify-end">
@@ -59,7 +59,7 @@ function Page() {
               href="/portal/tools"
               className="text-xs text-muted-foreground hover:text-foreground"
             >
-              ← Back to all tools
+              Back to all tools
             </Link>
           </div>
         </div>

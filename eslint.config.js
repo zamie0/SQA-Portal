@@ -13,6 +13,7 @@ export default tseslint.config(
       ".vinxi",
       ".next",
       "node_modules",
+      "next-env.d.ts",
       "src/routes/**",
       "src/router.tsx",
       "src/routeTree.gen.ts",
