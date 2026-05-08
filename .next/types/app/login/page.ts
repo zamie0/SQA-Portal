@@ -1,8 +1,8 @@
-// File: C:\Users\zamic\Desktop\SQA-Portal\src\app\portal\tools\page.tsx
-import * as entry from '../../../../../src/app/portal/tools/page.js'
+// File: C:\Users\zamic\Desktop\SQA-Portal\src\app\login\page.tsx
+import * as entry from '../../../../src/app/login/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
-type TEntry = typeof import('../../../../../src/app/portal/tools/page.js')
+type TEntry = typeof import('../../../../src/app/login/page.js')
 
 type SegmentParams<T extends Object = any> = T extends Record<string, any>
   ? { [K in keyof T]: T[K] extends string ? string | string[] | undefined : never }

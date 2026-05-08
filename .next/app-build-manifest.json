@@ -16,10 +16,10 @@
       "static/chunks/main-app.js",
       "static/chunks/app/page.js"
     ],
-    "/portal/tools/page": [
+    "/login/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/portal/tools/page.js"
+      "static/chunks/app/login/page.js"
     ]
   }
 }
