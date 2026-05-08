@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { LogIn, User, Lock } from "lucide-react";
 import { login } from "@/state";
 import { AuthLayout, Banner, Field } from "@/features/auth/components";
 
@@ -20,14 +21,14 @@ function LoginPage() {
     }
     const res = login(id, pw);
     if (res.ok) {
-      setMsg({ kind: "success", text: "✅ Login success. Redirecting…" });
+      setMsg({ kind: "success", text: "Login successful. Redirecting…" });
       setTimeout(() => router.push("/"), 400);
     } else if (res.reason === "pending") {
-      setMsg({ kind: "info", text: "⏳ Account pending admin approval." });
+      setMsg({ kind: "info", text: "Account pending admin approval." });
     } else if (res.reason === "rejected") {
-      setMsg({ kind: "error", text: "❌ Account was rejected. Contact an admin." });
+      setMsg({ kind: "error", text: "Account was rejected. Contact an admin." });
     } else {
-      setMsg({ kind: "error", text: "❌ Invalid username, email or password." });
+      setMsg({ kind: "error", text: "Invalid username, email or password." });
     }
   }
 
@@ -35,21 +36,27 @@ function LoginPage() {
     <AuthLayout title="SQA Portal" subtitle="Sign in to your workspace">
       <form onSubmit={submit} className="space-y-4">
         <Field label="Username or Email">
-          <input
-            value={id}
-            onChange={(e) => setId(e.target.value)}
-            autoComplete="username"
-            className="auth-input"
-          />
+          <div className="relative">
+            <User className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={id}
+              onChange={(e) => setId(e.target.value)}
+              autoComplete="username"
+              className="auth-input pl-10"
+            />
+          </div>
         </Field>
         <Field label="Password">
-          <input
-            type="password"
-            value={pw}
-            onChange={(e) => setPw(e.target.value)}
-            autoComplete="current-password"
-            className="auth-input"
-          />
+          <div className="relative">
+            <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="password"
+              value={pw}
+              onChange={(e) => setPw(e.target.value)}
+              autoComplete="current-password"
+              className="auth-input pl-10"
+            />
+          </div>
         </Field>
 
         {msg && <Banner kind={msg.kind} text={msg.text} />}
@@ -58,7 +65,10 @@ function LoginPage() {
           type="submit"
           className="w-full rounded-xl bg-[image:var(--gradient-primary)] text-white font-medium py-2.5 shadow-md hover:opacity-95 transition"
         >
-          Login
+          <span className="inline-flex items-center justify-center gap-2">
+            <LogIn className="h-4 w-4" />
+            Login
+          </span>
         </button>
 
         <div className="flex items-center justify-between text-xs">
