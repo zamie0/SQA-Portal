@@ -12,6 +12,7 @@ import {
   Sparkles,
   LifeBuoy,
   MessageCircle,
+  CircleHelp,
   // help icons removed: now using only LifeBuoy + MessageCircle
   User as UserIcon,
   LogOut,
@@ -46,7 +47,6 @@ const portalNav: NavItem[] = [
   { to: "/portal/projects", label: "Project", icon: FolderKanban },
   { to: "/portal/testbeds", label: "Testbeds", icon: Server },
   { to: "/portal/tools", label: "Tools", icon: Wrench },
-  { to: "/help", label: "Help", icon: LifeBuoy },
 ];
 
 const toolsNav: NavItem[] = [
@@ -182,10 +182,10 @@ export function Shell({ children }: { children: ReactNode }) {
           {user?.role === "admin" && ctx === "portal" && <AdminLink path={path} />}
 
           <div className="mt-5 mb-1.5 px-3 flex items-center gap-2 text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
-            <LifeBuoy className="h-3.5 w-3.5" /> Help
+            <CircleHelp className="h-3.5 w-3.5" /> Support
           </div>
           {helpNav.map((item) => {
-            const active = path.startsWith(item.to);
+            const active = item.exact ? path === item.to : path.startsWith(item.to);
             const Icon = item.icon;
             return (
               <Link
