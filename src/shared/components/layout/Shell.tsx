@@ -46,7 +46,7 @@ const portalNav: NavItem[] = [
   { to: "/portal/projects", label: "Project", icon: FolderKanban },
   { to: "/portal/testbeds", label: "Testbeds", icon: Server },
   { to: "/portal/tools", label: "Tools", icon: Wrench },
-  { to: "/help", label: "Help", icon: LifeBuoy },
+  { to: "/help", label: "Help", icon: LifeBuoy, exact: true },
 ];
 
 const toolsNav: NavItem[] = [
@@ -65,10 +65,7 @@ const qeNav: NavItem[] = [
   { to: "/settings", label: "Settings", icon: SettingsIcon },
 ];
 
-const helpNav: NavItem[] = [
-  { to: "/help", label: "Help", icon: LifeBuoy, exact: true },
-  { to: "/help/chat", label: "AI Assistant", icon: MessageCircle },
-];
+const helpNav: NavItem[] = [{ to: "/help/chat", label: "AI Assistant", icon: MessageCircle }];
 
 const orcaNav: NavItem[] = [
   { to: "/tools/orca", label: "Overview", icon: Bot, exact: true },
