@@ -11,6 +11,7 @@ import {
   getAllUsers,
   getResetRequests,
   rejectReset,
+  setUserRole,
   setUserStatus,
   type PortalUser,
   type ResetRequest,
@@ -46,7 +47,7 @@ function AdminPage() {
             <div>
               <h1 className="text-3xl font-bold font-display">Admin panel</h1>
               <p className="text-muted-foreground text-sm">
-                Approve registrations, manage users and finalize password resets.
+                Approve users, assign roles, manage accounts and finalize password resets.
               </p>
             </div>
           </div>
@@ -56,6 +57,7 @@ function AdminPage() {
           users={users}
           resets={resets}
           setUserStatus={setUserStatus}
+          setUserRole={setUserRole}
           deleteUser={deleteUser}
           approveReset={approveReset}
           rejectReset={rejectReset}

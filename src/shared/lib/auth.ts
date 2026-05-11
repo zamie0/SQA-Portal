@@ -2,7 +2,7 @@
 // All names are lowercase for case-insensitive matching.
 
 export type UserStatus = "pending" | "approved" | "rejected";
-export type UserRole = "admin" | "user";
+export type UserRole = "admin" | "staff" | "intern" | "user";
 
 export interface PortalUser {
   id: string;
@@ -13,6 +13,14 @@ export interface PortalUser {
   role: UserRole;
   status: UserStatus;
   createdAt: number;
+  phone?: string;
+  website?: string;
+  address?: string;
+  birthdate?: string;
+  about?: string;
+  skills?: string;
+  profilePicture?: string;
+  lastLoginAt?: number;
 }
 
 export interface ResetRequest {
@@ -38,6 +46,8 @@ const ADMIN: PortalUser = {
   role: "admin",
   status: "approved",
   createdAt: 0,
+  about: "System administrator for SQA Portal.",
+  skills: "User approval, QA governance, portal administration",
 };
 
 function isBrowser() {
@@ -112,8 +122,9 @@ export function login(usernameOrEmail: string, password: string): LoginResult {
   if (!user || user.password !== password) return { ok: false, reason: "invalid" };
   if (user.status === "pending") return { ok: false, reason: "pending" };
   if (user.status === "rejected") return { ok: false, reason: "rejected" };
+  saveUsers(getAllUsers().map((u) => (u.id === user.id ? { ...u, lastLoginAt: Date.now() } : u)));
   setSession(user.id);
-  return { ok: true, user };
+  return { ok: true, user: { ...user, lastLoginAt: Date.now() } };
 }
 
 export function logout() {
@@ -155,8 +166,88 @@ export function setUserStatus(id: string, status: UserStatus) {
   saveUsers(users);
 }
 
+export function setUserRole(id: string, role: UserRole) {
+  const users = getAllUsers().map((u) => (u.id === id ? { ...u, role } : u));
+  saveUsers(users);
+}
+
 export function deleteUser(id: string) {
   saveUsers(getAllUsers().filter((u) => u.id !== id));
+}
+
+export type ProfileUpdate = Partial<
+  Pick<
+    PortalUser,
+    | "fullName"
+    | "username"
+    | "phone"
+    | "website"
+    | "address"
+    | "birthdate"
+    | "about"
+    | "skills"
+    | "profilePicture"
+  >
+>;
+
+export type UpdateProfileResult =
+  | { ok: true; user: PortalUser }
+  | { ok: false; reason: "username-taken" | "missing-user" };
+
+export function updateUserProfile(id: string, input: ProfileUpdate): UpdateProfileResult {
+  const users = getAllUsers();
+  const current = users.find((u) => u.id === id);
+  if (!current) return { ok: false, reason: "missing-user" };
+  const nextUsername = input.username?.trim();
+  if (
+    nextUsername &&
+    users.some((u) => u.id !== id && u.username.toLowerCase() === nextUsername.toLowerCase())
+  ) {
+    return { ok: false, reason: "username-taken" };
+  }
+  const nextUser: PortalUser = {
+    ...current,
+    ...input,
+    fullName: input.fullName?.trim() || current.fullName,
+    username: nextUsername || current.username,
+  };
+  saveUsers(users.map((u) => (u.id === id ? nextUser : u)));
+  return { ok: true, user: nextUser };
+}
+
+export type ChangeEmailResult =
+  | { ok: true; user: PortalUser }
+  | { ok: false; reason: "email-taken" | "bad-password" | "missing-user" };
+
+export function changeUserEmail(id: string, newEmail: string, password: string): ChangeEmailResult {
+  const users = getAllUsers();
+  const current = users.find((u) => u.id === id);
+  if (!current) return { ok: false, reason: "missing-user" };
+  if (current.password !== password) return { ok: false, reason: "bad-password" };
+  const email = newEmail.trim().toLowerCase();
+  if (users.some((u) => u.id !== id && u.email.toLowerCase() === email)) {
+    return { ok: false, reason: "email-taken" };
+  }
+  const nextUser = { ...current, email: newEmail.trim() };
+  saveUsers(users.map((u) => (u.id === id ? nextUser : u)));
+  return { ok: true, user: nextUser };
+}
+
+export type ChangePasswordResult =
+  | { ok: true }
+  | { ok: false; reason: "bad-password" | "missing-user" };
+
+export function changeUserPassword(
+  id: string,
+  oldPassword: string,
+  newPassword: string,
+): ChangePasswordResult {
+  const users = getAllUsers();
+  const current = users.find((u) => u.id === id);
+  if (!current) return { ok: false, reason: "missing-user" };
+  if (current.password !== oldPassword) return { ok: false, reason: "bad-password" };
+  saveUsers(users.map((u) => (u.id === id ? { ...u, password: newPassword } : u)));
+  return { ok: true };
 }
 
 export function requestPasswordReset(usernameOrEmail: string): boolean {

@@ -110,7 +110,6 @@ function getContext(path: string): Ctx {
 
 export function Shell({ children }: { children: ReactNode }) {
   const path = usePathname() ?? "/";
-  const helpOpen = path.startsWith("/help");
   const ctx = getContext(path);
   const user = useAuth();
 
@@ -205,41 +204,21 @@ export function Shell({ children }: { children: ReactNode }) {
           })}
         </nav>
 
-        <div className="mt-auto rounded-2xl glass-strong p-4 text-sm">
-          {helpOpen ? (
-            <>
-              <div className="font-medium">Need a hand?</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Ask the AI Assistant or contact support directly.
-              </p>
-              <Link
-                href="/help/chat"
-                className="mt-3 block text-center w-full rounded-lg bg-[image:var(--gradient-primary)] text-white text-xs font-medium py-2"
-              >
-                Open AI Assistant
-              </Link>
-            </>
-          ) : (
-            <>
-              <div className="font-medium">SQA Portal</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Unified workspace for QA, automation and performance testing.
-              </p>
-            </>
-          )}
+        <div className="mt-auto">
+          <ProfileMenu placement="sidebar" />
         </div>
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="sticky top-0 z-30 m-4 rounded-3xl glass px-4 py-3 flex items-center gap-3">
-          <div className="lg:hidden h-9 w-9 rounded-xl bg-[image:var(--gradient-primary)] grid place-items-center">
+        <header className="lg:hidden sticky top-0 z-30 m-4 rounded-3xl glass px-4 py-3 flex items-center gap-3">
+          <div className="h-9 w-9 rounded-xl bg-[image:var(--gradient-primary)] grid place-items-center">
             <Sparkles className="h-4 w-4 text-white" />
           </div>
           <div className="flex-1" />
           <ProfileMenu />
         </header>
 
-        <main className="px-4 pb-10 flex-1">{children}</main>
+        <main className="p-4 pb-10 flex-1">{children}</main>
       </div>
     </div>
   );
@@ -305,7 +284,7 @@ function AdminLink({ path }: { path: string }) {
   );
 }
 
-function ProfileMenu() {
+function ProfileMenu({ placement = "header" }: { placement?: "header" | "sidebar" }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -343,9 +322,12 @@ function ProfileMenu() {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-2 pr-2 pl-1 py-1 rounded-2xl glass-strong hover:bg-white/80 transition"
+        className={[
+          "flex items-center gap-2 rounded-2xl border border-white/70 bg-white/70 shadow-sm transition-all hover:border-primary/35 hover:bg-white hover:shadow-md",
+          placement === "sidebar" ? "w-full p-2" : "pr-2 pl-1 py-1",
+        ].join(" ")}
       >
-        <div className="relative h-9 w-9 rounded-xl bg-[image:var(--gradient-primary)] grid place-items-center text-white text-sm font-semibold shadow">
+        <div className="relative h-9 w-9 shrink-0 rounded-full bg-[image:var(--gradient-primary)] grid place-items-center text-white text-sm font-semibold shadow">
           {initials}
           {unread > 0 && (
             <span className="absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold grid place-items-center">
@@ -353,19 +335,31 @@ function ProfileMenu() {
             </span>
           )}
         </div>
-        <div className="hidden sm:block text-left leading-tight">
+        <div className="hidden sm:block text-left leading-tight min-w-0 flex-1">
           <div className="text-xs font-semibold">{user?.fullName || user?.username || "Guest"}</div>
           <div className="text-[10px] text-muted-foreground">
             {user ? (user.role === "admin" ? "Administrator" : "User") : "Not signed in"}
           </div>
         </div>
-        <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+        <ChevronDown
+          className={[
+            "h-3.5 w-3.5 text-muted-foreground transition-transform",
+            open ? "rotate-180 text-primary" : "",
+          ].join(" ")}
+        />
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-72 rounded-2xl glass-strong p-2 shadow-xl z-40">
-          <div className="px-3 py-3 border-b border-white/40 flex items-center gap-3">
-            <div className="h-12 w-12 rounded-xl bg-[image:var(--gradient-primary)] grid place-items-center text-white font-semibold">
+        <div
+          className={[
+            "absolute rounded-3xl border border-white/80 bg-white/95 p-2 shadow-2xl z-40 backdrop-blur-xl",
+            placement === "sidebar"
+              ? "left-0 right-0 bottom-full mb-3 w-full"
+              : "right-0 top-full mt-2 w-72",
+          ].join(" ")}
+        >
+          <div className="rounded-2xl bg-[image:var(--gradient-soft)] px-3 py-3 border border-white/70 flex items-center gap-3">
+            <div className="h-11 w-11 shrink-0 rounded-full bg-[image:var(--gradient-primary)] grid place-items-center text-white font-semibold shadow-md">
               {initials}
             </div>
             <div className="min-w-0">
@@ -380,18 +374,24 @@ function ProfileMenu() {
             </div>
           </div>
 
-          <DropItem
-            icon={Bell}
-            label="Notifications"
-            badge={unread}
-            onClick={() => go("/notifications")}
-          />
-          <DropItem icon={UserIcon} label="Profile" onClick={() => go("/profile")} />
-          <DropItem icon={SettingsIcon} label="Settings" onClick={() => go("/settings")} />
-          {user?.role === "admin" && (
-            <DropItem icon={ShieldCheck} label="Admin panel" onClick={() => go("/portal/admin")} />
-          )}
-          <div className="my-1 border-t border-white/40" />
+          <div className="my-2 space-y-1">
+            <DropItem
+              icon={Bell}
+              label="Notifications"
+              badge={unread}
+              onClick={() => go("/notifications")}
+            />
+            <DropItem icon={UserIcon} label="Profile" onClick={() => go("/profile")} />
+            <DropItem icon={SettingsIcon} label="Settings" onClick={() => go("/settings")} />
+            {user?.role === "admin" && (
+              <DropItem
+                icon={ShieldCheck}
+                label="Admin panel"
+                onClick={() => go("/portal/admin")}
+              />
+            )}
+          </div>
+          <div className="my-2 border-t border-border/60" />
           {user ? (
             <DropItem icon={LogOut} label="Logout" danger onClick={logout} />
           ) : (
@@ -420,11 +420,18 @@ function DropItem({
     <button
       onClick={onClick}
       className={[
-        "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition",
-        danger ? "text-destructive hover:bg-destructive/10" : "text-foreground hover:bg-white/70",
+        "group w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-sm font-medium transition-all",
+        danger
+          ? "text-destructive hover:bg-destructive hover:text-destructive-foreground hover:shadow-md"
+          : "text-foreground hover:bg-primary/12 hover:text-primary hover:shadow-sm",
       ].join(" ")}
     >
-      <Icon className="h-4 w-4" />
+      <Icon
+        className={[
+          "h-4 w-4 transition-colors",
+          danger ? "group-hover:text-destructive-foreground" : "group-hover:text-primary",
+        ].join(" ")}
+      />
       <span className="flex-1 text-left">{label}</span>
       {!!badge && badge > 0 && (
         <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-destructive text-destructive-foreground">

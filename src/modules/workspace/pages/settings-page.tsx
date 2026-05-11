@@ -1,145 +1,326 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { Shell } from "@/shared/components/layout/Shell";
 import { RequireAuth } from "@/shared/components/RequireAuth";
-import { Shield, Users, GitBranch, Bell } from "lucide-react";
+import {
+  changeUserEmail,
+  changeUserPassword,
+  getAllUsers,
+  useAuth,
+  useEventTick,
+} from "@/shared/state";
+import { Bell, KeyRound, Mail, Save, Shield, UserCog, Users } from "lucide-react";
 
-const roles = [
-  { name: "Aiman R.", email: "aiman@qe.io", role: "Admin" },
-  { name: "Sara T.", email: "sara@qe.io", role: "QE" },
-  { name: "Daniel K.", email: "daniel@qe.io", role: "QE" },
-  { name: "Lina M.", email: "lina@qe.io", role: "Viewer" },
+const notificationDefaults = [
+  "Registration approvals",
+  "Password reset requests",
+  "Failed automation runs",
+  "Weekly QA summary",
 ];
 
 function SettingsPage() {
+  const authTick = useEventTick("sqa.auth.changed");
+  const user = useAuth();
+  const [users, setUsers] = useState(() => getAllUsers());
+  const [emailForm, setEmailForm] = useState({ email: "", confirmEmail: "", password: "" });
+  const [passwordForm, setPasswordForm] = useState({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [emailMessage, setEmailMessage] = useState("");
+  const [passwordMessage, setPasswordMessage] = useState("");
+  const [enabledNotifications, setEnabledNotifications] = useState<string[]>([
+    "Registration approvals",
+    "Failed automation runs",
+  ]);
+
+  useEffect(() => {
+    setUsers(getAllUsers());
+  }, [authTick]);
+
+  function saveEmail() {
+    if (!user) return;
+    if (emailForm.email !== emailForm.confirmEmail) {
+      setEmailMessage("New email and confirmation do not match.");
+      return;
+    }
+    const result = changeUserEmail(user.id, emailForm.email, emailForm.password);
+    if (!result.ok) {
+      setEmailMessage(
+        result.reason === "bad-password"
+          ? "Password is incorrect."
+          : result.reason === "email-taken"
+            ? "Email is already used by another account."
+            : "Unable to change email.",
+      );
+      return;
+    }
+    setEmailForm({ email: "", confirmEmail: "", password: "" });
+    setEmailMessage("Email changed.");
+  }
+
+  function savePassword() {
+    if (!user) return;
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setPasswordMessage("New password and confirmation do not match.");
+      return;
+    }
+    const result = changeUserPassword(user.id, passwordForm.oldPassword, passwordForm.newPassword);
+    if (!result.ok) {
+      setPasswordMessage(
+        result.reason === "bad-password"
+          ? "Old password is incorrect."
+          : "Unable to change password.",
+      );
+      return;
+    }
+    setPasswordForm({ oldPassword: "", newPassword: "", confirmPassword: "" });
+    setPasswordMessage("Password changed.");
+  }
+
+  function toggleNotification(label: string) {
+    setEnabledNotifications((current) =>
+      current.includes(label) ? current.filter((item) => item !== label) : [...current, label],
+    );
+  }
+
   return (
-    <Shell>
-      <div className="rounded-3xl glass-strong p-6 mb-5">
-        <h1 className="text-3xl font-bold">Settings</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Roles, integrations and workspace preferences.
-        </p>
-      </div>
-
-      <div className="grid lg:grid-cols-2 gap-4">
-        <div className="rounded-3xl glass p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Users className="h-5 w-5 text-primary" />
-            <h2 className="font-semibold">Team & roles</h2>
-          </div>
-          <div className="space-y-2">
-            {roles.map((u) => (
-              <div
-                key={u.email}
-                className="flex items-center justify-between p-3 rounded-2xl bg-white/50 border border-white/60"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-xl bg-[image:var(--gradient-primary)] text-white grid place-items-center text-xs font-bold">
-                    {u.name
-                      .split(" ")
-                      .map((p) => p[0])
-                      .join("")}
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium">{u.name}</div>
-                    <div className="text-xs text-muted-foreground">{u.email}</div>
-                  </div>
-                </div>
-                <span
-                  className={`text-xs px-2.5 py-1 rounded-full font-medium ${
-                    u.role === "Admin"
-                      ? "bg-primary/15 text-primary"
-                      : u.role === "QE"
-                        ? "bg-success/15 text-success"
-                        : "bg-muted text-muted-foreground"
-                  }`}
-                >
-                  {u.role}
-                </span>
-              </div>
-            ))}
-          </div>
+    <RequireAuth>
+      <Shell>
+        <div className="rounded-3xl glass-strong p-6 mb-5">
+          <h1 className="text-3xl font-bold">Settings</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Manage your account details, security, notifications and team roles.
+          </p>
         </div>
 
-        <div className="rounded-3xl glass p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <GitBranch className="h-5 w-5 text-primary" />
-            <h2 className="font-semibold">CI/CD integrations</h2>
-          </div>
-          <div className="space-y-2">
-            {[
-              { name: "GitHub Actions", status: "Connected" },
-              { name: "Jenkins", status: "Connected" },
-              { name: "GitLab CI", status: "Available" },
-              { name: "CircleCI", status: "Available" },
-            ].map((i) => (
-              <div
-                key={i.name}
-                className="flex items-center justify-between p-3 rounded-2xl bg-white/50 border border-white/60"
-              >
-                <span className="text-sm font-medium">{i.name}</span>
-                <button
-                  className={`text-xs px-3 py-1.5 rounded-lg font-medium ${
-                    i.status === "Connected"
-                      ? "bg-success/15 text-success"
-                      : "bg-foreground text-background"
-                  }`}
-                >
-                  {i.status === "Connected" ? "Connected" : "Connect"}
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="rounded-3xl glass p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Bell className="h-5 w-5 text-primary" />
-            <h2 className="font-semibold">Notifications</h2>
-          </div>
-          {[
-            { label: "Email me on failed runs", on: true },
-            { label: "Slack: #qe-alerts on regression failures", on: true },
-            { label: "Weekly summary email", on: false },
-          ].map((n) => (
-            <div
-              key={n.label}
-              className="flex items-center justify-between py-3 border-b border-white/50 last:border-b-0"
-            >
-              <span className="text-sm">{n.label}</span>
-              <div
-                className={`h-6 w-11 rounded-full transition ${n.on ? "bg-primary" : "bg-muted"} relative`}
-              >
-                <span
-                  className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition ${n.on ? "left-5" : "left-0.5"}`}
-                />
-              </div>
+        <div className="grid lg:grid-cols-2 gap-4">
+          <section className="rounded-3xl glass p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Mail className="h-5 w-5 text-primary" />
+              <h2 className="font-semibold">Email</h2>
             </div>
-          ))}
-        </div>
+            <div className="space-y-3">
+              <ReadonlyField label="Current email" value={user?.email ?? ""} />
+              <Field
+                label="New email"
+                type="email"
+                value={emailForm.email}
+                onChange={(value) => setEmailForm((current) => ({ ...current, email: value }))}
+              />
+              <Field
+                label="Confirm new email"
+                type="email"
+                value={emailForm.confirmEmail}
+                onChange={(value) =>
+                  setEmailForm((current) => ({ ...current, confirmEmail: value }))
+                }
+              />
+              <Field
+                label="Password"
+                type="password"
+                value={emailForm.password}
+                onChange={(value) => setEmailForm((current) => ({ ...current, password: value }))}
+              />
+              <ActionRow message={emailMessage} onClick={saveEmail} label="Change email" />
+            </div>
+          </section>
 
-        <div className="rounded-3xl glass p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Shield className="h-5 w-5 text-primary" />
-            <h2 className="font-semibold">Environments</h2>
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            {["Dev", "UAT", "Prod"].map((e) => (
-              <div
-                key={e}
-                className="rounded-2xl bg-white/50 border border-white/60 p-4 text-center"
-              >
-                <div className="text-xs uppercase tracking-wider text-muted-foreground">
-                  Environment
+          <section className="rounded-3xl glass p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <KeyRound className="h-5 w-5 text-primary" />
+              <h2 className="font-semibold">Password</h2>
+            </div>
+            <div className="space-y-3">
+              <Field
+                label="Old password"
+                type="password"
+                value={passwordForm.oldPassword}
+                onChange={(value) =>
+                  setPasswordForm((current) => ({ ...current, oldPassword: value }))
+                }
+              />
+              <Field
+                label="New password"
+                type="password"
+                value={passwordForm.newPassword}
+                onChange={(value) =>
+                  setPasswordForm((current) => ({ ...current, newPassword: value }))
+                }
+              />
+              <Field
+                label="Confirm new password"
+                type="password"
+                value={passwordForm.confirmPassword}
+                onChange={(value) =>
+                  setPasswordForm((current) => ({ ...current, confirmPassword: value }))
+                }
+              />
+              <ActionRow message={passwordMessage} onClick={savePassword} label="Change password" />
+            </div>
+          </section>
+
+          <section className="rounded-3xl glass p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Bell className="h-5 w-5 text-primary" />
+              <h2 className="font-semibold">Notifications</h2>
+            </div>
+            <div className="space-y-2">
+              {notificationDefaults.map((item) => {
+                const enabled = enabledNotifications.includes(item);
+                return (
+                  <button
+                    key={item}
+                    onClick={() => toggleNotification(item)}
+                    className="w-full flex items-center justify-between py-3 border-b border-white/50 last:border-b-0 text-left"
+                  >
+                    <span className="text-sm">{item}</span>
+                    <span
+                      className={`h-6 w-11 rounded-full transition ${enabled ? "bg-primary" : "bg-muted"} relative`}
+                    >
+                      <span
+                        className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition ${enabled ? "left-5" : "left-0.5"}`}
+                      />
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
+          <section className="rounded-3xl glass p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Users className="h-5 w-5 text-primary" />
+              <h2 className="font-semibold">Team roles</h2>
+            </div>
+            <div className="space-y-2">
+              {users.map((account) => (
+                <div
+                  key={account.id}
+                  className="flex items-center justify-between p-3 rounded-2xl bg-white/50 border border-white/60"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="h-9 w-9 rounded-xl bg-[image:var(--gradient-primary)] text-white grid place-items-center text-xs font-bold shrink-0">
+                      {(account.fullName || account.username).slice(0, 2).toUpperCase()}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium truncate">{account.fullName}</div>
+                      <div className="text-xs text-muted-foreground truncate">{account.email}</div>
+                    </div>
+                  </div>
+                  <span
+                    className={`text-xs px-2.5 py-1 rounded-full font-medium capitalize ${roleClass(account.role)}`}
+                  >
+                    {account.role}
+                  </span>
                 </div>
-                <div className="mt-1 text-lg font-bold">{e}</div>
-                <span className="mt-2 inline-block text-[10px] px-2 py-0.5 rounded-full bg-success/15 text-success font-medium">
-                  Healthy
-                </span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="rounded-3xl glass p-6 lg:col-span-2">
+            <div className="flex items-center gap-2 mb-4">
+              <Shield className="h-5 w-5 text-primary" />
+              <h2 className="font-semibold">Account access</h2>
+            </div>
+            <div className="grid sm:grid-cols-3 gap-3">
+              <AccessCard icon={UserCog} label="Role" value={user?.role ?? "User"} />
+              <AccessCard icon={Shield} label="Status" value={user?.status ?? "Active"} />
+              <AccessCard
+                icon={KeyRound}
+                label="Last login"
+                value={
+                  user?.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : "Not recorded"
+                }
+              />
+            </div>
+          </section>
         </div>
+      </Shell>
+    </RequireAuth>
+  );
+}
+
+function roleClass(role: string) {
+  if (role === "admin") return "bg-primary/15 text-primary";
+  if (role === "staff") return "bg-success/15 text-success";
+  if (role === "intern") return "bg-warning/15 text-warning";
+  return "bg-muted text-muted-foreground";
+}
+
+function Field({
+  label,
+  value,
+  onChange,
+  type = "text",
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  type?: string;
+}) {
+  return (
+    <label className="grid gap-1 text-sm">
+      <span className="text-xs font-medium text-muted-foreground">{label}</span>
+      <input
+        type={type}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="auth-input"
+      />
+    </label>
+  );
+}
+
+function ReadonlyField({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="grid gap-1 text-sm">
+      <span className="text-xs font-medium text-muted-foreground">{label}</span>
+      <div className="auth-input bg-white/40 text-muted-foreground">{value}</div>
+    </div>
+  );
+}
+
+function ActionRow({
+  message,
+  onClick,
+  label,
+}: {
+  message: string;
+  onClick: () => void;
+  label: string;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 pt-1">
+      <span className="text-xs text-muted-foreground">{message}</span>
+      <button
+        onClick={onClick}
+        className="inline-flex items-center gap-2 rounded-xl bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground"
+      >
+        <Save className="h-3.5 w-3.5" /> {label}
+      </button>
+    </div>
+  );
+}
+
+function AccessCard({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof Shield;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-2xl bg-white/50 border border-white/60 p-4">
+      <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
+        <Icon className="h-3.5 w-3.5" /> {label}
       </div>
-    </Shell>
+      <div className="mt-2 text-lg font-bold capitalize">{value}</div>
+    </div>
   );
 }
 

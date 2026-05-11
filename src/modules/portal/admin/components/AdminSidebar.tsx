@@ -36,7 +36,7 @@ import {
   Tools,
   AuthTokens,
 } from "./index";
-import type { PortalUser, ResetRequest, UserStatus } from "@/shared/state";
+import type { PortalUser, ResetRequest, UserRole, UserStatus } from "@/shared/state";
 
 type AdminMenuItem = {
   id: string;
@@ -83,6 +83,7 @@ type AdminSidebarProps = {
   users: PortalUser[];
   resets: ResetRequest[];
   setUserStatus: (id: string, status: UserStatus) => void;
+  setUserRole: (id: string, role: UserRole) => void;
   deleteUser: (id: string) => void;
   approveReset: (id: string, password: string) => void;
   rejectReset: (id: string) => void;
@@ -93,6 +94,7 @@ function renderContent(
   users: PortalUser[],
   resets: ResetRequest[],
   setUserStatus: AdminSidebarProps["setUserStatus"],
+  setUserRole: AdminSidebarProps["setUserRole"],
   deleteUser: AdminSidebarProps["deleteUser"],
   approveReset: AdminSidebarProps["approveReset"],
   rejectReset: AdminSidebarProps["rejectReset"],
@@ -109,6 +111,7 @@ function renderContent(
         <PendingRegistrations
           pendingUsers={users.filter((u) => u.status === "pending")}
           setUserStatus={setUserStatus}
+          setUserRole={setUserRole}
         />
       );
     case "password-reset-requests":
@@ -125,6 +128,7 @@ function renderContent(
         <AllUsers
           otherUsers={users.filter((u) => u.status !== "pending")}
           setUserStatus={setUserStatus}
+          setUserRole={setUserRole}
           deleteUser={deleteUser}
         />
       );
@@ -164,6 +168,7 @@ export function AdminSidebar({
   users,
   resets,
   setUserStatus,
+  setUserRole,
   deleteUser,
   approveReset,
   rejectReset,
@@ -240,6 +245,7 @@ export function AdminSidebar({
             users,
             resets,
             setUserStatus,
+            setUserRole,
             deleteUser,
             approveReset,
             rejectReset,
