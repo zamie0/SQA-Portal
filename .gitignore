@@ -16,28 +16,31 @@ lerna-debug.log*
 # dependencies
 node_modules
 
-# nextjs
+# next.js
 .next
+out
 
-# typescript
-*.tsbuildinfo
-
+# build outputs
 dist
 dist-ssr
 .output
 .vinxi
 .tanstack/**
 .nitro
-*.local
 
-# Wrangler / Cloudflare
+# typescript
+*.tsbuildinfo
+
+# cloudflare / wrangler
 .wrangler/
 .dev.vars
 
-# Editor directories and files
+# editor
 .vscode/*
 !.vscode/extensions.json
 .idea
+
+# OS files
 .DS_Store
 *.suo
 *.ntvs*

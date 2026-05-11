@@ -1,1 +1,1 @@
-export * from "@/app/api/chat/route";
+export type { ChatMessage, ChatRole } from "@/shared/lib/chat-types";

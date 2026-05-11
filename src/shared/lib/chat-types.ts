@@ -1,0 +1,14 @@
+export type ChatRole = "system" | "user" | "assistant";
+
+export interface ChatAttachment {
+  name: string;
+  mimeType: string;
+  size: number;
+  data?: string;
+}
+
+export interface ChatMessage {
+  role: ChatRole;
+  content: string;
+  attachments?: ChatAttachment[];
+}
