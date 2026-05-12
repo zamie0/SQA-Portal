@@ -10,6 +10,7 @@ import {
   AlertTriangle,
   HelpCircle,
   GraduationCap,
+  Settings,
   Plus,
   Trash2,
   Pencil,
@@ -372,6 +373,12 @@ function ChatPage() {
                 className="inline-flex items-center gap-2 px-3 py-2 rounded-xl glass text-xs font-medium"
               >
                 <GraduationCap className="h-3.5 w-3.5" /> Tutorial
+              </Link>
+              <Link
+                href="/settings"
+                className="inline-flex items-center gap-2 px-3 py-2 rounded-xl glass text-xs font-medium"
+              >
+                <Settings className="h-3.5 w-3.5" /> Settings
               </Link>
             </div>
           </div>
