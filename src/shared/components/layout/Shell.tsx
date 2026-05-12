@@ -151,8 +151,8 @@ export function Shell({ children }: { children: ReactNode }) {
               : "Quality Assurance";
 
   return (
-    <div className="min-h-screen flex">
-      <aside className="hidden lg:flex flex-col w-64 m-4 mr-0 rounded-3xl glass p-5 sticky top-4 self-start h-[calc(100vh-2rem)] overflow-y-auto">
+    <div className="min-h-screen flex overflow-visible">
+      <aside className="hidden lg:flex flex-col w-64 m-4 mr-0 rounded-3xl glass p-5 sticky top-4 self-start h-[calc(100vh-2rem)] overflow-visible">
         <SmartLogo heading={heading} subheading={subheading} />
 
         <nav className="flex flex-col gap-1">
@@ -287,6 +287,7 @@ function AdminLink({ path }: { path: string }) {
 function ProfileMenu({ placement = "header" }: { placement?: "header" | "sidebar" }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number } | null>(null);
   const ref = useRef<HTMLDivElement>(null);
   const user = useAuth();
   const unread = seedNotifications.filter((n) => !n.read).length;
@@ -297,6 +298,12 @@ function ProfileMenu({ placement = "header" }: { placement?: "header" | "sidebar
     }
     if (open) document.addEventListener("mousedown", onClick);
     return () => document.removeEventListener("mousedown", onClick);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const rect = ref.current?.getBoundingClientRect();
+    if (rect) setMenuPos({ top: rect.top, left: rect.right });
   }, [open]);
 
   function go(to: string) {
@@ -319,7 +326,7 @@ function ProfileMenu({ placement = "header" }: { placement?: "header" | "sidebar
     .toUpperCase();
 
   return (
-    <div className="relative" ref={ref}>
+    <div className="relative overflow-visible" ref={ref}>
       <button
         onClick={() => setOpen((o) => !o)}
         className={[
@@ -352,11 +359,9 @@ function ProfileMenu({ placement = "header" }: { placement?: "header" | "sidebar
       {open && (
         <div
           className={[
-            "absolute rounded-3xl border border-white/80 bg-white/95 p-2 shadow-2xl z-40 backdrop-blur-xl",
-            placement === "sidebar"
-              ? "left-0 right-0 bottom-full mb-3 w-full"
-              : "right-0 top-full mt-2 w-72",
+            "fixed rounded-3xl border border-white/80 bg-white/95 p-2 shadow-2xl z-50 backdrop-blur-xl w-72",
           ].join(" ")}
+          style={{ top: menuPos?.top ?? 0, left: menuPos?.left ?? 0 }}
         >
           <div className="rounded-2xl bg-[image:var(--gradient-soft)] px-3 py-3 border border-white/70 flex items-center gap-3">
             <div className="h-11 w-11 shrink-0 rounded-full bg-[image:var(--gradient-primary)] grid place-items-center text-white font-semibold shadow-md">
