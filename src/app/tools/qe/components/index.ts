@@ -1,0 +1,16 @@
+export { ApiTab } from "@/app/tools/qe/components/ApiTab";
+export { CasesTab } from "@/app/tools/qe/components/CasesTab";
+export { CustomTabContent } from "@/app/tools/qe/components/CustomTabContent";
+export { DiscussionTab } from "@/app/tools/qe/components/DiscussionTab";
+export { ExecutionTab } from "@/app/tools/qe/components/ExecutionTab";
+export { FilesTab } from "@/app/tools/qe/components/FilesTab";
+export { MiniFilesPanel } from "@/app/tools/qe/components/MiniFilesPanel";
+export { MobileTab } from "@/app/tools/qe/components/MobileTab";
+export { OverviewTab } from "@/app/tools/qe/components/OverviewTab";
+export { ProjectTabsToggle } from "@/app/tools/qe/components/ProjectTabsToggle";
+export { ResultsTab } from "@/app/tools/qe/components/ResultsTab";
+export { RpaTab } from "@/app/tools/qe/components/RpaTab";
+export { RunResultsPanel } from "@/app/tools/qe/components/RunResultsPanel";
+export { ScriptsTab } from "@/app/tools/qe/components/ScriptsTab";
+export { SettingsTab } from "@/app/tools/qe/components/SettingsTab";
+export { WebTab } from "@/app/tools/qe/components/WebTab";

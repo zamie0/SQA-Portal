@@ -1,1 +1,1 @@
-export * from "@/modules/projects/components";
+export * from "@/app/tools/qe/components";
