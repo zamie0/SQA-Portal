@@ -1,38 +1,79 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Shell } from "@/shared/components/layout/Shell";
 import { RequireAuth } from "@/shared/components/RequireAuth";
-import { AdminSidebar } from "@/modules/portal/admin/components";
+import { AdminConfirmProvider, AdminSidebar } from "@/modules/portal/admin/components";
+import {
+  emptyAdminOverview,
+  type AdminOverview,
+} from "@/modules/portal/admin/components/adminOverviewData";
 import {
   AUTH_EVENT,
   approveReset,
   deleteUser,
-  getAllUsers,
-  getResetRequests,
+  getAuthSnapshot,
   rejectReset,
   setUserRole,
   setUserStatus,
   type PortalUser,
   type ResetRequest,
 } from "@/shared/state";
+import { useAuth } from "@/shared/state";
 import { ShieldCheck } from "lucide-react";
 
 function AdminPage() {
+  const currentUser = useAuth();
   const [users, setUsers] = useState<PortalUser[]>([]);
   const [resets, setResets] = useState<ResetRequest[]>([]);
+  const [adminData, setAdminData] = useState<AdminOverview>(emptyAdminOverview);
+
+  const refresh = useCallback(async () => {
+    const [snapshot, overview] = await Promise.all([
+      getAuthSnapshot().catch(() => ({ users: [], resets: [] })),
+      fetch("/api/admin/overview")
+        .then((response) => (response.ok ? response.json() : emptyAdminOverview))
+        .catch(() => emptyAdminOverview),
+    ]);
+    setUsers(snapshot.users);
+    setResets(snapshot.resets);
+    setAdminData(overview);
+  }, []);
+
+  const onAdminMutate = useCallback(
+    async (payload: Record<string, unknown>) => {
+      const response = await fetch("/api/admin/manage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ actorId: currentUser?.id ?? null, ...payload }),
+      });
+      if (!response.ok) throw new Error(await response.text());
+      await refresh();
+    },
+    [currentUser?.id, refresh],
+  );
 
   useEffect(() => {
-    const refresh = () => {
-      setUsers(getAllUsers());
-      setResets(getResetRequests());
+    let active = true;
+    const refreshIfActive = async () => {
+      const [snapshot, overview] = await Promise.all([
+        getAuthSnapshot().catch(() => ({ users: [], resets: [] })),
+        fetch("/api/admin/overview")
+          .then((response) => (response.ok ? response.json() : emptyAdminOverview))
+          .catch(() => emptyAdminOverview),
+      ]);
+      if (!active) return;
+      setUsers(snapshot.users);
+      setResets(snapshot.resets);
+      setAdminData(overview);
     };
-    refresh();
-    window.addEventListener(AUTH_EVENT, refresh);
-    window.addEventListener("storage", refresh);
+    void refreshIfActive();
+    window.addEventListener(AUTH_EVENT, refreshIfActive);
+    window.addEventListener("storage", refreshIfActive);
     return () => {
-      window.removeEventListener(AUTH_EVENT, refresh);
-      window.removeEventListener("storage", refresh);
+      active = false;
+      window.removeEventListener(AUTH_EVENT, refreshIfActive);
+      window.removeEventListener("storage", refreshIfActive);
     };
   }, []);
 
@@ -53,15 +94,19 @@ function AdminPage() {
           </div>
         </section>
 
-        <AdminSidebar
-          users={users}
-          resets={resets}
-          setUserStatus={setUserStatus}
-          setUserRole={setUserRole}
-          deleteUser={deleteUser}
-          approveReset={approveReset}
-          rejectReset={rejectReset}
-        />
+        <AdminConfirmProvider>
+          <AdminSidebar
+            users={users}
+            resets={resets}
+            adminData={adminData}
+            setUserStatus={setUserStatus}
+            setUserRole={setUserRole}
+            deleteUser={deleteUser}
+            approveReset={approveReset}
+            rejectReset={rejectReset}
+            onAdminMutate={onAdminMutate}
+          />
+        </AdminConfirmProvider>
       </Shell>
     </RequireAuth>
   );

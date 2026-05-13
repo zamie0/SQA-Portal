@@ -89,9 +89,13 @@ function ProfilePage() {
     reader.readAsDataURL(file);
   }
 
-  function saveProfile() {
+  async function saveProfile() {
     if (!user) return;
-    const result = updateUserProfile(user.id, form);
+    const result = await updateUserProfile(user.id, form).catch(() => null);
+    if (!result) {
+      setMessage("Unable to update profile.");
+      return;
+    }
     if (!result.ok) {
       setMessage(
         result.reason === "username-taken"

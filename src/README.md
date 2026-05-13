@@ -10,6 +10,7 @@ This project is organized around thin Next.js route entrypoints and feature-owne
 - `modules/workspace/`: dashboard, runs, schedule, notifications, profile, and settings pages
 - `shared/components/`: shared UI, layout, and cross-feature components
 - `shared/lib/`: reusable data, storage, auth, notification, and helper logic
+- `shared/lib/mongodb.ts`: shared MongoDB connection helper
 - `shared/state/`: state entrypoint exports
 - `shared/services/`: service/API entrypoint exports
 - `shared/utils/`: utility entrypoint exports
@@ -28,3 +29,15 @@ New code should prefer:
 - `@/shared/utils`
 
 Keep `src/app` files small. A route page should normally import and export a page from `src/modules`.
+
+### Database Notes
+
+MongoDB is the active database for auth, users, roles, permissions, admin approvals, profile updates, email/password changes, and password reset requests.
+
+Run this after installing dependencies and starting MongoDB:
+
+```bash
+npm run db:seed
+```
+
+Project/tool workspace areas still contain mock data and browser storage while their API wiring is being completed.

@@ -9,13 +9,13 @@ function ForgotPage() {
   const [id, setId] = useState("");
   const [msg, setMsg] = useState<{ kind: "error" | "success" | "info"; text: string } | null>(null);
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!id) {
       setMsg({ kind: "error", text: "Enter your username or email." });
       return;
     }
-    const ok = requestPasswordReset(id);
+    const ok = await requestPasswordReset(id).catch(() => false);
     if (ok) {
       setMsg({
         kind: "success",
