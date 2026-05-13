@@ -1,15 +1,19 @@
 import { useState } from "react";
 import { Check, Users as UsersIcon, X } from "lucide-react";
 import type { PortalUser, UserRole, UserStatus } from "@/shared/state";
+import type { AdminRole } from "./adminOverviewData";
+import { useAdminConfirm } from "./useAdminConfirm";
 
 export function PendingRegistrations({
   pendingUsers,
   setUserStatus,
   setUserRole,
+  roles,
 }: {
   pendingUsers: PortalUser[];
-  setUserStatus: (id: string, status: UserStatus) => void;
-  setUserRole: (id: string, role: UserRole) => void;
+  setUserStatus: (id: string, status: UserStatus) => Promise<void>;
+  setUserRole: (id: string, role: UserRole) => Promise<void>;
+  roles: AdminRole[];
 }) {
   return (
     <div className="space-y-4">
@@ -32,6 +36,7 @@ export function PendingRegistrations({
             user={user}
             setUserStatus={setUserStatus}
             setUserRole={setUserRole}
+            roles={roles}
           />
         ))}
       </div>
@@ -43,16 +48,28 @@ function PendingUserRow({
   user,
   setUserStatus,
   setUserRole,
+  roles,
 }: {
   user: PortalUser;
-  setUserStatus: (id: string, status: UserStatus) => void;
-  setUserRole: (id: string, role: UserRole) => void;
+  setUserStatus: (id: string, status: UserStatus) => Promise<void>;
+  setUserRole: (id: string, role: UserRole) => Promise<void>;
+  roles: AdminRole[];
 }) {
-  const [role, setRole] = useState<UserRole>("intern");
+  const confirm = useAdminConfirm();
+  const [role, setRole] = useState<UserRole>("member");
+  const assignableRoles = roles.filter((item) => item.id !== "pending");
 
-  function approve() {
-    setUserRole(user.id, role);
-    setUserStatus(user.id, "approved");
+  async function approve() {
+    if (
+      !(await confirm({
+        title: "Approve registration",
+        message: `Approve ${user.fullName || user.username} as ${role.replace(/_/g, " ")}?`,
+        confirmLabel: "Approve",
+      }))
+    )
+      return;
+    await setUserRole(user.id, role);
+    await setUserStatus(user.id, "approved");
   }
 
   return (
@@ -73,8 +90,11 @@ function PendingUserRow({
         onChange={(event) => setRole(event.target.value as UserRole)}
         className="auth-input lg:w-32"
       >
-        <option value="intern">Intern</option>
-        <option value="staff">Staff</option>
+        {assignableRoles.map((item) => (
+          <option key={item.id} value={item.id}>
+            {item.name ?? item.id}
+          </option>
+        ))}
       </select>
       <div className="flex items-center gap-2">
         <button
@@ -84,7 +104,18 @@ function PendingUserRow({
           <Check className="h-3.5 w-3.5" /> Approve
         </button>
         <button
-          onClick={() => setUserStatus(user.id, "rejected")}
+          onClick={async () => {
+            if (
+              !(await confirm({
+                title: "Reject registration",
+                message: `Reject registration for ${user.fullName || user.username}?`,
+                confirmLabel: "Reject",
+                tone: "danger",
+              }))
+            )
+              return;
+            void setUserStatus(user.id, "rejected");
+          }}
           className="text-xs font-medium px-3 py-1.5 rounded-lg bg-destructive text-destructive-foreground inline-flex items-center gap-1"
         >
           <X className="h-3.5 w-3.5" /> Reject

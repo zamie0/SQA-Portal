@@ -1,6 +1,7 @@
 import { KeyRound, Check, X } from "lucide-react";
 import { useState } from "react";
 import type { ResetRequest } from "@/shared/state";
+import { useAdminConfirm } from "./useAdminConfirm";
 
 export function PasswordResetRequests({
   pendingResets,
@@ -10,8 +11,8 @@ export function PasswordResetRequests({
 }: {
   pendingResets: ResetRequest[];
   oldResets: ResetRequest[];
-  approveReset: (id: string, pw: string) => void;
-  rejectReset: (id: string) => void;
+  approveReset: (id: string, pw: string) => Promise<void>;
+  rejectReset: (id: string) => Promise<void>;
 }) {
   return (
     <div className="space-y-4">
@@ -60,9 +61,10 @@ function ResetRow({
   rejectReset,
 }: {
   reset: ResetRequest;
-  approveReset: (id: string, pw: string) => void;
-  rejectReset: (id: string) => void;
+  approveReset: (id: string, pw: string) => Promise<void>;
+  rejectReset: (id: string) => Promise<void>;
 }) {
+  const confirm = useAdminConfirm();
   const [pw, setPw] = useState("");
   return (
     <div className="flex flex-col sm:flex-row sm:items-center gap-2 rounded-2xl bg-white/60 border border-white/60 p-3">
@@ -81,8 +83,16 @@ function ResetRow({
       />
       <button
         disabled={pw.length < 4}
-        onClick={() => {
-          approveReset(reset.id, pw);
+        onClick={async () => {
+          if (
+            !(await confirm({
+              title: "Approve password reset",
+              message: `Approve password reset for @${reset.username}?`,
+              confirmLabel: "Approve",
+            }))
+          )
+            return;
+          void approveReset(reset.id, pw);
           setPw("");
         }}
         className="text-xs font-medium px-3 py-1.5 rounded-lg bg-success text-success-foreground disabled:opacity-50 inline-flex items-center gap-1"
@@ -90,7 +100,18 @@ function ResetRow({
         <Check className="h-3.5 w-3.5" /> Approve
       </button>
       <button
-        onClick={() => rejectReset(reset.id)}
+        onClick={async () => {
+          if (
+            !(await confirm({
+              title: "Reject password reset",
+              message: `Reject password reset for @${reset.username}?`,
+              confirmLabel: "Reject",
+              tone: "danger",
+            }))
+          )
+            return;
+          void rejectReset(reset.id);
+        }}
         className="text-xs font-medium px-3 py-1.5 rounded-lg bg-destructive text-destructive-foreground inline-flex items-center gap-1"
       >
         <X className="h-3.5 w-3.5" /> Reject

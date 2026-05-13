@@ -252,11 +252,19 @@ function SmartLogo({ heading, subheading }: { heading: string; subheading: strin
 function AdminLink({ path }: { path: string }) {
   const [counts, setCounts] = useState({ users: 0, resets: 0 });
   useEffect(() => {
-    const refresh = () => setCounts({ users: pendingUserCount(), resets: pendingResetCount() });
-    refresh();
+    let active = true;
+    const refresh = async () => {
+      const [users, resets] = await Promise.all([
+        pendingUserCount().catch(() => 0),
+        pendingResetCount().catch(() => 0),
+      ]);
+      if (active) setCounts({ users, resets });
+    };
+    void refresh();
     window.addEventListener(AUTH_EVENT, refresh);
     window.addEventListener("storage", refresh);
     return () => {
+      active = false;
       window.removeEventListener(AUTH_EVENT, refresh);
       window.removeEventListener("storage", refresh);
     };

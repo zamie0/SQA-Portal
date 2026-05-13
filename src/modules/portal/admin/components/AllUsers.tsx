@@ -1,18 +1,23 @@
 import { Search, Trash2, Users as UsersIcon } from "lucide-react";
 import { useState } from "react";
 import type { PortalUser, UserRole, UserStatus } from "@/shared/state";
+import type { AdminRole } from "./adminOverviewData";
+import { useAdminConfirm } from "./useAdminConfirm";
 
 export function AllUsers({
   otherUsers,
   setUserStatus,
   setUserRole,
   deleteUser,
+  roles,
 }: {
   otherUsers: PortalUser[];
-  setUserStatus: (id: string, status: UserStatus) => void;
-  setUserRole: (id: string, role: UserRole) => void;
-  deleteUser: (id: string) => void;
+  setUserStatus: (id: string, status: UserStatus) => Promise<void>;
+  setUserRole: (id: string, role: UserRole) => Promise<void>;
+  deleteUser: (id: string) => Promise<void>;
+  roles: AdminRole[];
 }) {
+  const confirm = useAdminConfirm();
   const [search, setSearch] = useState("");
   const filteredUsers = otherUsers.filter((user) =>
     [user.fullName, user.username, user.email, user.role, user.status]
@@ -60,7 +65,7 @@ export function AllUsers({
                 </td>
                 <td className="py-2 px-2 text-muted-foreground">{user.email}</td>
                 <td className="py-2 px-2">
-                  <RoleSelect user={user} setUserRole={setUserRole} />
+                  <RoleSelect user={user} roles={roles} setUserRole={setUserRole} />
                 </td>
                 <td className="py-2 px-2">
                   <span
@@ -78,7 +83,17 @@ export function AllUsers({
                   <div className="flex items-center justify-end gap-1.5">
                     {user.status === "rejected" && (
                       <button
-                        onClick={() => setUserStatus(user.id, "approved")}
+                        onClick={async () => {
+                          if (
+                            !(await confirm({
+                              title: "Approve user",
+                              message: `Approve ${user.fullName || user.username}?`,
+                              confirmLabel: "Approve",
+                            }))
+                          )
+                            return;
+                          void setUserStatus(user.id, "approved");
+                        }}
                         className="text-xs px-2 py-1 rounded-lg bg-success/10 text-success"
                       >
                         Approve
@@ -86,7 +101,18 @@ export function AllUsers({
                     )}
                     {user.status === "approved" && user.role !== "admin" && (
                       <button
-                        onClick={() => setUserStatus(user.id, "rejected")}
+                        onClick={async () => {
+                          if (
+                            !(await confirm({
+                              title: "Suspend user",
+                              message: `Suspend ${user.fullName || user.username}?`,
+                              confirmLabel: "Suspend",
+                              tone: "danger",
+                            }))
+                          )
+                            return;
+                          void setUserStatus(user.id, "rejected");
+                        }}
                         className="text-xs px-2 py-1 rounded-lg bg-destructive/10 text-destructive"
                       >
                         Suspend
@@ -94,7 +120,18 @@ export function AllUsers({
                     )}
                     {user.role !== "admin" && (
                       <button
-                        onClick={() => deleteUser(user.id)}
+                        onClick={async () => {
+                          if (
+                            !(await confirm({
+                              title: "Delete user",
+                              message: `Delete ${user.fullName || user.username}? This cannot be undone.`,
+                              confirmLabel: "Delete",
+                              tone: "danger",
+                            }))
+                          )
+                            return;
+                          void deleteUser(user.id);
+                        }}
                         title="Delete user"
                         className="text-xs p-1 rounded-lg text-destructive hover:bg-destructive/10"
                       >
@@ -114,20 +151,40 @@ export function AllUsers({
 
 function RoleSelect({
   user,
+  roles,
   setUserRole,
 }: {
   user: PortalUser;
-  setUserRole: (id: string, role: UserRole) => void;
+  roles: AdminRole[];
+  setUserRole: (id: string, role: UserRole) => Promise<void>;
 }) {
+  const confirm = useAdminConfirm();
   if (user.role === "admin") return <span className="capitalize">{user.role}</span>;
+  const assignableRoles = roles.filter((role) => role.id !== "pending");
+  const currentRole = user.role === "pending" ? "member" : user.role;
   return (
     <select
-      value={user.role === "user" ? "intern" : user.role}
-      onChange={(event) => setUserRole(user.id, event.target.value as UserRole)}
+      value={currentRole}
+      onChange={async (event) => {
+        const nextRole = event.target.value as UserRole;
+        if (nextRole === currentRole) return;
+        if (
+          !(await confirm({
+            title: "Change user role",
+            message: `Change ${user.fullName || user.username}'s role to ${nextRole.replace(/_/g, " ")}?`,
+            confirmLabel: "Change role",
+          }))
+        )
+          return;
+        void setUserRole(user.id, nextRole);
+      }}
       className="auth-input min-w-28 py-1.5"
     >
-      <option value="intern">Intern</option>
-      <option value="staff">Staff</option>
+      {assignableRoles.map((role) => (
+        <option key={role.id} value={role.id}>
+          {role.name ?? role.id}
+        </option>
+      ))}
     </select>
   );
 }

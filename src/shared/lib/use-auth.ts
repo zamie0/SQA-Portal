@@ -7,11 +7,17 @@ export function useAuth(): PortalUser | null {
   const [user, setUser] = useState<PortalUser | null>(null);
 
   useEffect(() => {
-    setUser(getSession());
-    const handler = () => setUser(getSession());
+    let active = true;
+    const refresh = async () => {
+      const next = await getSession().catch(() => null);
+      if (active) setUser(next);
+    };
+    void refresh();
+    const handler = () => void refresh();
     window.addEventListener(AUTH_EVENT, handler);
     window.addEventListener("storage", handler);
     return () => {
+      active = false;
       window.removeEventListener(AUTH_EVENT, handler);
       window.removeEventListener("storage", handler);
     };
