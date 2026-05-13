@@ -1,0 +1,44 @@
+timeStamp,elapsed,label,responseCode,responseMessage,threadName,dataType,success,failureMessage,bytes,sentBytes,grpThreads,allThreads,URL,Latency,IdleTime,Connect
+1778662410364,2470,T01_Login,200,"Number of samples in transaction : 1, number of failing samples : 0",Virtual Student 1-1,,true,,2878,348,1,1,null,0,1567,1757
+1778662410446,2470,POST API Login,200,OK,Virtual Student 1-1,text,true,,2878,348,1,1,https://ilmu-dev.tmrnd.dev/usermgmt/v1/auth/token,2470,0,1757
+1778662414404,4109,T02_Learning_Assessment,200,"Number of samples in transaction : 6, number of failing samples : 0",Virtual Student 1-1,,true,,67800,10124,1,1,null,0,224,0
+1778662414405,660,GET Learning Assessment Page/API,200,OK,Virtual Student 1-1,text,true,,793,2032,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/user-questionnaires/status/PERSONALIZED_LEARNING_V1,660,0,0
+1778662415065,513,GET Questionnaire Page,200,OK,Virtual Student 1-1,text,true,,2637,2016,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/questionnaires/1,513,0,0
+1778662415579,562,POST User Questionnaire Session ID,200,OK,Virtual Student 1-1,text,true,,745,2055,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/user-questionnaires/start,562,0,0
+1778662416142,567,GET newUserQuestionnaire Page,200,OK,Virtual Student 1-1,text,true,,720,2005,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/user-questionnaires/1576,566,0,0
+1778662416710,1781,GET All Questions,200,OK,Virtual Student 1-1,text,true,,62905,2016,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/questionnaires/1/questions?limit=26,705,0,0
+1778662418711,26,Log Assessment Completion & Summary,200,Assessment complete - all 26 answers submitted,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778662418739,41259,T03_Learning_Space,200,"Number of samples in transaction : 41, number of failing samples : 0",Virtual Student 1-1,,true,,807195,136439,1,1,null,0,153,0
+1778662418741,595,GET Subscription Active,200,OK,Virtual Student 1-1,text,true,,4181,2088,1,1,https://ilmu-dev.tmrnd.dev/subscription/v1/user-subscriptions/me/active,594,0,0
+1778662419336,537,GET Tags By SubjectIds,200,OK,Virtual Student 1-1,text,true,,713,2102,1,1,"https://ilmu-dev.tmrnd.dev/learning/v1/learning-resources/tags?subjectIds=2,14,15,6,7",537,0,0
+1778662419874,529,GET Textbook Learning Resources,200,OK,Virtual Student 1-1,text,true,,1607,2137,1,1,"https://ilmu-dev.tmrnd.dev/learning/v1/learning-resources?resourceType=TEXTBOOK&subjectIds=2,14,15,6,7&limit=12&offset=0",528,0,0
+1778662420404,852,GET Navigate TextBook BM,200,OK,Virtual Student 1-1,text,true,,53076,2087,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/textbooks/courses/14/navigation,764,0,0
+1778662421257,485,GET Learning TextBook BM PT1,200,OK,Virtual Student 1-1,text,true,,1046,2086,1,1,https://ilmu-dev.tmrnd.dev/%20/learning/v1/textbooks/405/page-content,484,0,0
+1778662421743,535,GET Learning TextBook BM PT4,200,OK,Virtual Student 1-1,text,true,,1046,2086,1,1,https://ilmu-dev.tmrnd.dev/%20/learning/v1/textbooks/447/page-content,535,0,0
+1778662422279,516,GET Learning TextBook BM PT8,200,OK,Virtual Student 1-1,text,true,,1046,2086,1,1,https://ilmu-dev.tmrnd.dev/%20/learning/v1/textbooks/505/page-content,515,0,0
+1778662422795,503,GET Learning TextBook BM PT16,200,OK,Virtual Student 1-1,text,true,,1046,2086,1,1,https://ilmu-dev.tmrnd.dev/%20/learning/v1/textbooks/620/page-content,503,0,0
+1778662423299,805,GET Navigate TextBook BI,200,OK,Virtual Student 1-1,text,true,,36925,2087,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/textbooks/courses/17/navigation,738,0,0
+1778662424104,577,GET Learning TextBook BI PT1,200,OK,Virtual Student 1-1,text,true,,1211,2082,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/textbooks/195/page-content,577,0,0
+1778662424682,731,GET Learning TextBook BI PT6,200,OK,Virtual Student 1-1,text,true,,1178,2082,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/textbooks/259/page-content,731,0,0
+1778662425413,565,GET Learning TextBook BI PT12,200,OK,Virtual Student 1-1,text,true,,1225,2082,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/textbooks/337/page-content,565,0,0
+1778662425979,507,GET Learning TextBook BI PT16,200,OK,Virtual Student 1-1,text,true,,1046,2086,1,1,https://ilmu-dev.tmrnd.dev/%20/learning/v1/textbooks/377/page-content,507,0,0
+1778662426487,1172,GET Navigate TextBook Math,200,OK,Virtual Student 1-1,text,true,,36352,2087,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/textbooks/courses/11/navigation,855,0,0
+1778662427660,517,GET Learning TextBook Math PT1,200,OK,Virtual Student 1-1,text,true,,1046,2087,1,1,https://ilmu-dev.tmrnd.dev/%20/learning/v1/textbooks/1878/page-content,517,0,0
+1778662428178,531,GET Learning TextBook Math PT4,200,OK,Virtual Student 1-1,text,true,,1046,2087,1,1,https://ilmu-dev.tmrnd.dev/%20/learning/v1/textbooks/1971/page-content,531,0,0
+1778662428710,508,GET Learning TextBook Math PT6,200,OK,Virtual Student 1-1,text,true,,1046,2087,1,1,https://ilmu-dev.tmrnd.dev/%20/learning/v1/textbooks/2049/page-content,507,0,0
+1778662429219,540,GET Learning TextBook Math PT8,200,OK,Virtual Student 1-1,text,true,,1046,2087,1,1,https://ilmu-dev.tmrnd.dev/%20/learning/v1/textbooks/2105/page-content,538,0,0
+1778662429759,833,GET Navigate TextBook Sejarah,200,OK,Virtual Student 1-1,text,true,,41039,2086,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/textbooks/courses/9/navigation,751,0,0
+1778662430592,543,GET Learning TextBook Sejarah PT1,200,OK,Virtual Student 1-1,text,true,,1460,2083,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/textbooks/2155/page-content,543,0,0
+1778662431135,556,GET Learning TextBook Sejarah PT5,200,OK,Virtual Student 1-1,text,true,,1323,2083,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/textbooks/2241/page-content,556,0,0
+1778662431692,504,GET Learning TextBook Sejarah PT8,200,OK,Virtual Student 1-1,text,true,,1046,2087,1,1,https://ilmu-dev.tmrnd.dev/%20/learning/v1/textbooks/2317/page-content,503,0,0
+1778662432197,534,GET Learning TextBook Sejarah PT10,200,OK,Virtual Student 1-1,text,true,,1646,2083,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/textbooks/2377/page-content,534,0,0
+1778662432732,534,GET Learning TextBook Math ,200,OK,Virtual Student 1-1,text,true,,1046,2091,1,1,https://ilmu-dev.tmrnd.dev/%20/learning/v1/textbooks/courses/10/navigation,534,0,0
+1778662433267,518,GET Learning TextBook Math PT1,200,OK,Virtual Student 1-1,text,true,,2087,2083,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/textbooks/1553/page-content,517,0,0
+1778662433785,1294,GET Learning TextBook Math PT4,200,OK,Virtual Student 1-1,text,true,,2128,2083,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/textbooks/1649/page-content,1294,0,0
+1778662435080,524,GET Learning TextBook Math PT8,200,OK,Virtual Student 1-1,text,true,,2090,2083,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/textbooks/1763/page-content,524,0,0
+1778662435605,547,GET Learning TextBook Math PT10,200,OK,Virtual Student 1-1,text,true,,2427,2083,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/textbooks/1825/page-content,547,0,0
+1778662436152,665,GET Navigate Study Notes,200,OK,Virtual Student 1-1,text,true,,15069,2140,1,1,"https://ilmu-dev.tmrnd.dev/learning/v1/learning-resources?resourceType=STUDY_NOTES&subjectIds=2,14,15,6,7&limit=12&offset=0",582,0,0
+1778662436818,744,GET Learning Study Notes BM TP1,200,OK,Virtual Student 1-1,text,true,,31504,2079,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/study-notes/3284/detail,538,0,0
+1778662437562,865,GET Learning Study Notes BM TP2,200,OK,Virtual Student 1-1,text,true,,44837,2079,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/study-notes/3283/detail,588,0,0
+1778662438428,840,GET Learning Study Notes BI TP1,200,OK,Virtual Student 1-1,text,true,,37990,2079,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/study-notes/3162/detail,588,0,0
+1778662439269,899,GET Learning Study Notes BI TP2,200,OK,Virtual Student 1-1,text,true,,40961,2079,1,1,https:/

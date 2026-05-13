@@ -1,0 +1,351 @@
+timeStamp,elapsed,label,responseCode,responseMessage,threadName,dataType,success,failureMessage,bytes,sentBytes,grpThreads,allThreads,URL,Latency,IdleTime,Connect
+1778657231095,20108,T01_Login,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,"Number of samples in transaction : 1, number of failing samples : 1",Virtual Student 1-1,,false,,2670,0,1,1,null,0,3339,20107
+1778657231183,20108,POST API Login,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,ACCESS_TOKEN not extracted from login response,2670,0,1,1,https://ilmu-dev.tmrnd.dev/usermgmt/v1/auth/token,0,0,20107
+1778657254554,100085,T02_Learning_Assessment,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,"Number of samples in transaction : 6, number of failing samples : 5",Virtual Student 1-1,,false,,13350,0,1,1,null,0,197,100051
+1778657254555,20004,GET Learning Assessment Page/API,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/user-questionnaires/status/PERSONALIZED_LEARNING_V1,0,0,20003
+1778657274562,20010,GET Questionnaire Page,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/questionnaires/1,0,0,20010
+1778657294575,20012,POST User Questionnaire Session ID,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/user-questionnaires/start,0,0,20012
+1778657314591,20013,GET newUserQuestionnaire Page,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/user-questionnaires/NOT_FOUND,0,0,20013
+1778657334610,20013,GET All Questions,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/questionnaires/1/questions?limit=26,0,0,20013
+1778657354803,33,Log Assessment Completion & Summary,200,Assessment complete - all 26 answers submitted,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778657354838,620207,T03_Learning_Space,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,"Number of samples in transaction : 41, number of failing samples : 41",Virtual Student 1-1,,false,,93050,12746,1,1,null,0,239,601891
+1778657354839,20088,GET Subscription Active,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,https://ilmu-dev.tmrnd.dev/subscription/v1/user-subscriptions/me/active,0,0,20088
+1778657374928,20011,GET Tags By SubjectIds,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,"https://ilmu-dev.tmrnd.dev/learning/v1/learning-resources/tags?subjectIds=2,14,15,6,7",0,0,20011
+1778657394941,20012,GET Textbook Learning Resources,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,"https://ilmu-dev.tmrnd.dev/learning/v1/learning-resources?resourceType=TEXTBOOK&subjectIds=2,14,15,6,7&limit=12&offset=0",0,0,20012
+1778657414954,20006,GET Navigate TextBook BM,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/textbooks/courses/14/navigation,0,0,20006
+1778657434961,20014,GET Learning TextBook BM PT1,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,https://ilmu-dev.tmrnd.dev/%20/learning/v1/textbooks/405/page-content,0,0,20014
+1778657454977,20001,GET Learning TextBook BM PT4,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,https://ilmu-dev.tmrnd.dev/%20/learning/v1/textbooks/447/page-content,0,0,20001
+1778657474979,20012,GET Learning TextBook BM PT8,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,https://ilmu-dev.tmrnd.dev/%20/learning/v1/textbooks/505/page-content,0,0,20012
+1778657494994,20014,GET Learning TextBook BM PT16,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,https://ilmu-dev.tmrnd.dev/%20/learning/v1/textbooks/620/page-content,0,0,20014
+1778657515009,20007,GET Navigate TextBook BI,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/textbooks/courses/17/navigation,0,0,20007
+1778657535017,20012,GET Learning TextBook BI PT1,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/textbooks/195/page-content,0,0,20011
+1778657555030,20014,GET Learning TextBook BI PT6,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/textbooks/259/page-content,0,0,20014
+1778657575046,20016,GET Learning TextBook BI PT12,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/textbooks/337/page-content,0,0,20016
+1778657595064,20015,GET Learning TextBook BI PT16,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,https://ilmu-dev.tmrnd.dev/%20/learning/v1/textbooks/377/page-content,0,0,20015
+1778657615081,20015,GET Navigate TextBook Math,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/textbooks/courses/11/navigation,0,0,20015
+1778657635096,20034,GET Learning TextBook Math PT1,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,https://ilmu-dev.tmrnd.dev/%20/learning/v1/textbooks/1878/page-content,0,0,20034
+1778657655131,20001,GET Learning TextBook Math PT4,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,https://ilmu-dev.tmrnd.dev/%20/learning/v1/textbooks/1971/page-content,0,0,20001
+1778657675133,20014,GET Learning TextBook Math PT6,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,https://ilmu-dev.tmrnd.dev/%20/learning/v1/textbooks/2049/page-content,0,0,20014
+1778657695150,20009,GET Learning TextBook Math PT8,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,https://ilmu-dev.tmrnd.dev/%20/learning/v1/textbooks/2105/page-content,0,0,20008
+1778657715159,20004,GET Navigate TextBook Sejarah,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/textbooks/courses/9/navigation,0,0,20004
+1778657735164,20002,GET Learning TextBook Sejarah PT1,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/textbooks/2155/page-content,0,0,20002
+1778657755167,20001,GET Learning TextBook Sejarah PT5,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/textbooks/2241/page-content,0,0,20001
+1778657775169,20007,GET Learning TextBook Sejarah PT8,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,https://ilmu-dev.tmrnd.dev/%20/learning/v1/textbooks/2317/page-content,0,0,20007
+1778657795178,20010,GET Learning TextBook Sejarah PT10,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/textbooks/2377/page-content,0,0,20010
+1778657815188,20002,GET Learning TextBook Math ,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,https://ilmu-dev.tmrnd.dev/%20/learning/v1/textbooks/courses/10/navigation,0,0,20002
+1778657835191,20011,GET Learning TextBook Math PT1,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/textbooks/1553/page-content,0,0,20011
+1778657855203,20000,GET Learning TextBook Math PT4,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/textbooks/1649/page-content,0,0,20000
+1778657875204,20016,GET Learning TextBook Math PT8,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/textbooks/1763/page-content,0,0,20016
+1778657895221,20013,GET Learning TextBook Math PT10,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/textbooks/1825/page-content,0,0,20012
+1778657915236,20008,GET Navigate Study Notes,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,"https://ilmu-dev.tmrnd.dev/learning/v1/learning-resources?resourceType=STUDY_NOTES&subjectIds=2,14,15,6,7&limit=12&offset=0",0,0,20008
+1778657935245,20007,GET Learning Study Notes BM TP1,Non HTTP response code: org.apache.http.conn.ConnectTimeoutException,Non HTTP response message: Connect to ilmu-dev.tmrnd.dev:443 [ilmu-dev.tmrnd.dev/202.165.25.39] failed: Connect timed out,Virtual Student 1-1,text,false,,2670,0,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/study-notes/3284/detail,0,0,20007
+1778657955254,2015,GET Learning Study Notes BM TP2,401,Unauthorized,Virtual Student 1-1,text,false,,370,337,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/study-notes/3283/detail,2014,0,1518
+1778657957270,530,GET Learning Study Notes BI TP1,401,Unauthorized,Virtual Student 1-1,text,false,,370,337,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/study-notes/3162/detail,530,0,0
+1778657957801,533,GET Learning Study Notes BI TP2,401,Unauthorized,Virtual Student 1-1,text,false,,370,337,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/study-notes/3159/detail,533,0,0
+1778657958335,523,GET Learning Study Notes Math TP1,401,Unauthorized,Virtual Student 1-1,text,false,,370,337,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/study-notes/3316/detail,523,0,0
+1778657958859,529,GET Learning Study Notes Math TP2,401,Unauthorized,Virtual Student 1-1,text,false,,370,337,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/study-notes/3311/detail,529,0,0
+1778657959389,579,GET Learning Study Notes Sejarah TP1,401,Unauthorized,Virtual Student 1-1,text,false,,370,337,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/study-notes/3367/detail,579,0,0
+1778657959969,498,GET Learning Study Notes Sejarah TP2,401,Unauthorized,Virtual Student 1-1,text,false,,370,337,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/study-notes/3364/detail,498,0,0
+1778657960467,505,GET Study Notes Details,401,Unauthorized,Virtual Student 1-1,text,false,,370,337,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/study-notes/3283/detail,505,0,0
+1778657960973,541,GET Flashcards,401,Unauthorized,Virtual Student 1-1,text,false,,370,397,1,1,"https://ilmu-dev.tmrnd.dev/learning/v1/learning-resources?resourceType=FLASHCARDS&subjectIds=2,14,15,6,7&limit=12&offset=0",541,0,0
+1778657961515,503,GET Quiz,401,Unauthorized,Virtual Student 1-1,text,false,,370,391,1,1,"https://ilmu-dev.tmrnd.dev/learning/v1/learning-resources?resourceType=QUIZ&subjectIds=2,14,15,6,7&limit=12&offset=0",503,0,0
+1778657962018,13075,T03A_Navigate_Quiz_And_Answer_10Q,401,"Number of samples in transaction : 25, number of failing samples : 25",Virtual Student 1-1,,false,,9250,9262,1,1,null,0,191,0
+1778657962019,521,GET Quiz Detail 2808,401,Unauthorized,Virtual Student 1-1,text,false,,370,333,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/detail,520,0,0
+1778657962540,537,GET Quiz 2808,401,Unauthorized,Virtual Student 1-1,text,false,,370,326,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808,537,0,0
+1778657963078,523,POST Start Quiz Attempt 2808,401,Unauthorized,Virtual Student 1-1,text,false,QUIZ_ATTEMPT_ID not extracted from start attempt response,370,355,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/attempts,523,0,0
+1778657963675,527,GET Quiz Item 1826,401,Unauthorized,Virtual Student 1-1,text,false,,370,337,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/items/1826,527,0,0
+1778657964268,549,POST Quiz Answer 1826,404,Not Found,Virtual Student 1-1,text,false,,371,418,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/attempts//items/1826/answer,549,0,0
+1778657964817,497,GET Quiz Item 1827,401,Unauthorized,Virtual Student 1-1,text,false,,370,337,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/items/1827,497,0,0
+1778657965317,522,POST Quiz Answer 1827,404,Not Found,Virtual Student 1-1,text,false,,371,418,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/attempts//items/1827/answer,522,0,0
+1778657965840,542,GET Quiz Item 1828,401,Unauthorized,Virtual Student 1-1,text,false,,370,337,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/items/1828,542,0,0
+1778657966384,505,POST Quiz Answer 1828,404,Not Found,Virtual Student 1-1,text,false,,371,418,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/attempts//items/1828/answer,504,0,0
+1778657966889,537,GET Quiz Item 1829,401,Unauthorized,Virtual Student 1-1,text,false,,370,337,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/items/1829,537,0,0
+1778657967428,524,POST Quiz Answer 1829,404,Not Found,Virtual Student 1-1,text,false,,371,418,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/attempts//items/1829/answer,524,0,0
+1778657967953,513,GET Quiz Item 1830,401,Unauthorized,Virtual Student 1-1,text,false,,370,337,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/items/1830,513,0,0
+1778657968467,552,POST Quiz Answer 1830,404,Not Found,Virtual Student 1-1,text,false,,371,418,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/attempts//items/1830/answer,552,0,0
+1778657969019,489,GET Quiz Item 1831,401,Unauthorized,Virtual Student 1-1,text,false,,370,337,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/items/1831,489,0,0
+1778657969509,545,POST Quiz Answer 1831,404,Not Found,Virtual Student 1-1,text,false,,371,418,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/attempts//items/1831/answer,545,0,0
+1778657970055,519,GET Quiz Item 1832,401,Unauthorized,Virtual Student 1-1,text,false,,370,337,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/items/1832,519,0,0
+1778657970575,499,POST Quiz Answer 1832,404,Not Found,Virtual Student 1-1,text,false,,371,418,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/attempts//items/1832/answer,499,0,0
+1778657971075,545,GET Quiz Item 1833,401,Unauthorized,Virtual Student 1-1,text,false,,370,337,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/items/1833,544,0,0
+1778657971621,499,POST Quiz Answer 1833,404,Not Found,Virtual Student 1-1,text,false,,371,418,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/attempts//items/1833/answer,499,0,0
+1778657972122,490,GET Quiz Item 1834,401,Unauthorized,Virtual Student 1-1,text,false,,370,337,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/items/1834,490,0,0
+1778657972614,506,POST Quiz Answer 1834,404,Not Found,Virtual Student 1-1,text,false,,371,418,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/attempts//items/1834/answer,506,0,0
+1778657973121,535,GET Quiz Item 1835,401,Unauthorized,Virtual Student 1-1,text,false,,370,337,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/items/1835,535,0,0
+1778657973658,533,POST Quiz Answer 1835,404,Not Found,Virtual Student 1-1,text,false,,371,418,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/attempts//items/1835/answer,533,0,0
+1778657974192,529,POST Submit Quiz Attempt ,404,Not Found,Virtual Student 1-1,text,false,Unexpected HTTP status for submit quiz: 404,360,362,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/attempts//submit,529,0,0
+1778657974748,537,GET Quiz Attempt Result ,401,Unauthorized,Virtual Student 1-1,text,false,,370,336,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/attempts/,537,0,0
+1778657975299,132503,T04_AI_Tutor_WebSocket,401,"Number of samples in transaction : 273, number of failing samples : 145",Virtual Student 1-1,,false,,15248,0,1,1,null,0,112338,0
+1778657975704,16,Init AI Tutor Socket State,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778657976132,2188,WS Open AI Tutor Connection,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778657978732,21,Init AI Verification Counter,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778657979166,91,Load and Randomize Sejarah ,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778657979666,206,Ensure Access Token Min Validity Before Sejarah Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+0,0,WS Send Sejarah Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778657980855,22,Log Sejarah Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778657981312,33,Prepare AI Tutor Reconnect Before Sejarah Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778657981762,2146,WS Open AI Tutor Connection Retry (Sejarah),401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778657984317,49,Mark AI Tutor Socket Reconnected (Sejarah),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,202,0,1,1,null,0,0,0
+1778657984767,21,Prepare Sejarah Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778657985204,1,Ensure Access Token Min Validity Before Sejarah Retry Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778657985624,3,Prepare AI Tutor Reconnect Before Sejarah Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778657986057,2139,WS Open AI Tutor Connection Before Sejarah Retry Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry Sejarah Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778657989055,2,Ensure Access Token Min Validity Before Sejarah Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778657989471,2,Prepare AI Tutor Reconnect Before Sejarah Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778657989898,2591,WS Open AI Tutor Connection Before Sejarah Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send Sejarah Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778657993296,1,Log Sejarah Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778657993710,3,Prepare AI Tutor Reconnect Before Sejarah Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778657994124,2136,WS Open AI Tutor Connection Retry (Sejarah),401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778657996662,1,Mark AI Tutor Socket Reconnected (Sejarah),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,202,0,1,1,null,0,0,0
+1778657997068,1,Prepare Sejarah Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778657997473,2,Ensure Access Token Min Validity Before Sejarah Retry Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778657997890,2,Prepare AI Tutor Reconnect Before Sejarah Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778657998309,2170,WS Open AI Tutor Connection Before Sejarah Retry Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry Sejarah Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658001290,2,Ensure Access Token Min Validity Before Sejarah Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658001706,2,Prepare AI Tutor Reconnect Before Sejarah Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658002115,2122,WS Open AI Tutor Connection Before Sejarah Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send Sejarah Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658005053,1,Log Sejarah Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658005457,2,Prepare AI Tutor Reconnect Before Sejarah Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658005867,2173,WS Open AI Tutor Connection Retry (Sejarah),401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658008445,1,Mark AI Tutor Socket Reconnected (Sejarah),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,202,0,1,1,null,0,0,0
+1778658008848,0,Prepare Sejarah Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658009258,1,Ensure Access Token Min Validity Before Sejarah Retry Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658009670,4,Prepare AI Tutor Reconnect Before Sejarah Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658010080,2082,WS Open AI Tutor Connection Before Sejarah Retry Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry Sejarah Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658012981,1,Ensure Access Token Min Validity Before Sejarah Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658013392,1,Prepare AI Tutor Reconnect Before Sejarah Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658013804,2180,WS Open AI Tutor Connection Before Sejarah Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send Sejarah Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658016795,2,Log Sejarah Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658017207,1,Prepare AI Tutor Reconnect Before Sejarah Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658017618,2186,WS Open AI Tutor Connection Retry (Sejarah),401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658020220,2,Mark AI Tutor Socket Reconnected (Sejarah),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,202,0,1,1,null,0,0,0
+1778658020632,1,Prepare Sejarah Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658021042,2,Ensure Access Token Min Validity Before Sejarah Retry Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658021453,2,Prepare AI Tutor Reconnect Before Sejarah Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658021865,2176,WS Open AI Tutor Connection Before Sejarah Retry Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry Sejarah Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658024844,1,Ensure Access Token Min Validity Before Sejarah Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658025253,2,Prepare AI Tutor Reconnect Before Sejarah Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658025663,2164,WS Open AI Tutor Connection Before Sejarah Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send Sejarah Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658028635,2,Log Sejarah Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658029047,1,Prepare AI Tutor Reconnect Before Sejarah Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658029456,2115,WS Open AI Tutor Connection Retry (Sejarah),401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658031974,1,Mark AI Tutor Socket Reconnected (Sejarah),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,202,0,1,1,null,0,0,0
+1778658032389,1,Prepare Sejarah Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658032790,2,Ensure Access Token Min Validity Before Sejarah Retry Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658033200,2,Prepare AI Tutor Reconnect Before Sejarah Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658033606,2223,WS Open AI Tutor Connection Before Sejarah Retry Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry Sejarah Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658036640,20,Verify 5 Sejarah Questions Sent,500,"Expected 5 Sejarah questions completed but got done=0, sent=0",Virtual Student 1-1,text,false,,107,0,1,1,null,0,0,0
+1778658037072,12,Initialize Math Question Counter,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658037489,15,Load and Randomize Math,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658037909,1,Ensure Access Token Min Validity Before Math Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658038321,1,Prepare AI Tutor Reconnect Before Math Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658038737,2230,WS Open AI Tutor Connection Before Math Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send Math Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658041858,21,Log Math Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658042307,2,Prepare AI Tutor Reconnect Before Math Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658042732,2129,WS Open AI Tutor Connection Retry (Math),401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658045265,2,Mark AI Tutor Socket Reconnected (Math),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,202,0,1,1,null,0,0,0
+1778658045674,11,Prepare Math Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658046086,1,Ensure Access Token Min Validity Before Math Retry Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658046496,1,Prepare AI Tutor Reconnect Before Math Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658046908,2134,WS Open AI Tutor Connection Before Math Retry Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry Math Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658049871,2,Ensure Access Token Min Validity Before Math Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658050291,4,Prepare AI Tutor Reconnect Before Math Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658050710,2384,WS Open AI Tutor Connection Before Math Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send Math Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658053925,0,Log Math Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658054339,2,Prepare AI Tutor Reconnect Before Math Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658054753,2138,WS Open AI Tutor Connection Retry (Math),401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658057291,1,Mark AI Tutor Socket Reconnected (Math),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,202,0,1,1,null,0,0,0
+1778658057708,0,Prepare Math Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658058109,1,Ensure Access Token Min Validity Before Math Retry Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658058515,1,Prepare AI Tutor Reconnect Before Math Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658058923,2169,WS Open AI Tutor Connection Before Math Retry Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry Math Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658061903,1,Ensure Access Token Min Validity Before Math Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658062313,1,Prepare AI Tutor Reconnect Before Math Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658062723,2133,WS Open AI Tutor Connection Before Math Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send Math Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658065672,1,Log Math Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658066082,1,Prepare AI Tutor Reconnect Before Math Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658066492,2119,WS Open AI Tutor Connection Retry (Math),401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658069020,2,Mark AI Tutor Socket Reconnected (Math),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,202,0,1,1,null,0,0,0
+1778658069429,1,Prepare Math Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658069839,2,Ensure Access Token Min Validity Before Math Retry Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658070248,1,Prepare AI Tutor Reconnect Before Math Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658070659,2244,WS Open AI Tutor Connection Before Math Retry Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry Math Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658073729,1,Ensure Access Token Min Validity Before Math Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658074139,1,Prepare AI Tutor Reconnect Before Math Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658074549,2157,WS Open AI Tutor Connection Before Math Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send Math Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658077534,1,Log Math Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658077943,2,Prepare AI Tutor Reconnect Before Math Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658078355,2149,WS Open AI Tutor Connection Retry (Math),401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658080916,0,Mark AI Tutor Socket Reconnected (Math),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,202,0,1,1,null,0,0,0
+1778658081324,0,Prepare Math Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658081732,2,Ensure Access Token Min Validity Before Math Retry Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658082143,1,Prepare AI Tutor Reconnect Before Math Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658082553,2198,WS Open AI Tutor Connection Before Math Retry Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry Math Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658085567,1,Ensure Access Token Min Validity Before Math Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658085976,1,Prepare AI Tutor Reconnect Before Math Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658086388,2108,WS Open AI Tutor Connection Before Math Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send Math Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658089314,2,Log Math Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658089726,1,Prepare AI Tutor Reconnect Before Math Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658090135,2106,WS Open AI Tutor Connection Retry (Math),401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658092644,1,Mark AI Tutor Socket Reconnected (Math),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,202,0,1,1,null,0,0,0
+1778658093059,0,Prepare Math Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658093474,1,Ensure Access Token Min Validity Before Math Retry Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658093889,1,Prepare AI Tutor Reconnect Before Math Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658094292,2845,WS Open AI Tutor Connection Before Math Retry Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry Math Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658097955,19,Verify 5 Math Questions Sent,500,"Expected 5 Math questions completed but got done=0, sent=0",Virtual Student 1-1,text,false,,104,0,1,1,null,0,0,0
+1778658098382,16,Initialize BI Question Counter,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658098807,18,Load and Randomize BI,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658099235,2,Ensure Access Token Min Validity Before BI Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658099662,1,Prepare AI Tutor Reconnect Before BI Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658100084,2136,WS Open AI Tutor Connection Before BI Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send BI Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658103075,22,Log BI Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658103526,2,Prepare AI Tutor Reconnect Before BI Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658103936,2117,WS Open AI Tutor Connection Retry (BI),401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658106459,1,Mark AI Tutor Socket Reconnected (BI),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,202,0,1,1,null,0,0,0
+1778658106870,9,Prepare BI Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658107281,2,Ensure Access Token Min Validity Before BI Retry Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658107694,2,Prepare AI Tutor Reconnect Before BI Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658108105,2109,WS Open AI Tutor Connection Before BI Retry Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry BI Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658111056,1,Ensure Access Token Min Validity Before BI Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658111466,1,Prepare AI Tutor Reconnect Before BI Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658111878,2204,WS Open AI Tutor Connection Before BI Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send BI Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658114898,1,Log BI Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658115310,2,Prepare AI Tutor Reconnect Before BI Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658115722,2169,WS Open AI Tutor Connection Retry (BI),401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658118291,2,Mark AI Tutor Socket Reconnected (BI),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,202,0,1,1,null,0,0,0
+1778658118706,1,Prepare BI Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658119114,1,Ensure Access Token Min Validity Before BI Retry Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658119526,3,Prepare AI Tutor Reconnect Before BI Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658119942,2192,WS Open AI Tutor Connection Before BI Retry Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry BI Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658122958,1,Ensure Access Token Min Validity Before BI Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658123361,1,Prepare AI Tutor Reconnect Before BI Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658123765,2167,WS Open AI Tutor Connection Before BI Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send BI Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658126754,0,Log BI Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658127165,1,Prepare AI Tutor Reconnect Before BI Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658127573,2171,WS Open AI Tutor Connection Retry (BI),401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658130153,1,Mark AI Tutor Socket Reconnected (BI),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,202,0,1,1,null,0,0,0
+1778658130564,1,Prepare BI Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658130975,1,Ensure Access Token Min Validity Before BI Retry Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658131386,1,Prepare AI Tutor Reconnect Before BI Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658131803,2219,WS Open AI Tutor Connection Before BI Retry Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry BI Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658134843,1,Ensure Access Token Min Validity Before BI Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658135251,1,Prepare AI Tutor Reconnect Before BI Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658135663,2162,WS Open AI Tutor Connection Before BI Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send BI Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658138641,0,Log BI Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658139042,2,Prepare AI Tutor Reconnect Before BI Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658139453,2169,WS Open AI Tutor Connection Retry (BI),401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658142023,1,Mark AI Tutor Socket Reconnected (BI),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,202,0,1,1,null,0,0,0
+1778658142433,1,Prepare BI Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658142844,2,Ensure Access Token Min Validity Before BI Retry Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658143253,1,Prepare AI Tutor Reconnect Before BI Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658143662,2265,WS Open AI Tutor Connection Before BI Retry Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry BI Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658146752,1,Ensure Access Token Min Validity Before BI Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658147163,1,Prepare AI Tutor Reconnect Before BI Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658147575,2175,WS Open AI Tutor Connection Before BI Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send BI Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658150569,1,Log BI Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658150978,1,Prepare AI Tutor Reconnect Before BI Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658151393,2151,WS Open AI Tutor Connection Retry (BI),401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658153952,1,Mark AI Tutor Socket Reconnected (BI),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,202,0,1,1,null,0,0,0
+1778658154364,1,Prepare BI Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658154773,1,Ensure Access Token Min Validity Before BI Retry Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658155184,2,Prepare AI Tutor Reconnect Before BI Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658155595,2141,WS Open AI Tutor Connection Before BI Retry Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry BI Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658158551,86,Verify 5 BI Questions Sent,500,"Expected 5 BI questions completed but got done=0, sent=0",Virtual Student 1-1,text,false,,102,0,1,1,null,0,0,0
+1778658159051,22,Initialize BM Question Counter,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658159475,17,Load and Randomize BM,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658159901,2,Ensure Access Token Min Validity Before BM Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658160328,2,Prepare AI Tutor Reconnect Before BM Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658160755,2166,WS Open AI Tutor Connection Before BM Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send BM Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658163837,25,Log BM Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658164293,2,Prepare AI Tutor Reconnect Before BM Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658164704,2105,WS Open AI Tutor Connection Retry (BM),401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658167213,2,Mark AI Tutor Socket Reconnected (BM),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,202,0,1,1,null,0,0,0
+1778658167632,14,Prepare BM Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658168055,1,Ensure Access Token Min Validity Before BM Retry Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658168465,1,Prepare AI Tutor Reconnect Before BM Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658168893,2131,WS Open AI Tutor Connection Before BM Retry Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry BM Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658171879,2,Ensure Access Token Min Validity Before BM Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658172291,1,Prepare AI Tutor Reconnect Before BM Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658172701,2133,WS Open AI Tutor Connection Before BM Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send BM Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658175660,1,Log BM Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658176073,2,Prepare AI Tutor Reconnect Before BM Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658176485,2511,WS Open AI Tutor Connection Retry (BM),401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658179411,1,Mark AI Tutor Socket Reconnected (BM),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,202,0,1,1,null,0,0,0
+1778658179823,0,Prepare BM Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658180229,2,Ensure Access Token Min Validity Before BM Retry Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658180640,1,Prepare AI Tutor Reconnect Before BM Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658181051,2236,WS Open AI Tutor Connection Before BM Retry Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry BM Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658184098,1,Ensure Access Token Min Validity Before BM Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658184510,2,Prepare AI Tutor Reconnect Before BM Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658184920,2260,WS Open AI Tutor Connection Before BM Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send BM Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658188002,2,Log BM Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658188411,1,Prepare AI Tutor Reconnect Before BM Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658188821,2186,WS Open AI Tutor Connection Retry (BM),401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658191408,1,Mark AI Tutor Socket Reconnected (BM),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,202,0,1,1,null,0,0,0
+1778658191814,1,Prepare BM Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658192226,2,Ensure Access Token Min Validity Before BM Retry Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658192635,2,Prepare AI Tutor Reconnect Before BM Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658193047,2151,WS Open AI Tutor Connection Before BM Retry Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry BM Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658196019,3,Ensure Access Token Min Validity Before BM Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658196428,1,Prepare AI Tutor Reconnect Before BM Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658196840,2195,WS Open AI Tutor Connection Before BM Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send BM Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658199861,2,Log BM Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658200272,0,Prepare AI Tutor Reconnect Before BM Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658200683,2187,WS Open AI Tutor Connection Retry (BM),401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658203274,1,Mark AI Tutor Socket Reconnected (BM),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,202,0,1,1,null,0,0,0
+1778658203683,0,Prepare BM Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658204092,1,Ensure Access Token Min Validity Before BM Retry Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658204504,1,Prepare AI Tutor Reconnect Before BM Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658204914,2142,WS Open AI Tutor Connection Before BM Retry Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry BM Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658207879,2,Ensure Access Token Min Validity Before BM Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658208290,2,Prepare AI Tutor Reconnect Before BM Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658208703,2177,WS Open AI Tutor Connection Before BM Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send BM Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658211696,1,Log BM Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658212108,2,Prepare AI Tutor Reconnect Before BM Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658212516,2166,WS Open AI Tutor Connection Retry (BM),401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658215083,1,Mark AI Tutor Socket Reconnected (BM),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,202,0,1,1,null,0,0,0
+1778658215493,1,Prepare BM Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778658215903,1,Ensure Access Token Min Validity Before BM Retry Question,500,ACCESS_TOKEN is missing before AI tutor question send,Virtual Student 1-1,text,false,,53,0,1,1,null,0,0,0
+1778658216315,1,Prepare AI Tutor Reconnect Before BM Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,147,0,1,1,null,0,0,0
+1778658216732,2167,WS Open AI Tutor Connection Before BM Retry Question,401,Got unexpected status 401 with statusLine:HTTP/1.1 401 Unauthorized,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry BM Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778658219711,24,Verify 5 BM Questions Sent,500,"Expected 5 BM questions completed but got done=0, sent=0",Virtual Student 1-1,text,false,,102,0,1,1,null,0,0,0
+0,0,WS Close AI Tutor Connection,,No connection; nothing to close.,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
