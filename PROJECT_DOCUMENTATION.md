@@ -65,7 +65,7 @@ The purpose of QE Automation Hub is to provide a single interface for quality en
 
 ### General description of the system
 
-QE Automation Hub is a single-page application built with React, TypeScript, and TanStack Router. It is structured around project management and reporting for quality engineering work.
+QE Automation Hub is a Next.js application built with React, TypeScript, and MongoDB-backed API routes. It is structured around project management and reporting for quality engineering work.
 
 The application presents a navigation sidebar, dashboard view, project listing, project detail pages with multiple tabs, run history, schedule calendar, and settings panel.
 
@@ -79,7 +79,8 @@ The application presents a navigation sidebar, dashboard view, project listing, 
 - Settings page for workspace and user preferences.
 - Help content with AI assistant, FAQ, tutorial, and contact links.
 - Reusable Radix UI-based components for consistent design.
-- Mock data and local client-side project handling for demo use.
+- MongoDB-backed authentication, users, roles, permissions, admin approvals, profile updates, email/password changes, and password reset requests.
+- Mock data and local client-side project/tool handling still exist for workspace areas that have not been wired to MongoDB yet.
 
 ---
 
@@ -135,9 +136,8 @@ The application structure is organized as:
 
 - React 19
 - TypeScript
-- Vite 7
-- TanStack Start
-- TanStack Router
+- Next.js 15
+- MongoDB
 - Tailwind CSS v4
 - Radix UI
 - Recharts
@@ -151,7 +151,7 @@ The application structure is organized as:
 #### Root files
 
 - `package.json`: Contains scripts, dependencies, and devDependencies.
-- `vite.config.ts`: Vite build configuration.
+- `next.config.mjs`: Next.js configuration.
 - `tsconfig.json`: TypeScript configuration.
 - `eslint.config.js`: ESLint rules.
 - `README.md`: Project overview and commands.
@@ -208,7 +208,31 @@ The application structure is organized as:
 
 #### Data model overview
 
-The current system uses a local in-memory/mock-data model for demonstration. Key models include:
+The current system uses MongoDB for core account and admin data. Project/tool workspace data is still partially backed by mock data or browser storage while feature APIs are being completed.
+
+MongoDB collections include:
+
+- `users`
+- `roles`
+- `permissions`
+- `password_resets`
+- `projects`
+- `project_members`
+- `tools`
+- `project_tools`
+- `files`
+- `gallery_items`
+- `forum_threads`
+- `forum_messages`
+- `meetings`
+- `copilot_chats`
+- `copilot_attachments`
+- `sonarqube_configs`
+- `sonarqube_scans`
+- `sonarqube_issues`
+- `audit_logs`
+
+Workspace models include:
 
 - Project
 - Test Case
@@ -226,13 +250,13 @@ The current system uses a local in-memory/mock-data model for demonstration. Key
 
 1. User navigates to a route.
 2. The router loads any required data via route loaders.
-3. The component renders using mock data or local persisted user data.
-4. UI state updates happen in React component state and local storage.
+3. The component renders using MongoDB-backed API data where available, and mock/local data for areas not yet wired.
+4. UI state updates happen through API calls, React component state, or local storage depending on the feature area.
 5. Actions such as switching tabs or opening dialogs update local UI state.
 
 #### Typical project page workflow
 
-- Load project from `mock-data.ts` or local user projects.
+- Load project from `mock-data.ts` or local user projects until the project APIs are wired to MongoDB.
 - Determine enabled tabs for project type.
 - Render the `Shell` around page content.
 - Render tab navigation buttons.
@@ -266,33 +290,52 @@ cd "QE Automation Hub"
 npm install
 ```
 
-#### 3. Run development server
+#### 3. Configure environment
+
+Create `.env.local` from `.env.example` and make sure MongoDB is running.
+
+```env
+MONGODB_URI=mongodb://127.0.0.1:27017
+MONGODB_DB=sqa-portal
+GEMINI_API_KEY=
+GEMINI_MODEL=
+```
+
+#### 4. Seed MongoDB
+
+```bash
+npm run db:seed
+```
+
+This creates the MongoDB collections, base roles, permissions, and the demo admin account.
+
+#### 5. Run development server
 
 ```bash
 npm run dev
 ```
 
-Open the browser at the URL shown in the terminal, usually `http://localhost:5173`.
+Open the browser at the URL shown in the terminal, usually `http://localhost:3000`.
 
-#### 4. Build for production
+#### 6. Build for production
 
 ```bash
 npm run build
 ```
 
-#### 5. Preview production build locally
+#### 7. Run production build locally
 
 ```bash
-npm run preview
+npm run start
 ```
 
-#### 6. Lint the code
+#### 8. Lint the code
 
 ```bash
 npm run lint
 ```
 
-#### 7. Format the codebase
+#### 9. Format the codebase
 
 ```bash
 npm run format
@@ -300,15 +343,13 @@ npm run format
 
 ### Environment variables
 
-This repository does not require a backend API by default, but it can be extended to use environment variables for service keys and endpoints.
-
-If you add backend integration, store secrets in a `.env` file and update Vite configuration accordingly.
+This repository requires MongoDB for the current auth/admin flow. Store local secrets in `.env.local`.
 
 ### Deployment notes
 
 - This app is compatible with Vercel deployment.
 - Use `npm run build` to create production assets.
-- The output directory is managed by Vite.
+- Configure `MONGODB_URI`, `MONGODB_DB`, `GEMINI_API_KEY`, and `GEMINI_MODEL` in the deployment environment.
 
 ---
 
@@ -467,7 +508,7 @@ The system operates in the following flow:
 
 1. User opens the application.
 2. The router determines the requested path.
-3. Route loaders fetch mock or persisted data.
+3. Next.js pages and API routes fetch MongoDB, mock, or persisted data depending on the feature area.
 4. The `Shell` wraps the page content with navigation.
 5. The requested page content renders.
 6. User interacts with UI controls.
@@ -648,7 +689,8 @@ Common UI elements:
 - `npm install`
 - `npm run dev`
 - `npm run build`
-- `npm run preview`
+- `npm run start`
+- `npm run db:seed`
 - `npm run lint`
 - `npm run format`
 

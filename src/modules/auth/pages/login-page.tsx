@@ -13,13 +13,17 @@ function LoginPage() {
   const [pw, setPw] = useState("");
   const [msg, setMsg] = useState<{ kind: "error" | "success" | "info"; text: string } | null>(null);
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!id || !pw) {
       setMsg({ kind: "error", text: "Enter your username/email and password." });
       return;
     }
-    const res = login(id, pw);
+    const res = await login(id, pw).catch(() => null);
+    if (!res) {
+      setMsg({ kind: "error", text: "Unable to reach the login server." });
+      return;
+    }
     if (res.ok) {
       setMsg({ kind: "success", text: "Login successful. Redirecting…" });
       setTimeout(() => router.push("/"), 400);
