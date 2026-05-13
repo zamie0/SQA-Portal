@@ -44,7 +44,7 @@ import {
   FilesTab,
   CustomTabContent,
   ProjectTabsToggle,
-} from "@/modules/projects/components";
+} from "@/app/tools/qe/components";
 
 type ProjectLike = { kind: "mock"; project: Project } | { kind: "user"; project: UserProject };
 
