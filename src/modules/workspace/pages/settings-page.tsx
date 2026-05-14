@@ -7,6 +7,7 @@ import {
   changeUserEmail,
   changeUserPassword,
   getAllUsers,
+  type PortalUser,
   useAuth,
   useEventTick,
 } from "@/shared/state";
@@ -22,7 +23,7 @@ const notificationDefaults = [
 function SettingsPage() {
   const authTick = useEventTick("sqa.auth.changed");
   const user = useAuth();
-  const [users, setUsers] = useState(() => getAllUsers());
+  const [users, setUsers] = useState<PortalUser[]>([]);
   const [emailForm, setEmailForm] = useState({ email: "", confirmEmail: "", password: "" });
   const [passwordForm, setPasswordForm] = useState({
     oldPassword: "",
@@ -37,16 +38,32 @@ function SettingsPage() {
   ]);
 
   useEffect(() => {
-    setUsers(getAllUsers());
+    let active = true;
+    void getAllUsers()
+      .then((next) => {
+        if (active) setUsers(next);
+      })
+      .catch(() => {
+        if (active) setUsers([]);
+      });
+    return () => {
+      active = false;
+    };
   }, [authTick]);
 
-  function saveEmail() {
+  async function saveEmail() {
     if (!user) return;
     if (emailForm.email !== emailForm.confirmEmail) {
       setEmailMessage("New email and confirmation do not match.");
       return;
     }
-    const result = changeUserEmail(user.id, emailForm.email, emailForm.password);
+    const result = await changeUserEmail(user.id, emailForm.email, emailForm.password).catch(
+      () => null,
+    );
+    if (!result) {
+      setEmailMessage("Unable to change email.");
+      return;
+    }
     if (!result.ok) {
       setEmailMessage(
         result.reason === "bad-password"
@@ -61,13 +78,21 @@ function SettingsPage() {
     setEmailMessage("Email changed.");
   }
 
-  function savePassword() {
+  async function savePassword() {
     if (!user) return;
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
       setPasswordMessage("New password and confirmation do not match.");
       return;
     }
-    const result = changeUserPassword(user.id, passwordForm.oldPassword, passwordForm.newPassword);
+    const result = await changeUserPassword(
+      user.id,
+      passwordForm.oldPassword,
+      passwordForm.newPassword,
+    ).catch(() => null);
+    if (!result) {
+      setPasswordMessage("Unable to change password.");
+      return;
+    }
     if (!result.ok) {
       setPasswordMessage(
         result.reason === "bad-password"
@@ -245,8 +270,9 @@ function SettingsPage() {
 
 function roleClass(role: string) {
   if (role === "admin") return "bg-primary/15 text-primary";
-  if (role === "staff") return "bg-success/15 text-success";
-  if (role === "intern") return "bg-warning/15 text-warning";
+  if (role === "project_manager") return "bg-success/15 text-success";
+  if (role === "project_leader") return "bg-warning/15 text-warning";
+  if (role === "member") return "bg-muted text-muted-foreground";
   return "bg-muted text-muted-foreground";
 }
 

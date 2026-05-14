@@ -21,7 +21,7 @@ function RegisterPage() {
     setForm((f) => ({ ...f, [k]: v }));
   }
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
     const { username, fullName, email, password, confirm } = form;
     if (!username || !fullName || !email || !password) {
@@ -36,7 +36,11 @@ function RegisterPage() {
       setMsg({ kind: "error", text: "Passwords do not match." });
       return;
     }
-    const res = register({ username, fullName, email, password });
+    const res = await register({ username, fullName, email, password }).catch(() => null);
+    if (!res) {
+      setMsg({ kind: "error", text: "Unable to reach the registration server." });
+      return;
+    }
     if (!res.ok) {
       setMsg({
         kind: "error",

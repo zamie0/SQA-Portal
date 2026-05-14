@@ -1,41 +1,23 @@
 "use client";
 
 import { useState, type ComponentType } from "react";
+import { Activity, Database, FileText, Key, KeyRound, Layers, Users, Wrench } from "lucide-react";
+import { PendingRegistrations, PasswordResetRequests, AllUsers } from "./index";
 import {
-  Activity,
-  BookOpen,
-  Box,
-  Database,
-  FileText,
-  Image,
-  Key,
-  KeyRound,
-  Layers,
-  Plus,
-  Users,
-  Wrench,
-} from "lucide-react";
-import {
-  PendingRegistrations,
-  PasswordResetRequests,
-  AllUsers,
-  Groups,
-  Activities,
-  GalleryImages,
-  GuideDocuments,
-  Guides,
-  ProjectDocuments,
-  Projects,
-  ReportDocuments,
-  Reports,
-  SonarQubeConfigs,
-  SonarQubeIssues,
-  SonarQubeScans,
-  TestbedColors,
-  Testbeds,
-  Tools,
-  AuthTokens,
-} from "./index";
+  AdminOverviewCards,
+  AuditLogsView,
+  PermissionsView,
+  ProjectMembersView,
+  ProjectsAdminView,
+  ProjectToolsView,
+  RolesView,
+  SonarQubeConfigsView,
+  SonarQubeIssuesView,
+  SonarQubeScansView,
+  ToolsAdminView,
+  type AdminMutate,
+} from "./AdminResourceViews";
+import type { AdminOverview } from "./adminOverviewData";
 import type { PortalUser, ResetRequest, UserRole, UserStatus } from "@/shared/state";
 
 type AdminMenuItem = {
@@ -46,22 +28,7 @@ type AdminMenuItem = {
 };
 
 const menuItems: AdminMenuItem[] = [
-  { id: "groups", label: "Groups", icon: Users, category: "Authentication and Authorization" },
-  { id: "activities", label: "Activities", icon: Activity, category: "Core" },
-  { id: "gallery-images", label: "Gallery images", icon: Image, category: "Core" },
-  { id: "guide-documents", label: "Guide documents", icon: FileText, category: "Core" },
-  { id: "guides", label: "Guides", icon: BookOpen, category: "Core" },
-  { id: "project-documents", label: "Project documents", icon: FileText, category: "Core" },
-  { id: "projects", label: "Projects", icon: Layers, category: "Core" },
-  { id: "report-documents", label: "Report documents", icon: FileText, category: "Core" },
-  { id: "reports", label: "Reports", icon: FileText, category: "Core" },
-  { id: "sonar-qube-configs", label: "Sonar qube configs", icon: Database, category: "Core" },
-  { id: "sonar-qube-issues", label: "Sonar qube issues", icon: FileText, category: "Core" },
-  { id: "sonar-qube-scans", label: "Sonar qube scans", icon: Activity, category: "Core" },
-  { id: "testbed-colors", label: "Testbed colors", icon: Layers, category: "Core" },
-  { id: "testbeds", label: "Testbeds", icon: Box, category: "Core" },
-  { id: "tools", label: "Tools", icon: Wrench, category: "Core" },
-  { id: "auth-tokens", label: "Auth tokens", icon: Key, category: "Knox" },
+  { id: "overview", label: "Overview", icon: Database, category: "Overview" },
   {
     id: "pending-registrations",
     label: "Pending registrations",
@@ -75,43 +42,62 @@ const menuItems: AdminMenuItem[] = [
     category: "User Management",
   },
   { id: "all-users", label: "All users", icon: Users, category: "User Management" },
+  { id: "roles", label: "Roles", icon: Key, category: "Access Control" },
+  { id: "permissions", label: "Permissions", icon: KeyRound, category: "Access Control" },
+  { id: "projects", label: "Projects", icon: Layers, category: "Project Control" },
+  { id: "project-members", label: "Project members", icon: Users, category: "Project Control" },
+  { id: "tools", label: "Tools", icon: Wrench, category: "Tools" },
+  { id: "project-tools", label: "Project tools", icon: Wrench, category: "Tools" },
+  { id: "sonar-qube-configs", label: "SonarQube configs", icon: Database, category: "SonarQube" },
+  { id: "sonar-qube-scans", label: "SonarQube scans", icon: Activity, category: "SonarQube" },
+  { id: "sonar-qube-issues", label: "SonarQube issues", icon: FileText, category: "SonarQube" },
+  { id: "audit-logs", label: "Audit logs", icon: Activity, category: "System" },
 ];
 
-const categories = ["Authentication and Authorization", "Core", "Knox", "User Management"] as const;
+const categories = [
+  "Overview",
+  "User Management",
+  "Access Control",
+  "Project Control",
+  "Tools",
+  "SonarQube",
+  "System",
+] as const;
 
 type AdminSidebarProps = {
   users: PortalUser[];
   resets: ResetRequest[];
-  setUserStatus: (id: string, status: UserStatus) => void;
-  setUserRole: (id: string, role: UserRole) => void;
-  deleteUser: (id: string) => void;
-  approveReset: (id: string, password: string) => void;
-  rejectReset: (id: string) => void;
+  adminData: AdminOverview;
+  setUserStatus: (id: string, status: UserStatus) => Promise<void>;
+  setUserRole: (id: string, role: UserRole) => Promise<void>;
+  deleteUser: (id: string) => Promise<void>;
+  approveReset: (id: string, password: string) => Promise<void>;
+  rejectReset: (id: string) => Promise<void>;
+  onAdminMutate: AdminMutate;
 };
 
 function renderContent(
   id: string,
   users: PortalUser[],
   resets: ResetRequest[],
+  adminData: AdminOverview,
   setUserStatus: AdminSidebarProps["setUserStatus"],
   setUserRole: AdminSidebarProps["setUserRole"],
   deleteUser: AdminSidebarProps["deleteUser"],
   approveReset: AdminSidebarProps["approveReset"],
   rejectReset: AdminSidebarProps["rejectReset"],
+  onAdminMutate: AdminSidebarProps["onAdminMutate"],
 ) {
   switch (id) {
-    case "groups":
-      return <Groups />;
-    case "activities":
-      return <Activities />;
-    case "gallery-images":
-      return <GalleryImages />;
+    case "overview":
+      return <AdminOverviewCards data={adminData} />;
     case "pending-registrations":
       return (
         <PendingRegistrations
           pendingUsers={users.filter((u) => u.status === "pending")}
           setUserStatus={setUserStatus}
           setUserRole={setUserRole}
+          roles={adminData.roles}
         />
       );
     case "password-reset-requests":
@@ -130,31 +116,29 @@ function renderContent(
           setUserStatus={setUserStatus}
           setUserRole={setUserRole}
           deleteUser={deleteUser}
+          roles={adminData.roles}
         />
       );
-    case "guide-documents":
-      return <GuideDocuments />;
-    case "report-documents":
-      return <ReportDocuments />;
+    case "roles":
+      return <RolesView data={adminData} onMutate={onAdminMutate} />;
+    case "permissions":
+      return <PermissionsView data={adminData} />;
     case "projects":
-      return <Projects />;
+      return <ProjectsAdminView data={adminData} onMutate={onAdminMutate} />;
+    case "project-members":
+      return <ProjectMembersView data={adminData} onMutate={onAdminMutate} />;
     case "tools":
-      return <Tools />;
-    case "auth-tokens":
-      return <AuthTokens />;
-    case "guides":
-      return <Guides />;
-
+      return <ToolsAdminView data={adminData} onMutate={onAdminMutate} />;
+    case "project-tools":
+      return <ProjectToolsView data={adminData} onMutate={onAdminMutate} />;
     case "sonar-qube-configs":
-      return <SonarQubeConfigs />;
+      return <SonarQubeConfigsView data={adminData} />;
     case "sonar-qube-issues":
-      return <SonarQubeIssues />;
+      return <SonarQubeIssuesView data={adminData} />;
     case "sonar-qube-scans":
-      return <SonarQubeScans />;
-    case "testbed-colors":
-      return <TestbedColors />;
-    case "testbeds":
-      return <Testbeds />;
+      return <SonarQubeScansView data={adminData} />;
+    case "audit-logs":
+      return <AuditLogsView data={adminData} />;
     default:
       return (
         <div className="rounded-3xl border border-border/70 bg-white/80 p-6 text-sm text-muted-foreground">
@@ -167,14 +151,22 @@ function renderContent(
 export function AdminSidebar({
   users,
   resets,
+  adminData,
   setUserStatus,
   setUserRole,
   deleteUser,
   approveReset,
   rejectReset,
+  onAdminMutate,
 }: AdminSidebarProps) {
   const [selectedId, setSelectedId] = useState(menuItems[0].id);
+  const [query, setQuery] = useState("");
+  const pendingUsers = users.filter((user) => user.status === "pending").length;
   const selected = menuItems.find((item) => item.id === selectedId) ?? menuItems[0];
+  const normalizedQuery = query.trim().toLowerCase();
+  const visibleItems = menuItems.filter((item) =>
+    [item.label, item.category].join(" ").toLowerCase().includes(normalizedQuery),
+  );
 
   return (
     <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
@@ -182,6 +174,8 @@ export function AdminSidebar({
         <div>
           <input
             type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
             placeholder="Start typing to filter..."
             className="w-full rounded-2xl border border-border/70 bg-background/80 px-3 py-2 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10"
           />
@@ -194,10 +188,12 @@ export function AdminSidebar({
             </div>
             <div className="space-y-2">
               {menuItems
+                .filter((item) => visibleItems.includes(item))
                 .filter((item) => item.category === category)
                 .map((item) => {
                   const Icon = item.icon;
                   const active = item.id === selectedId;
+                  const count = item.id === "pending-registrations" ? pendingUsers : 0;
                   return (
                     <button
                       key={item.id}
@@ -214,7 +210,11 @@ export function AdminSidebar({
                         <Icon className="h-4 w-4 text-muted-foreground" />
                         {item.label}
                       </span>
-                      <Plus className="h-4 w-4 text-primary opacity-0 group-hover:opacity-100" />
+                      {count > 0 && (
+                        <span className="grid h-5 min-w-5 place-items-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
+                          {count}
+                        </span>
+                      )}
                     </button>
                   );
                 })}
@@ -235,7 +235,7 @@ export function AdminSidebar({
             </p>
           </div>
           <button className="rounded-full border border-border/70 bg-background/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground transition hover:bg-white">
-            History
+            Live data
           </button>
         </div>
 
@@ -244,11 +244,13 @@ export function AdminSidebar({
             selectedId,
             users,
             resets,
+            adminData,
             setUserStatus,
             setUserRole,
             deleteUser,
             approveReset,
             rejectReset,
+            onAdminMutate,
           )}
         </div>
       </section>

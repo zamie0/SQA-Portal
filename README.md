@@ -90,6 +90,7 @@ There is also `routes/route-groups.ts` for grouped exports.
 ## Tech Stack
 
 - **Framework**: Next.js 15 + React 19 + TypeScript
+- **Database**: MongoDB with the official Node.js driver
 - **Styling**: Tailwind CSS v4
 - **UI**: Radix UI primitives + shadcn-style components
 - **Charts**: Recharts
@@ -102,6 +103,7 @@ There is also `routes/route-groups.ts` for grouped exports.
 npm run dev      # start local development server
 npm run build    # production build
 npm run start    # run production server
+npm run db:seed  # create MongoDB collections, roles, permissions, and demo admin
 npm run lint     # lint code
 npm run format   # format code
 ```
@@ -110,10 +112,37 @@ npm run format   # format code
 
 ```bash
 npm install
+npm run db:seed
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+MongoDB must be running before `npm run db:seed`. For local development, the default connection is:
+
+```env
+MONGODB_URI=mongodb://127.0.0.1:27017
+MONGODB_DB=sqa-portal
+```
+
+After seeding, MongoDB Compass should show the `sqa-portal` database. The seeded demo admin account is:
+
+```text
+Username: adminpower
+Password: adminpowertocontrol
+```
+
+You can verify the database connection in the browser:
+
+```text
+http://127.0.0.1:3000/api/database/status
+```
+
+## Data Status
+
+MongoDB is now the active database for auth, users, roles, permissions, admin approvals, profile updates, email/password changes, password reset requests, tools, and audit logs.
+
+Some project/tool workspace areas still use mock data or browser storage while their MongoDB APIs are being built.
 
 ## Migration Status
 
