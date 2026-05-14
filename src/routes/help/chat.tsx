@@ -22,7 +22,7 @@ import { useLocalStorage } from "@/shared/lib/use-storage";
 export const Route = createFileRoute("/help/chat")({
   head: () => ({
     meta: [
-      { title: "AI Assistant — QE Automation Hub" },
+      { title: "SQA Copilot — QE Automation Hub" },
       {
         name: "description",
         content: "Multi-chat AI assistant for projects, scripts, runs and RPA flows.",
@@ -192,7 +192,7 @@ function ChatPage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold flex items-center gap-2">
-                AI Assistant
+                SQA Copilot
                 <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-success/15 text-success font-semibold">
                   Live
                 </span>

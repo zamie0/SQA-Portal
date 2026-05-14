@@ -84,7 +84,7 @@ function FaqPage() {
           <div className="rounded-3xl glass p-10 text-center">
             <p className="text-sm text-muted-foreground">
               No matches for <span className="font-medium text-foreground">"{query}"</span>. Try the
-              AI Assistant —
+              SQA Copilot —
             </p>
 
             <Link
