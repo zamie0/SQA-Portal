@@ -52,6 +52,7 @@ type ProjectRun = {
   startedAt: string;
   status: RunStatus;
   fileName: string;
+  scenarioName?: string;
   threads: number;
   rampUp: number;
   loops: number;
@@ -62,12 +63,21 @@ type ProjectRun = {
   summary?: RunSummary;
 };
 
+type UploadedJmxRef = {
+  fileId: string;
+  fileName: string;
+  scenarioId: string;
+  scenarioName: string;
+  createdAt: string;
+};
+
 type PerformanceProject = {
   id: string;
   name: string;
   description: string;
   createdAt: string;
   lastFileName?: string;
+  uploadedJmx?: UploadedJmxRef;
   lastConfig: {
     jmeterPath: string;
     threads: number;
@@ -79,6 +89,7 @@ type PerformanceProject = {
 
 type HubApiResponse = {
   status: RunStatus;
+  scenarioName?: string;
   message?: string;
   stdout?: string;
   stderr?: string;
@@ -100,6 +111,10 @@ type StoredReportFile = {
   createdAt: string;
   sizeBytes: number;
   downloadUrl: string;
+  fileType?: string;
+  status?: string;
+  scenarioName?: string;
+  viewUrl?: string;
 };
 
 const STORAGE_KEY = "sqa.performance-testing-hub.projects";
@@ -134,12 +149,12 @@ const DEFAULT_PROJECTS: PerformanceProject[] = [
 function PerformancePage() {
   const [projects, setProjects] = useState<PerformanceProject[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>("");
-  const [projectFiles, setProjectFiles] = useState<Record<string, File | null>>({});
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newProjectName, setNewProjectName] = useState("");
   const [newProjectDescription, setNewProjectDescription] = useState("");
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const [runningProjectId, setRunningProjectId] = useState<string | null>(null);
+  const [uploadingProjectId, setUploadingProjectId] = useState<string | null>(null);
   const [reportFiles, setReportFiles] = useState<StoredReportFile[]>([]);
   const [reportsLoading, setReportsLoading] = useState(false);
   const [reportsError, setReportsError] = useState<string | null>(null);
@@ -154,6 +169,7 @@ function PerformancePage() {
   useEffect(() => {
     if (projects.length === 0) return;
     persistProjects(projects);
+    void syncProjectsToBackend(projects);
   }, [projects]);
 
   useEffect(() => {
@@ -169,16 +185,16 @@ function PerformancePage() {
 
   const selectedProject =
     projects.find((project) => project.id === selectedProjectId) ?? projects[0] ?? null;
-  const selectedFile = selectedProject ? (projectFiles[selectedProject.id] ?? null) : null;
+  const selectedUpload = selectedProject?.uploadedJmx ?? null;
   const latestRun = selectedProject?.runs[0] ?? null;
 
-  const loadProjectReports = useCallback(async (projectName: string) => {
+  const loadProjectReports = useCallback(async (projectId: string) => {
     setReportsLoading(true);
     setReportsError(null);
 
     try {
       const response = await fetch(
-        `/api/performance/results?project=${encodeURIComponent(projectName)}`,
+        `/api/performance/results?projectId=${encodeURIComponent(projectId)}`,
         {
           cache: "no-store",
         },
@@ -201,6 +217,23 @@ function PerformancePage() {
     }
   }, []);
 
+  async function syncProjectsToBackend(currentProjects: PerformanceProject[]) {
+    if (currentProjects.length === 0) return;
+
+    await fetch("/api/performance/projects", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        projects: currentProjects.map((project) => ({
+          id: project.id,
+          name: project.name,
+          description: project.description,
+          createdAt: project.createdAt,
+        })),
+      }),
+    }).catch(() => null);
+  }
+
   useEffect(() => {
     if (!selectedProject) {
       setReportFiles([]);
@@ -208,7 +241,7 @@ function PerformancePage() {
       return;
     }
 
-    void loadProjectReports(selectedProject.name);
+    void loadProjectReports(selectedProject.id);
   }, [loadProjectReports, selectedProject]);
 
   const metrics = useMemo(() => {
@@ -261,7 +294,7 @@ function PerformancePage() {
     }));
   }
 
-  function onUploadFile(projectId: string, event: ChangeEvent<HTMLInputElement>) {
+  async function onUploadFile(projectId: string, event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0] ?? null;
     event.target.value = "";
 
@@ -272,9 +305,54 @@ function PerformancePage() {
       return;
     }
 
-    setProjectFiles((current) => ({ ...current, [projectId]: file }));
-    updateProject(projectId, (project) => ({ ...project, lastFileName: file.name }));
-    setFeedback({ tone: "success", text: `${file.name} is ready for the next run.` });
+    const project = projects.find((item) => item.id === projectId);
+    if (!project) return;
+
+    setUploadingProjectId(projectId);
+    setFeedback({ tone: "info", text: `Uploading ${file.name}...` });
+
+    try {
+      const formData = new FormData();
+      formData.append("projectId", project.id);
+      formData.append("projectName", project.name);
+      formData.append("projectDescription", project.description);
+      formData.append("plan", file);
+
+      const response = await fetch("/api/performance/uploads", {
+        method: "POST",
+        body: formData,
+      });
+      const data = (await response.json()) as
+        | UploadedJmxRef
+        | { message?: string; scenarioId?: string; scenarioName?: string; fileId?: string; fileName?: string; createdAt?: string };
+
+      if (!response.ok || !("fileId" in data) || !data.fileId || !data.fileName || !data.scenarioId || !data.scenarioName || !data.createdAt) {
+        throw new Error(("message" in data && data.message) || "Unable to upload the JMX file.");
+      }
+
+      updateProject(projectId, (current) => ({
+        ...current,
+        lastFileName: data.fileName,
+        uploadedJmx: {
+          fileId: data.fileId,
+          fileName: data.fileName,
+          scenarioId: data.scenarioId,
+          scenarioName: data.scenarioName,
+          createdAt: data.createdAt,
+        },
+      }));
+      setFeedback({
+        tone: "success",
+        text: `${data.fileName} uploaded and linked to scenario "${data.scenarioName}".`,
+      });
+    } catch (error) {
+      setFeedback({
+        tone: "error",
+        text: error instanceof Error ? error.message : "Unable to upload the JMX file.",
+      });
+    } finally {
+      setUploadingProjectId(null);
+    }
   }
 
   function createProject(event: FormEvent<HTMLFormElement>) {
@@ -342,23 +420,23 @@ function PerformancePage() {
       }
       return remaining;
     });
-    setProjectFiles((current) => {
-      const next = { ...current };
-      delete next[project.id];
-      return next;
-    });
+    void fetch("/api/performance/projects", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ projectId: project.id }),
+    }).catch(() => null);
     setFeedback({ tone: "success", text: `${project.name} was deleted.` });
   }
 
   async function runTest() {
     if (!selectedProject) return;
 
-    const file = projectFiles[selectedProject.id];
-    if (!file) {
+    const upload = selectedProject.uploadedJmx;
+    if (!upload) {
       setFeedback({
         tone: "error",
         text:
-          selectedProject.lastFileName && !projectFiles[selectedProject.id]
+          selectedProject.lastFileName && !selectedProject.uploadedJmx
             ? `Re-upload ${selectedProject.lastFileName} before running again.`
             : "Upload a .jmx file before starting the test.",
       });
@@ -366,12 +444,12 @@ function PerformancePage() {
     }
 
     setRunningProjectId(selectedProject.id);
-    setFeedback({ tone: "info", text: `Running ${selectedProject.name} with ${file.name}...` });
+    setFeedback({ tone: "info", text: `Running ${selectedProject.name} with ${upload.fileName}...` });
 
     const formData = new FormData();
     formData.append("projectId", selectedProject.id);
     formData.append("projectName", selectedProject.name);
-    formData.append("plan", file);
+    formData.append("uploadedFileId", upload.fileId);
     formData.append("threads", String(selectedProject.lastConfig.threads));
     formData.append("rampUp", String(selectedProject.lastConfig.rampUp));
     formData.append("loops", String(selectedProject.lastConfig.loops));
@@ -388,7 +466,8 @@ function PerformancePage() {
         id: makeId(`${selectedProject.id}-${Date.now()}`),
         startedAt: new Date().toISOString(),
         status: result.status,
-        fileName: file.name,
+        fileName: upload.fileName,
+        scenarioName: "scenarioName" in result ? String((result as { scenarioName?: string }).scenarioName ?? "") : undefined,
         threads: selectedProject.lastConfig.threads,
         rampUp: selectedProject.lastConfig.rampUp,
         loops: selectedProject.lastConfig.loops,
@@ -401,7 +480,7 @@ function PerformancePage() {
 
       updateProject(selectedProject.id, (project) => ({
         ...project,
-        lastFileName: file.name,
+        lastFileName: upload.fileName,
         runs: [run, ...project.runs].slice(0, 8),
       }));
 
@@ -423,7 +502,8 @@ function PerformancePage() {
             id: makeId(`${selectedProject.id}-${Date.now()}`),
             startedAt: new Date().toISOString(),
             status: "failed" as const,
-            fileName: file.name,
+            fileName: upload.fileName,
+            scenarioName: upload.scenarioName,
             threads: project.lastConfig.threads,
             rampUp: project.lastConfig.rampUp,
             loops: project.lastConfig.loops,
@@ -679,12 +759,13 @@ function PerformancePage() {
             {selectedProject ? (
               <ProjectWorkbench
                 project={selectedProject}
-                selectedFile={selectedFile}
+                selectedUpload={selectedUpload}
                 latestRun={latestRun}
                 reportFiles={reportFiles}
                 reportsLoading={reportsLoading}
                 reportsError={reportsError}
                 isRunning={runningProjectId === selectedProject.id}
+                isUploading={uploadingProjectId === selectedProject.id}
                 onFileUpload={onUploadFile}
                 onConfigChange={updateProjectConfig}
                 onJMeterPathChange={(value) =>
@@ -775,12 +856,13 @@ function PerformancePage() {
 
 function ProjectWorkbench({
   project,
-  selectedFile,
+  selectedUpload,
   latestRun,
   reportFiles,
   reportsLoading,
   reportsError,
   isRunning,
+  isUploading,
   onFileUpload,
   onConfigChange,
   onJMeterPathChange,
@@ -788,12 +870,13 @@ function ProjectWorkbench({
   onRun,
 }: {
   project: PerformanceProject;
-  selectedFile: File | null;
+  selectedUpload: UploadedJmxRef | null;
   latestRun: ProjectRun | null;
   reportFiles: StoredReportFile[];
   reportsLoading: boolean;
   reportsError: string | null;
   isRunning: boolean;
+  isUploading: boolean;
   onFileUpload: (projectId: string, event: ChangeEvent<HTMLInputElement>) => void;
   onConfigChange: (projectId: string, field: NumericConfigField, value: number) => void;
   onJMeterPathChange: (value: string) => void;
@@ -825,8 +908,12 @@ function ProjectWorkbench({
             </div>
 
             <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-medium text-slate-950 shadow">
-              <FileUp className="h-4 w-4" />
-              Upload .jmx
+              {isUploading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <FileUp className="h-4 w-4" />
+              )}
+              {isUploading ? "Uploading..." : "Upload .jmx"}
               <input
                 type="file"
                 accept=".jmx"
@@ -837,8 +924,11 @@ function ProjectWorkbench({
           </div>
 
           <div className="mt-4 rounded-2xl border border-dashed border-white/15 bg-slate-900/70 px-4 py-3 text-sm text-slate-200">
-            {selectedFile ? (
-              <span>{selectedFile.name}</span>
+            {selectedUpload ? (
+              <span>
+                {selectedUpload.fileName}
+                <span className="ml-2 text-slate-400">Scenario: {selectedUpload.scenarioName}</span>
+              </span>
             ) : project.lastFileName ? (
               <span>
                 Last uploaded file: {project.lastFileName}
@@ -897,7 +987,7 @@ function ProjectWorkbench({
           <Button
             type="button"
             onClick={onRun}
-            disabled={isRunning || !selectedFile}
+            disabled={isRunning || isUploading || !selectedUpload}
             className="h-11 rounded-xl bg-[image:var(--gradient-primary)] px-5 text-white shadow-lg shadow-primary/25 disabled:cursor-not-allowed"
           >
             {isRunning ? (
@@ -1051,7 +1141,8 @@ function ProjectResultsPanel({
         <div>
           <div className="text-sm font-semibold">Test Results</div>
           <p className="mt-1 text-sm text-muted-foreground">
-            Generated CSV files for {projectName}, saved to `performance/reports`.
+            Generated report files for {projectName}, saved under
+            `src/app/tools/performance/reports`.
           </p>
         </div>
         <Button
@@ -1097,17 +1188,32 @@ function ProjectResultsPanel({
               <div className="min-w-0">
                 <div className="truncate text-sm font-semibold">{file.fileName}</div>
                 <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                  <span>{file.fileType ?? "CSV"}</span>
+                  {file.scenarioName ? <span>Scenario {file.scenarioName}</span> : null}
+                  {file.status ? <span>Status {file.status}</span> : null}
                   <span>Created {formatDateTime(file.createdAt)}</span>
                   <span>Size {formatFileSize(file.sizeBytes)}</span>
                 </div>
               </div>
-              <a
-                href={file.downloadUrl}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-[image:var(--gradient-primary)] px-4 text-sm font-medium text-white shadow-lg shadow-primary/15"
-              >
-                <Download className="h-4 w-4" />
-                Download
-              </a>
+              <div className="flex gap-2">
+                {file.viewUrl ? (
+                  <a
+                    href={file.viewUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/70 bg-white/80 px-4 text-sm font-medium text-foreground"
+                  >
+                    Open
+                  </a>
+                ) : null}
+                <a
+                  href={file.downloadUrl}
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-[image:var(--gradient-primary)] px-4 text-sm font-medium text-white shadow-lg shadow-primary/15"
+                >
+                  <Download className="h-4 w-4" />
+                  Download
+                </a>
+              </div>
             </div>
           ))}
         </div>
@@ -1301,6 +1407,15 @@ function makeId(seed: string) {
 function hydrateProjects(projects: PerformanceProject[]) {
   return projects.map((project) => ({
     ...project,
+    uploadedJmx: project.uploadedJmx
+      ? {
+          fileId: project.uploadedJmx.fileId,
+          fileName: project.uploadedJmx.fileName,
+          scenarioId: project.uploadedJmx.scenarioId,
+          scenarioName: project.uploadedJmx.scenarioName,
+          createdAt: project.uploadedJmx.createdAt,
+        }
+      : undefined,
     lastConfig: {
       jmeterPath: project.lastConfig?.jmeterPath ?? "",
       threads: project.lastConfig?.threads ?? 10,

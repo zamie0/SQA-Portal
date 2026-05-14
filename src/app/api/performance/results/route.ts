@@ -1,17 +1,17 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { listProjectReports } from "@/app/api/performance/lib/report-files";
+import { listPerformanceReportsForProject } from "@/app/api/performance/lib/performance-metadata";
 
 export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
-  const projectName = request.nextUrl.searchParams.get("project")?.trim() ?? "";
-  if (!projectName) {
-    return NextResponse.json({ message: "project query parameter is required." }, { status: 400 });
+  const projectId = request.nextUrl.searchParams.get("projectId")?.trim() ?? "";
+  if (!projectId) {
+    return NextResponse.json({ message: "projectId query parameter is required." }, { status: 400 });
   }
 
   try {
-    const results = await listProjectReports(projectName);
+    const results = await listPerformanceReportsForProject(projectId);
     return NextResponse.json({ results });
   } catch (error) {
     const message =

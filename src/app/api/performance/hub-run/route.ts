@@ -1,24 +1,31 @@
 import { spawn } from "node:child_process";
-import { randomUUID } from "node:crypto";
-import { mkdir, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { stat } from "node:fs/promises";
 import path from "node:path";
-import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { createUniqueReportPath, slugifyProjectName } from "@/app/api/performance/lib/report-files";
+import {
+  createPerformanceReport,
+  createPerformanceRun,
+  ensurePerformanceProject,
+  findPerformanceUploadFile,
+  type PerformanceRunStatus,
+  updatePerformanceRun,
+} from "@/app/api/performance/lib/performance-metadata";
+import {
+  createReportOutputPaths,
+  ensurePerformanceDirectories,
+} from "@/app/api/performance/lib/performance-storage";
 
 export const runtime = "nodejs";
 
-type RunStatus = "completed" | "failed" | "setup_required";
-
 type RunnerPayload = {
-  status: RunStatus;
+  status: "completed" | "failed" | "setup_required";
   message?: string;
   stdout?: string;
   stderr?: string;
   command?: string[];
   resultPath?: string;
-  reportFileName?: string;
+  aggregatePath?: string;
+  summaryPath?: string;
   summary?: {
     samples: number;
     failures: number;
@@ -31,7 +38,6 @@ type RunnerPayload = {
   };
 };
 
-const MAX_PLAN_SIZE_BYTES = 5 * 1024 * 1024;
 const MAX_JMETER_PATH_LENGTH = 512;
 
 const PYTHON_CANDIDATES =
@@ -68,29 +74,38 @@ function parseNumericField(
   return { ok: true, value: numeric };
 }
 
-function sanitizeFilename(name: string) {
-  const cleaned = name.replace(/[^a-zA-Z0-9._-]/g, "-");
-  return cleaned.toLowerCase().endsWith(".jmx") ? cleaned : `${cleaned}.jmx`;
+function parseOptionalJMeterPath(value: FormDataEntryValue | null) {
+  if (value === null) return { ok: true, value: undefined } as const;
+  if (typeof value !== "string") {
+    return { ok: false, error: "JMeter path must be a string." } as const;
+  }
+
+  const trimmed = value.trim();
+  if (trimmed === "") return { ok: true, value: undefined } as const;
+
+  if (trimmed.length > MAX_JMETER_PATH_LENGTH) {
+    return {
+      ok: false,
+      error: `JMeter path must be ${MAX_JMETER_PATH_LENGTH} characters or fewer.`,
+    } as const;
+  }
+
+  return { ok: true, value: trimmed } as const;
 }
 
-async function savePlan(file: File) {
-  const runId = randomUUID();
-  const runDir = path.join(tmpdir(), "sqa-performance-hub", runId);
-  const planPath = path.join(runDir, sanitizeFilename(file.name));
-
-  await mkdir(runDir, { recursive: true });
-  await writeFile(planPath, new Uint8Array(await file.arrayBuffer()));
-
-  return { planPath };
+function absolutePathFromRelative(relativePath: string) {
+  return path.join(process.cwd(), relativePath);
 }
 
 async function runPythonRunner(args: {
-  planPath: string;
+  jmxPath: string;
   jmeterPath?: string;
   threads: number;
   rampUp: number;
   loops: number;
   resultPath: string;
+  aggregatePath: string;
+  summaryPath: string;
 }) {
   const scriptPath = path.join(
     process.cwd(),
@@ -102,14 +117,12 @@ async function runPythonRunner(args: {
     "jmeter_runner.py",
   );
 
-  let lastFailure: { stdout: string; stderr: string; exitCode: number | null } | null = null;
-
   for (const candidate of PYTHON_CANDIDATES) {
     const runnerArgs = [
       ...candidate.prefixArgs,
       scriptPath,
       "--jmx",
-      args.planPath,
+      args.jmxPath,
       "--threads",
       String(args.threads),
       "--ramp-up",
@@ -118,6 +131,10 @@ async function runPythonRunner(args: {
       String(args.loops),
       "--results",
       args.resultPath,
+      "--aggregate",
+      args.aggregatePath,
+      "--summary",
+      args.summaryPath,
     ];
 
     if (args.jmeterPath) {
@@ -125,16 +142,7 @@ async function runPythonRunner(args: {
     }
 
     const execution = await spawnProcess(candidate.command, runnerArgs);
-
-    if (execution.kind === "missing") {
-      continue;
-    }
-
-    lastFailure = {
-      stdout: execution.stdout,
-      stderr: execution.stderr,
-      exitCode: execution.exitCode,
-    };
+    if (execution.kind === "missing") continue;
 
     try {
       return JSON.parse(execution.stdout) as RunnerPayload;
@@ -191,104 +199,148 @@ function spawnProcess(command: string, args: string[]) {
   });
 }
 
-function parseOptionalJMeterPath(value: FormDataEntryValue | null) {
-  if (value === null) return { ok: true, value: undefined } as const;
-  if (typeof value !== "string") {
-    return { ok: false, error: "JMeter path must be a string." } as const;
+async function fileExists(absolutePath: string) {
+  try {
+    await stat(absolutePath);
+    return true;
+  } catch {
+    return false;
   }
-
-  const trimmed = value.trim();
-  if (trimmed === "") return { ok: true, value: undefined } as const;
-
-  if (trimmed.length > MAX_JMETER_PATH_LENGTH) {
-    return {
-      ok: false,
-      error: `JMeter path must be ${MAX_JMETER_PATH_LENGTH} characters or fewer.`,
-    } as const;
-  }
-
-  return { ok: true, value: trimmed } as const;
 }
 
-function parseProjectName(value: FormDataEntryValue | null) {
-  if (typeof value !== "string") {
-    return slugifyProjectName("performance-test");
-  }
-
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : "performance-test";
+function finalStatusFromRunner(payload: RunnerPayload): PerformanceRunStatus {
+  if (payload.status === "failed") return "failed";
+  if (payload.status === "setup_required") return "setup_required";
+  if (payload.summary && payload.summary.failures === 0) return "passed";
+  return "completed";
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   const formData = await request.formData().catch(() => null);
   if (!formData) {
     return NextResponse.json({ message: "Invalid multipart form data." }, { status: 400 });
   }
 
-  const plan = formData.get("plan");
-  if (!(plan instanceof File)) {
-    return NextResponse.json({ message: "A .jmx file upload is required." }, { status: 400 });
-  }
-
-  if (plan.size === 0) {
-    return NextResponse.json({ message: "Uploaded .jmx file is empty." }, { status: 400 });
-  }
-
-  if (!plan.name.toLowerCase().endsWith(".jmx")) {
-    return NextResponse.json({ message: "Only .jmx files are accepted." }, { status: 400 });
-  }
-
-  if (plan.size > MAX_PLAN_SIZE_BYTES) {
-    return NextResponse.json(
-      { message: "The uploaded .jmx file exceeds the 5 MB safety limit." },
-      { status: 400 },
-    );
-  }
-
+  const projectId = String(formData.get("projectId") ?? "").trim();
+  const projectName = String(formData.get("projectName") ?? "").trim();
+  const uploadedFileId = String(formData.get("uploadedFileId") ?? "").trim();
   const threads = parseNumericField(formData.get("threads"), "threads", 1, 500);
   const rampUp = parseNumericField(formData.get("rampUp"), "ramp-up", 1, 3600);
   const loops = parseNumericField(formData.get("loops"), "loop count", 1, 1000);
   const jmeterPath = parseOptionalJMeterPath(formData.get("jmeterPath"));
-  const projectName = parseProjectName(formData.get("projectName"));
 
-  if (!threads.ok) {
-    return NextResponse.json({ message: threads.error }, { status: 400 });
+  if (!projectId || !projectName) {
+    return NextResponse.json({ message: "projectId and projectName are required." }, { status: 400 });
   }
 
-  if (!rampUp.ok) {
-    return NextResponse.json({ message: rampUp.error }, { status: 400 });
+  if (!uploadedFileId) {
+    return NextResponse.json({ message: "uploadedFileId is required." }, { status: 400 });
   }
 
-  if (!loops.ok) {
-    return NextResponse.json({ message: loops.error }, { status: 400 });
+  if (!threads.ok) return NextResponse.json({ message: threads.error }, { status: 400 });
+  if (!rampUp.ok) return NextResponse.json({ message: rampUp.error }, { status: 400 });
+  if (!loops.ok) return NextResponse.json({ message: loops.error }, { status: 400 });
+  if (!jmeterPath.ok) return NextResponse.json({ message: jmeterPath.error }, { status: 400 });
+
+  const uploadedFile = await findPerformanceUploadFile(uploadedFileId);
+  if (!uploadedFile) {
+    return NextResponse.json({ message: "Uploaded JMX metadata could not be found." }, { status: 404 });
   }
 
-  if (!jmeterPath.ok) {
-    return NextResponse.json({ message: jmeterPath.error }, { status: 400 });
+  const uploadedFilePath = absolutePathFromRelative(uploadedFile.filePath);
+  if (!(await fileExists(uploadedFilePath))) {
+    return NextResponse.json({ message: "Uploaded JMX file is missing on disk." }, { status: 404 });
   }
 
-  const savedPlan = await savePlan(plan);
-  const reportFile = await createUniqueReportPath(projectName);
+  await ensurePerformanceDirectories();
+  await ensurePerformanceProject({
+    projectId,
+    name: projectName,
+    description: "Performance testing project",
+  });
+
+  const outputPaths = await createReportOutputPaths(projectName, uploadedFile.scenarioName);
+  const run = await createPerformanceRun({
+    projectId,
+    projectName,
+    scenarioId: uploadedFile.scenarioId,
+    scenarioName: uploadedFile.scenarioName,
+    jmxFileId: uploadedFile._id,
+    jmxFileName: uploadedFile.fileName,
+    threads: threads.value,
+    rampUp: rampUp.value,
+    loops: loops.value,
+  });
+
+  const startedAt = Date.now();
 
   try {
     const payload = await runPythonRunner({
-      planPath: savedPlan.planPath,
+      jmxPath: uploadedFilePath,
       jmeterPath: jmeterPath.value,
       threads: threads.value,
       rampUp: rampUp.value,
       loops: loops.value,
-      resultPath: reportFile.reportPath,
+      resultPath: outputPaths.rawResults.absolutePath,
+      aggregatePath: outputPaths.aggregate.absolutePath,
+      summaryPath: outputPaths.summary.absolutePath,
     });
 
-    payload.reportFileName ??= reportFile.fileName;
+    const finalStatus = finalStatusFromRunner(payload);
+    const reportFiles: string[] = [];
+
+    for (const candidate of [
+      outputPaths.rawResults.absolutePath,
+      outputPaths.aggregate.absolutePath,
+      outputPaths.summary.absolutePath,
+    ]) {
+      if (!(await fileExists(candidate))) continue;
+      const report = await createPerformanceReport({
+        projectId,
+        projectName,
+        scenarioId: uploadedFile.scenarioId,
+        scenarioName: uploadedFile.scenarioName,
+        runId: run._id,
+        absolutePath: candidate,
+        status: finalStatus,
+      });
+      reportFiles.push(report.fileName);
+    }
+
+    await updatePerformanceRun(run._id, {
+      status: finalStatus,
+      endedAt: new Date().toISOString(),
+      durationMs: Date.now() - startedAt,
+      message: payload.message,
+      command: payload.command,
+      summary: payload.summary,
+      reportFileNames: reportFiles,
+    });
 
     const statusCode =
       payload.status === "completed" ? 200 : payload.status === "setup_required" ? 503 : 500;
 
-    return NextResponse.json(payload, { status: statusCode });
+    return NextResponse.json(
+      {
+        ...payload,
+        runId: run._id,
+        scenarioId: uploadedFile.scenarioId,
+        scenarioName: uploadedFile.scenarioName,
+        reportFileNames: reportFiles,
+      },
+      { status: statusCode },
+    );
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Unable to invoke the Python performance runner.";
+
+    await updatePerformanceRun(run._id, {
+      status: "failed",
+      endedAt: new Date().toISOString(),
+      durationMs: Date.now() - startedAt,
+      message,
+      reportFileNames: [],
+    });
 
     return NextResponse.json({ status: "failed", message }, { status: 500 });
   }

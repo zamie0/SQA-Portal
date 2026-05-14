@@ -41,4 +41,343 @@ timeStamp,elapsed,label,responseCode,responseMessage,threadName,dataType,success
 1778662436818,744,GET Learning Study Notes BM TP1,200,OK,Virtual Student 1-1,text,true,,31504,2079,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/study-notes/3284/detail,538,0,0
 1778662437562,865,GET Learning Study Notes BM TP2,200,OK,Virtual Student 1-1,text,true,,44837,2079,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/study-notes/3283/detail,588,0,0
 1778662438428,840,GET Learning Study Notes BI TP1,200,OK,Virtual Student 1-1,text,true,,37990,2079,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/study-notes/3162/detail,588,0,0
-1778662439269,899,GET Learning Study Notes BI TP2,200,OK,Virtual Student 1-1,text,true,,40961,2079,1,1,https:/
+1778662439269,899,GET Learning Study Notes BI TP2,200,OK,Virtual Student 1-1,text,true,,40961,2079,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/study-notes/3159/detail,593,0,0
+1778662440168,914,GET Learning Study Notes Math TP1,200,OK,Virtual Student 1-1,text,true,,36560,2079,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/study-notes/3316/detail,618,0,0
+1778662441083,825,GET Learning Study Notes Math TP2,200,OK,Virtual Student 1-1,text,true,,44364,2079,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/study-notes/3311/detail,555,0,0
+1778662441909,1291,GET Learning Study Notes Sejarah TP1,200,OK,Virtual Student 1-1,text,true,,92234,2079,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/study-notes/3367/detail,634,0,0
+1778662443200,1130,GET Learning Study Notes Sejarah TP2,200,OK,Virtual Student 1-1,text,true,,88201,2079,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/study-notes/3364/detail,615,0,0
+1778662444331,755,GET Study Notes Details,200,OK,Virtual Student 1-1,text,true,,44837,2079,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/study-notes/3283/detail,548,0,0
+1778662445087,571,GET Flashcards,200,OK,Virtual Student 1-1,text,true,,10849,2139,1,1,"https://ilmu-dev.tmrnd.dev/learning/v1/learning-resources?resourceType=FLASHCARDS&subjectIds=2,14,15,6,7&limit=12&offset=0",536,0,0
+1778662445659,616,GET Quiz,200,OK,Virtual Student 1-1,text,true,,10473,2133,1,1,"https://ilmu-dev.tmrnd.dev/learning/v1/learning-resources?resourceType=QUIZ&subjectIds=2,14,15,6,7&limit=12&offset=0",615,0,0
+1778662446275,13752,T03A_Navigate_Quiz_And_Answer_10Q,200,"Number of samples in transaction : 25, number of failing samples : 0",Virtual Student 1-1,,true,,107142,52859,1,1,null,0,124,0
+1778662446276,899,GET Quiz Detail 2808,200,OK,Virtual Student 1-1,text,true,,66830,2075,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/detail,582,0,0
+1778662447176,556,GET Quiz 2808,200,OK,Virtual Student 1-1,text,true,,1550,2068,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808,556,0,0
+1778662447733,505,POST Start Quiz Attempt 2808,200,OK,Virtual Student 1-1,text,true,,618,2097,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/attempts,505,0,0
+1778662448275,525,GET Quiz Item 1826,200,OK,Virtual Student 1-1,text,true,,1232,2079,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/items/1826,525,0,0
+1778662448846,559,POST Quiz Answer 1826,200,OK,Virtual Student 1-1,text,true,,1018,2164,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/attempts/885/items/1826/answer,559,0,0
+1778662449406,510,GET Quiz Item 1827,200,OK,Virtual Student 1-1,text,true,,1304,2079,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/items/1827,510,0,0
+1778662449918,534,POST Quiz Answer 1827,200,OK,Virtual Student 1-1,text,true,,1037,2164,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/attempts/885/items/1827/answer,534,0,0
+1778662450452,541,GET Quiz Item 1828,200,OK,Virtual Student 1-1,text,true,,1643,2079,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/items/1828,540,0,0
+1778662450994,546,POST Quiz Answer 1828,200,OK,Virtual Student 1-1,text,true,,1004,2164,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/attempts/885/items/1828/answer,546,0,0
+1778662451540,508,GET Quiz Item 1829,200,OK,Virtual Student 1-1,text,true,,1395,2079,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/items/1829,508,0,0
+1778662452051,538,POST Quiz Answer 1829,200,OK,Virtual Student 1-1,text,true,,968,2164,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/attempts/885/items/1829/answer,538,0,0
+1778662452590,544,GET Quiz Item 1830,200,OK,Virtual Student 1-1,text,true,,1138,2079,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/items/1830,544,0,0
+1778662453136,503,POST Quiz Answer 1830,200,OK,Virtual Student 1-1,text,true,,995,2164,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/attempts/885/items/1830/answer,503,0,0
+1778662453640,529,GET Quiz Item 1831,200,OK,Virtual Student 1-1,text,true,,1446,2079,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/items/1831,529,0,0
+1778662454171,568,POST Quiz Answer 1831,200,OK,Virtual Student 1-1,text,true,,1018,2164,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/attempts/885/items/1831/answer,568,0,0
+1778662454740,514,GET Quiz Item 1832,200,OK,Virtual Student 1-1,text,true,,1147,2079,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/items/1832,514,0,0
+1778662455255,555,POST Quiz Answer 1832,200,OK,Virtual Student 1-1,text,true,,1021,2164,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/attempts/885/items/1832/answer,555,0,0
+1778662455810,555,GET Quiz Item 1833,200,OK,Virtual Student 1-1,text,true,,1283,2079,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/items/1833,555,0,0
+1778662456366,498,POST Quiz Answer 1833,200,OK,Virtual Student 1-1,text,true,,969,2164,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/attempts/885/items/1833/answer,498,0,0
+1778662456864,530,GET Quiz Item 1834,200,OK,Virtual Student 1-1,text,true,,1177,2079,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/items/1834,530,0,0
+1778662457396,561,POST Quiz Answer 1834,200,OK,Virtual Student 1-1,text,true,,1002,2164,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/attempts/885/items/1834/answer,561,0,0
+1778662457957,500,GET Quiz Item 1835,200,OK,Virtual Student 1-1,text,true,,1351,2079,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/items/1835,500,0,0
+1778662458459,542,POST Quiz Answer 1835,200,OK,Virtual Student 1-1,text,true,,1043,2164,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/attempts/885/items/1835/answer,542,0,0
+1778662459001,558,POST Submit Quiz Attempt 885,200,OK,Virtual Student 1-1,text,true,,659,2108,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/attempts/885/submit,558,0,0
+1778662459576,574,GET Quiz Attempt Result 885,200,OK,Virtual Student 1-1,text,true,,14294,2081,1,1,https://ilmu-dev.tmrnd.dev/learning/v1/quizzes/2808/attempts/885,518,0,0
+1778662460165,1784592,T04_AI_Tutor_WebSocket,Websocket I/O error,"Number of samples in transaction : 305, number of failing samples : 133",Virtual Student 1-1,,false,,15932,11381,1,1,null,0,53983257,8282
+1778662460571,9,Init AI Tutor Socket State,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778662460986,1660,WS Open AI Tutor Connection,101,Switching Protocols,Virtual Student 1-1,,true,,199,2099,1,1,null,0,0,1660
+1778662463067,21,Init AI Verification Counter,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778662463492,47,Load and Randomize Sejarah ,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778662463948,195,Ensure Access Token Min Validity Before Sejarah Question,200,Scheduled socket token rotation not due yet,Virtual Student 1-1,text,true,,123,0,1,1,null,0,0,0
+1778662464611,1,WS Send Sejarah Question,200,OK,Virtual Student 1-1,,true,,0,181,1,1,null,0,0,0
+1778662465037,22,Log Sejarah Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778662465494,1,WS Read AI Tutor Chunk,200,OK,Virtual Student 1-1,text,true,,248,0,1,1,null,0,0,0
+1778662466062,60006,WS Read AI Tutor Chunk,No response,"Read timeout, no response received.",Virtual Student 1-1,,true,,0,0,1,1,null,0,0,0
+1778662526478,60004,WS Read AI Tutor Chunk,No response,"Read timeout, no response received.",Virtual Student 1-1,,true,,0,0,1,1,null,0,0,0
+1778662586893,60000,WS Read AI Tutor Chunk,No response,"Read timeout, no response received.",Virtual Student 1-1,,true,,0,0,1,1,null,0,0,0
+1778662647304,60000,WS Read AI Tutor Chunk,No response,"Read timeout, no response received.",Virtual Student 1-1,,true,,0,0,1,1,null,0,0,0
+1778662707711,58559,WS Read AI Tutor Chunk,Websocket I/O error,WebSocket I/O error: Connection reset,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778662769067,26,Prepare AI Tutor Reconnect Before Sejarah Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,163,0,1,1,null,0,0,0
+1778662769510,1570,WS Open AI Tutor Connection Retry (Sejarah),101,Switching Protocols,Virtual Student 1-1,,true,,199,2099,1,1,null,0,0,1570
+1778662771489,45,Mark AI Tutor Socket Reconnected (Sejarah),200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778662771950,14,Prepare Sejarah Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778662772378,1,Ensure Access Token Min Validity Before Sejarah Retry Question,200,Scheduled socket token rotation not due yet,Virtual Student 1-1,text,true,,123,0,1,1,null,0,0,0
+1778662772802,1,WS Retry Sejarah Question,200,OK,Virtual Student 1-1,,true,,0,181,1,1,null,0,0,0
+1778662773261,75,WS Read Sejarah Retry Chunk,200,OK,Virtual Student 1-1,text,true,,248,0,1,1,null,0,0,0
+1778662773783,60004,WS Read Sejarah Retry Chunk,No response,"Read timeout, no response received.",Virtual Student 1-1,,true,,0,0,1,1,null,0,0,0
+1778662834199,60009,WS Read Sejarah Retry Chunk,No response,"Read timeout, no response received.",Virtual Student 1-1,,true,,0,0,1,1,null,0,0,0
+1778662894619,60000,WS Read Sejarah Retry Chunk,No response,"Read timeout, no response received.",Virtual Student 1-1,,true,,0,0,1,1,null,0,0,0
+1778662955024,60006,WS Read Sejarah Retry Chunk,No response,"Read timeout, no response received.",Virtual Student 1-1,,true,,0,0,1,1,null,0,0,0
+1778663015439,59210,WS Read Sejarah Retry Chunk,Websocket I/O error,WebSocket I/O error: Connection reset,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778663077495,1,Ensure Access Token Min Validity Before Sejarah Question,200,Scheduled socket token rotation not due yet,Virtual Student 1-1,text,true,,121,0,1,1,null,0,0,0
+1778663077898,2,Prepare AI Tutor Reconnect Before Sejarah Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778663078316,1651,WS Open AI Tutor Connection Before Sejarah Question,101,Switching Protocols,Virtual Student 1-1,,true,,199,2099,1,1,null,0,0,1651
+1778663080373,0,WS Send Sejarah Question,200,OK,Virtual Student 1-1,,true,,0,174,1,1,null,0,0,0
+1778663080778,1,Log Sejarah Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778663081181,0,WS Read AI Tutor Chunk,200,OK,Virtual Student 1-1,text,true,,248,0,1,1,null,0,0,0
+1778663081597,60012,WS Read AI Tutor Chunk,No response,"Read timeout, no response received.",Virtual Student 1-1,,true,,0,0,1,1,null,0,0,0
+1778663142024,60018,WS Read AI Tutor Chunk,No response,"Read timeout, no response received.",Virtual Student 1-1,,true,,0,0,1,1,null,0,0,0
+1778663202444,60005,WS Read AI Tutor Chunk,No response,"Read timeout, no response received.",Virtual Student 1-1,,true,,0,0,1,1,null,0,0,0
+1778663262854,60010,WS Read AI Tutor Chunk,No response,"Read timeout, no response received.",Virtual Student 1-1,,true,,0,0,1,1,null,0,0,0
+1778663323277,58608,WS Read AI Tutor Chunk,Websocket I/O error,WebSocket I/O error: Connection reset,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778663384897,2,Prepare AI Tutor Reconnect Before Sejarah Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,163,0,1,1,null,0,0,0
+1778663385314,1567,WS Open AI Tutor Connection Retry (Sejarah),101,Switching Protocols,Virtual Student 1-1,,true,,199,2099,1,1,null,0,0,1567
+1778663387297,1,Mark AI Tutor Socket Reconnected (Sejarah),200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778663387714,1,Prepare Sejarah Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778663388119,1,Ensure Access Token Min Validity Before Sejarah Retry Question,200,Scheduled socket token rotation not due yet,Virtual Student 1-1,text,true,,123,0,1,1,null,0,0,0
+1778663388521,1,WS Retry Sejarah Question,200,OK,Virtual Student 1-1,,true,,0,174,1,1,null,0,0,0
+1778663388932,70,WS Read Sejarah Retry Chunk,200,OK,Virtual Student 1-1,text,true,,248,0,1,1,null,0,0,0
+1778663389414,0,WS Read Sejarah Retry Chunk,200,OK,Virtual Student 1-1,text,true,,248,0,1,1,null,0,0,0
+1778663389831,60012,WS Read Sejarah Retry Chunk,No response,"Read timeout, no response received.",Virtual Student 1-1,,true,,0,0,1,1,null,0,0,0
+1778663450246,60000,WS Read Sejarah Retry Chunk,No response,"Read timeout, no response received.",Virtual Student 1-1,,true,,0,0,1,1,null,0,0,0
+1778663510649,60009,WS Read Sejarah Retry Chunk,No response,"Read timeout, no response received.",Virtual Student 1-1,,true,,0,0,1,1,null,0,0,0
+1778663571070,60007,WS Read Sejarah Retry Chunk,No response,"Read timeout, no response received.",Virtual Student 1-1,,true,,0,0,1,1,null,0,0,0
+1778663631496,58453,WS Read Sejarah Retry Chunk,Websocket I/O error,WebSocket I/O error: Connection reset,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778663692895,2,Ensure Access Token Min Validity Before Sejarah Question,200,Scheduled socket token rotation not due yet,Virtual Student 1-1,text,true,,121,0,1,1,null,0,0,0
+1778663693311,3,Prepare AI Tutor Reconnect Before Sejarah Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778663693724,1834,WS Open AI Tutor Connection Before Sejarah Question,101,Switching Protocols,Virtual Student 1-1,,true,,199,2099,1,1,null,0,0,1834
+1778663695973,0,WS Send Sejarah Question,200,OK,Virtual Student 1-1,,true,,0,176,1,1,null,0,0,0
+1778663696389,2,Log Sejarah Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778663696793,1,WS Read AI Tutor Chunk,200,OK,Virtual Student 1-1,text,true,,248,0,1,1,null,0,0,0
+1778663697209,0,WS Read AI Tutor Chunk,200,OK,Virtual Student 1-1,text,true,,248,0,1,1,null,0,0,0
+1778663697623,60009,WS Read AI Tutor Chunk,No response,"Read timeout, no response received.",Virtual Student 1-1,,true,,0,0,1,1,null,0,0,0
+1778663758048,60006,WS Read AI Tutor Chunk,No response,"Read timeout, no response received.",Virtual Student 1-1,,true,,0,0,1,1,null,0,0,0
+1778663818461,60011,WS Read AI Tutor Chunk,No response,"Read timeout, no response received.",Virtual Student 1-1,,true,,0,0,1,1,null,0,0,0
+1778663878878,60008,WS Read AI Tutor Chunk,No response,"Read timeout, no response received.",Virtual Student 1-1,,true,,0,0,1,1,null,0,0,0
+1778663939297,13163,WS Read AI Tutor Chunk,200,OK,Virtual Student 1-1,text,true,,248,0,1,1,null,0,0,0
+1778663952877,60002,WS Read AI Tutor Chunk,No response,"Read timeout, no response received.",Virtual Student 1-1,,true,,0,0,1,1,null,0,0,0
+1778664013290,60013,WS Read AI Tutor Chunk,No response,"Read timeout, no response received.",Virtual Student 1-1,,true,,0,0,1,1,null,0,0,0
+1778664073711,60010,WS Read AI Tutor Chunk,No response,"Read timeout, no response received.",Virtual Student 1-1,,true,,0,0,1,1,null,0,0,0
+1778664134133,131347,WS Read AI Tutor Chunk,Websocket I/O error,WebSocket I/O error: Connection reset,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778664266194,5,Prepare AI Tutor Reconnect Before Sejarah Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778664266630,1,WS Open AI Tutor Connection Retry (Sejarah),Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778664267037,6,Mark AI Tutor Socket Reconnected (Sejarah),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,174,0,1,1,null,0,0,0
+1778664267456,3,Prepare Sejarah Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778664267874,25,Ensure Access Token Min Validity Before Sejarah Retry Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778664268303,4,Prepare AI Tutor Reconnect Before Sejarah Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778664268783,1,WS Open AI Tutor Connection Before Sejarah Retry Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry Sejarah Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778664269602,12,Ensure Access Token Min Validity Before Sejarah Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778664270024,3,Prepare AI Tutor Reconnect Before Sejarah Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778664270430,0,WS Open AI Tutor Connection Before Sejarah Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send Sejarah Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778682828737,1,Log Sejarah Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778682829150,8,Prepare AI Tutor Reconnect Before Sejarah Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778682829584,14133,WS Open AI Tutor Connection Retry (Sejarah),Websocket I/O error,WebSocket I/O error: Connect timed out,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778682844129,3,Mark AI Tutor Socket Reconnected (Sejarah),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,173,0,1,1,null,0,0,0
+1778682844537,1,Prepare Sejarah Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718128575,528,Ensure Access Token Min Validity Before Sejarah Retry Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778718129677,1,Prepare AI Tutor Reconnect Before Sejarah Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718130097,3,WS Open AI Tutor Connection Before Sejarah Retry Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry Sejarah Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718130922,8,Ensure Access Token Min Validity Before Sejarah Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778718131344,3,Prepare AI Tutor Reconnect Before Sejarah Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718131816,1,WS Open AI Tutor Connection Before Sejarah Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send Sejarah Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718132686,24,Log Sejarah Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718133126,22,Prepare AI Tutor Reconnect Before Sejarah Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718133558,0,WS Open AI Tutor Connection Retry (Sejarah),Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718133967,1,Mark AI Tutor Socket Reconnected (Sejarah),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,174,0,1,1,null,0,0,0
+1778718134376,0,Prepare Sejarah Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718134785,22,Ensure Access Token Min Validity Before Sejarah Retry Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778718135235,3,Prepare AI Tutor Reconnect Before Sejarah Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718135651,1,WS Open AI Tutor Connection Before Sejarah Retry Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry Sejarah Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718136474,122,Verify 5 Sejarah Questions Sent,500,"Expected 5 Sejarah questions completed but got done=0, sent=3",Virtual Student 1-1,text,false,,107,0,1,1,null,0,0,0
+1778718137010,35,Initialize Math Question Counter,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718137453,155,Load and Randomize Math,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718138021,4,Ensure Access Token Min Validity Before Math Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778718138479,1,Prepare AI Tutor Reconnect Before Math Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718138917,7,WS Open AI Tutor Connection Before Math Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send Math Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718139852,56,Log Math Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718140402,1,Prepare AI Tutor Reconnect Before Math Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718140847,0,WS Open AI Tutor Connection Retry (Math),Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718141250,2,Mark AI Tutor Socket Reconnected (Math),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,174,0,1,1,null,0,0,0
+1778718141668,62,Prepare Math Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718142141,5,Ensure Access Token Min Validity Before Math Retry Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778718142586,1,Prepare AI Tutor Reconnect Before Math Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718143011,0,WS Open AI Tutor Connection Before Math Retry Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry Math Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718143930,21,Ensure Access Token Min Validity Before Math Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778718144373,6,Prepare AI Tutor Reconnect Before Math Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718144787,1,WS Open AI Tutor Connection Before Math Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send Math Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718145612,0,Log Math Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718146032,1,Prepare AI Tutor Reconnect Before Math Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718146437,0,WS Open AI Tutor Connection Retry (Math),Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718146846,2,Mark AI Tutor Socket Reconnected (Math),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,174,0,1,1,null,0,0,0
+1778718147252,1,Prepare Math Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718147668,3,Ensure Access Token Min Validity Before Math Retry Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778718148082,1,Prepare AI Tutor Reconnect Before Math Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718148494,1,WS Open AI Tutor Connection Before Math Retry Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry Math Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718149314,6,Ensure Access Token Min Validity Before Math Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778718149724,2,Prepare AI Tutor Reconnect Before Math Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718150137,0,WS Open AI Tutor Connection Before Math Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send Math Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718150961,1,Log Math Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718151369,1,Prepare AI Tutor Reconnect Before Math Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718151778,1,WS Open AI Tutor Connection Retry (Math),Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718152188,2,Mark AI Tutor Socket Reconnected (Math),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,174,0,1,1,null,0,0,0
+1778718152601,1,Prepare Math Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718153005,5,Ensure Access Token Min Validity Before Math Retry Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778718153415,2,Prepare AI Tutor Reconnect Before Math Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718153825,1,WS Open AI Tutor Connection Before Math Retry Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry Math Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718154644,7,Ensure Access Token Min Validity Before Math Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778718155054,2,Prepare AI Tutor Reconnect Before Math Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718155606,0,WS Open AI Tutor Connection Before Math Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send Math Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718156520,0,Log Math Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718156932,2,Prepare AI Tutor Reconnect Before Math Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718157356,1,WS Open AI Tutor Connection Retry (Math),Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718157796,43,Mark AI Tutor Socket Reconnected (Math),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,174,0,1,1,null,0,0,0
+1778718158306,1,Prepare Math Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718158757,45,Ensure Access Token Min Validity Before Math Retry Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778718159250,11,Prepare AI Tutor Reconnect Before Math Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718159724,1,WS Open AI Tutor Connection Before Math Retry Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry Math Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718160574,4,Ensure Access Token Min Validity Before Math Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778718161113,31,Prepare AI Tutor Reconnect Before Math Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718161657,0,WS Open AI Tutor Connection Before Math Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send Math Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718163112,11,Log Math Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718163537,2,Prepare AI Tutor Reconnect Before Math Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718163947,1,WS Open AI Tutor Connection Retry (Math),Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718164351,1,Mark AI Tutor Socket Reconnected (Math),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,174,0,1,1,null,0,0,0
+1778718164755,1,Prepare Math Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718165158,6,Ensure Access Token Min Validity Before Math Retry Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778718165570,3,Prepare AI Tutor Reconnect Before Math Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718165986,1,WS Open AI Tutor Connection Before Math Retry Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry Math Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718166795,33,Verify 5 Math Questions Sent,500,"Expected 5 Math questions completed but got done=0, sent=0",Virtual Student 1-1,text,false,,104,0,1,1,null,0,0,0
+1778718167235,15,Initialize BI Question Counter,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718167654,15,Load and Randomize BI,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718168071,3,Ensure Access Token Min Validity Before BI Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778718168487,2,Prepare AI Tutor Reconnect Before BI Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718168900,2,WS Open AI Tutor Connection Before BI Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send BI Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718169769,13,Log BI Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718170220,2,Prepare AI Tutor Reconnect Before BI Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718170637,1,WS Open AI Tutor Connection Retry (BI),Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718171049,1,Mark AI Tutor Socket Reconnected (BI),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,174,0,1,1,null,0,0,0
+1778718171452,244,Prepare BI Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718172103,5,Ensure Access Token Min Validity Before BI Retry Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778718172540,2,Prepare AI Tutor Reconnect Before BI Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718172973,1,WS Open AI Tutor Connection Before BI Retry Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry BI Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718173854,8,Ensure Access Token Min Validity Before BI Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778718174268,2,Prepare AI Tutor Reconnect Before BI Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718174688,0,WS Open AI Tutor Connection Before BI Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send BI Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718175506,1,Log BI Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718175913,2,Prepare AI Tutor Reconnect Before BI Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718176321,1,WS Open AI Tutor Connection Retry (BI),Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718176737,1,Mark AI Tutor Socket Reconnected (BI),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,174,0,1,1,null,0,0,0
+1778718177152,1,Prepare BI Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718177555,5,Ensure Access Token Min Validity Before BI Retry Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778718177966,2,Prepare AI Tutor Reconnect Before BI Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718178371,0,WS Open AI Tutor Connection Before BI Retry Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry BI Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718179185,4,Ensure Access Token Min Validity Before BI Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778718179598,2,Prepare AI Tutor Reconnect Before BI Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718180004,1,WS Open AI Tutor Connection Before BI Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send BI Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718180821,8,Log BI Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718181236,2,Prepare AI Tutor Reconnect Before BI Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718181642,1,WS Open AI Tutor Connection Retry (BI),Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718182053,2,Mark AI Tutor Socket Reconnected (BI),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,174,0,1,1,null,0,0,0
+1778718182469,1,Prepare BI Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718182873,6,Ensure Access Token Min Validity Before BI Retry Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778718183283,1,Prepare AI Tutor Reconnect Before BI Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718183689,0,WS Open AI Tutor Connection Before BI Retry Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry BI Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718184507,4,Ensure Access Token Min Validity Before BI Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778718184920,2,Prepare AI Tutor Reconnect Before BI Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718185334,0,WS Open AI Tutor Connection Before BI Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send BI Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718186143,2,Log BI Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718186557,3,Prepare AI Tutor Reconnect Before BI Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718186963,0,WS Open AI Tutor Connection Retry (BI),Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718187371,2,Mark AI Tutor Socket Reconnected (BI),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,174,0,1,1,null,0,0,0
+1778718187778,1,Prepare BI Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718188187,6,Ensure Access Token Min Validity Before BI Retry Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778718188599,2,Prepare AI Tutor Reconnect Before BI Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718189011,0,WS Open AI Tutor Connection Before BI Retry Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry BI Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718189824,43,Ensure Access Token Min Validity Before BI Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778718190270,2,Prepare AI Tutor Reconnect Before BI Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718190674,0,WS Open AI Tutor Connection Before BI Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send BI Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718191493,1,Log BI Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718191905,1,Prepare AI Tutor Reconnect Before BI Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718192311,1,WS Open AI Tutor Connection Retry (BI),Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718192727,1,Mark AI Tutor Socket Reconnected (BI),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,174,0,1,1,null,0,0,0
+1778718193129,1,Prepare BI Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718193537,3,Ensure Access Token Min Validity Before BI Retry Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778718193943,1,Prepare AI Tutor Reconnect Before BI Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718194358,1,WS Open AI Tutor Connection Before BI Retry Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry BI Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718195169,54,Verify 5 BI Questions Sent,500,"Expected 5 BI questions completed but got done=0, sent=0",Virtual Student 1-1,text,false,,102,0,1,1,null,0,0,0
+1778718195635,21,Initialize BM Question Counter,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718196058,43,Load and Randomize BM,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718196503,5,Ensure Access Token Min Validity Before BM Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778718196924,2,Prepare AI Tutor Reconnect Before BM Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718197357,0,WS Open AI Tutor Connection Before BM Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send BM Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718198236,22,Log BM Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718198686,1,Prepare AI Tutor Reconnect Before BM Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718199111,0,WS Open AI Tutor Connection Retry (BM),Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718199522,2,Mark AI Tutor Socket Reconnected (BM),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,174,0,1,1,null,0,0,0
+1778718199936,8,Prepare BM Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718200354,5,Ensure Access Token Min Validity Before BM Retry Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778718200771,2,Prepare AI Tutor Reconnect Before BM Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718201187,1,WS Open AI Tutor Connection Before BM Retry Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry BM Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718202036,4,Ensure Access Token Min Validity Before BM Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778718202441,2,Prepare AI Tutor Reconnect Before BM Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718202853,2,WS Open AI Tutor Connection Before BM Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send BM Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718203674,1,Log BM Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718204089,3,Prepare AI Tutor Reconnect Before BM Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718204506,1,WS Open AI Tutor Connection Retry (BM),Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718204921,3,Mark AI Tutor Socket Reconnected (BM),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,174,0,1,1,null,0,0,0
+1778718205338,1,Prepare BM Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718205740,3,Ensure Access Token Min Validity Before BM Retry Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778718206178,1,Prepare AI Tutor Reconnect Before BM Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718206589,1,WS Open AI Tutor Connection Before BM Retry Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry BM Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718207413,4,Ensure Access Token Min Validity Before BM Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778718207819,2,Prepare AI Tutor Reconnect Before BM Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718208229,0,WS Open AI Tutor Connection Before BM Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send BM Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718209041,2,Log BM Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718209484,1,Prepare AI Tutor Reconnect Before BM Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718209893,0,WS Open AI Tutor Connection Retry (BM),Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718210305,2,Mark AI Tutor Socket Reconnected (BM),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,174,0,1,1,null,0,0,0
+1778718210707,2,Prepare BM Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718211122,5,Ensure Access Token Min Validity Before BM Retry Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778718211541,1,Prepare AI Tutor Reconnect Before BM Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718211954,0,WS Open AI Tutor Connection Before BM Retry Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry BM Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718212771,5,Ensure Access Token Min Validity Before BM Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778718213176,2,Prepare AI Tutor Reconnect Before BM Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718213581,1,WS Open AI Tutor Connection Before BM Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send BM Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718214390,1,Log BM Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718214802,2,Prepare AI Tutor Reconnect Before BM Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718215219,0,WS Open AI Tutor Connection Retry (BM),Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718215639,1,Mark AI Tutor Socket Reconnected (BM),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,174,0,1,1,null,0,0,0
+1778718216046,1,Prepare BM Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718216456,4,Ensure Access Token Min Validity Before BM Retry Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778718216864,2,Prepare AI Tutor Reconnect Before BM Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718217272,1,WS Open AI Tutor Connection Before BM Retry Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry BM Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718218090,7,Ensure Access Token Min Validity Before BM Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778718218500,1,Prepare AI Tutor Reconnect Before BM Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718218907,2,WS Open AI Tutor Connection Before BM Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Send BM Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718219734,1,Log BM Question Sent,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718220147,1,Prepare AI Tutor Reconnect Before BM Retry Open,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718220558,0,WS Open AI Tutor Connection Retry (BM),Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718220972,1,Mark AI Tutor Socket Reconnected (BM),200,Skipped AI tutor socket auth mark because websocket open did not succeed,Virtual Student 1-1,text,true,,174,0,1,1,null,0,0,0
+1778718221385,3,Prepare BM Retry,200,OK,Virtual Student 1-1,text,true,,0,0,1,1,null,0,0,0
+1778718221796,8,Ensure Access Token Min Validity Before BM Retry Question,500,javax.script.ScriptException: java.net.UnknownHostException: ilmu-dev.tmrnd.dev,Virtual Student 1-1,text,false,,0,0,1,1,null,0,0,0
+1778718222221,2,Prepare AI Tutor Reconnect Before BM Retry Question,200,Preparing AI tutor reconnect without socket close,Virtual Student 1-1,text,true,,154,0,1,1,null,0,0,0
+1778718222642,0,WS Open AI Tutor Connection Before BM Retry Question,Websocket I/O error,WebSocket I/O error: ilmu-dev.tmrnd.dev,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+0,0,WS Retry BM Question,Sampler error,"Sampler configured for using existing connection, but there is no connection",Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0
+1778718223453,36,Verify 5 BM Questions Sent,500,"Expected 5 BM questions completed but got done=0, sent=0",Virtual Student 1-1,text,false,,102,0,1,1,null,0,0,0
+0,0,WS Close AI Tutor Connection,,No connection; nothing to close.,Virtual Student 1-1,,false,,0,0,1,1,null,0,0,0

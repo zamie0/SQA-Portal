@@ -5,6 +5,7 @@ import shutil
 import statistics
 import subprocess
 import sys
+from collections import defaultdict
 from pathlib import Path
 
 
@@ -14,7 +15,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--threads", required=True, type=int, help="Number of virtual users")
     parser.add_argument("--ramp-up", required=True, dest="ramp_up", type=int, help="Ramp-up seconds")
     parser.add_argument("--loops", required=True, type=int, help="Loop count")
-    parser.add_argument("--results", required=True, help="Absolute path to the JTL results file")
+    parser.add_argument("--results", required=True, help="Absolute path to the CSV results file")
+    parser.add_argument("--aggregate", required=True, help="Absolute path to the aggregate CSV file")
+    parser.add_argument("--summary", required=True, help="Absolute path to the summary CSV file")
     parser.add_argument(
         "--jmeter-path",
         required=False,
@@ -32,33 +35,37 @@ def percentile(values: list[int], percent: int) -> int:
     return values[index]
 
 
-def build_summary(result_path: Path) -> dict | None:
+def load_rows(result_path: Path) -> list[dict[str, str]]:
     if not result_path.exists():
-        return None
+        return []
 
     rows: list[dict[str, str]] = []
     with result_path.open("r", encoding="utf-8", newline="") as handle:
         reader = csv.DictReader(handle)
         for row in reader:
             rows.append(row)
+    return rows
 
+
+def numeric_values(rows: list[dict[str, str]], field: str) -> list[int]:
+    values: list[int] = []
+    for row in rows:
+        raw = str(row.get(field, "")).strip()
+        if raw.isdigit():
+            values.append(int(raw))
+    return values
+
+
+def build_summary(rows: list[dict[str, str]]) -> dict | None:
     if not rows:
         return None
 
-    elapsed_values = sorted(
-        int(row["elapsed"])
-        for row in rows
-        if row.get("elapsed") not in (None, "") and str(row["elapsed"]).isdigit()
-    )
+    elapsed_values = sorted(numeric_values(rows, "elapsed"))
     if not elapsed_values:
         return None
 
     failures = sum(1 for row in rows if str(row.get("success", "")).lower() != "true")
-    timestamps = [
-        int(row["timeStamp"])
-        for row in rows
-        if row.get("timeStamp") not in (None, "") and str(row["timeStamp"]).isdigit()
-    ]
+    timestamps = numeric_values(rows, "timeStamp")
     throughput = None
     if len(timestamps) > 1:
         duration_ms = max(timestamps) - min(timestamps)
@@ -75,6 +82,58 @@ def build_summary(result_path: Path) -> dict | None:
         "p99Ms": percentile(elapsed_values, 99),
         "throughput": throughput,
     }
+
+
+def write_summary_csv(summary_path: Path, summary: dict) -> None:
+    summary_path.parent.mkdir(parents=True, exist_ok=True)
+    with summary_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.writer(handle)
+        writer.writerow(["metric", "value"])
+        for key in [
+            "samples",
+            "failures",
+            "errorRate",
+            "averageMs",
+            "p90Ms",
+            "p95Ms",
+            "p99Ms",
+            "throughput",
+        ]:
+            writer.writerow([key, summary.get(key, "")])
+
+
+def write_aggregate_csv(aggregate_path: Path, rows: list[dict[str, str]]) -> None:
+    aggregate_path.parent.mkdir(parents=True, exist_ok=True)
+    buckets: dict[str, list[int]] = defaultdict(list)
+    failures: dict[str, int] = defaultdict(int)
+
+    for row in rows:
+        label = str(row.get("label", "")).strip() or "Unnamed sampler"
+        elapsed = str(row.get("elapsed", "")).strip()
+        if elapsed.isdigit():
+            buckets[label].append(int(elapsed))
+        if str(row.get("success", "")).lower() != "true":
+            failures[label] += 1
+
+    with aggregate_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.writer(handle)
+        writer.writerow(["label", "samples", "avgMs", "minMs", "maxMs", "failures", "errorRate"])
+        for label in sorted(buckets.keys()):
+            values = sorted(buckets[label])
+            sample_count = len(values)
+            failure_count = failures[label]
+            error_rate = round((failure_count / sample_count) * 100, 2) if sample_count else 0
+            writer.writerow(
+                [
+                    label,
+                    sample_count,
+                    round(statistics.fmean(values)) if values else 0,
+                    min(values) if values else 0,
+                    max(values) if values else 0,
+                    failure_count,
+                    error_rate,
+                ]
+            )
 
 
 def validate_jmeter_path(raw_path: str) -> str | None:
@@ -112,6 +171,8 @@ def main() -> int:
     args = parse_args()
     jmx_path = Path(args.jmx)
     result_path = Path(args.results)
+    aggregate_path = Path(args.aggregate)
+    summary_path = Path(args.summary)
 
     if jmx_path.suffix.lower() != ".jmx":
         print(json.dumps({"status": "failed", "message": "Only .jmx files are accepted."}))
@@ -140,15 +201,12 @@ def main() -> int:
                 "The provided JMeter path is invalid. Use the full path to jmeter.bat, "
                 "jmeter.cmd, jmeter.exe, or jmeter, or leave the field blank to use PATH."
             )
-        print(
-            json.dumps(
-                {
-                    "status": "setup_required",
-                    "message": setup_message,
-                }
-            )
-        )
+        print(json.dumps({"status": "setup_required", "message": setup_message}))
         return 0
+
+    result_path.parent.mkdir(parents=True, exist_ok=True)
+    aggregate_path.parent.mkdir(parents=True, exist_ok=True)
+    summary_path.parent.mkdir(parents=True, exist_ok=True)
 
     command = [
         jmeter_executable,
@@ -171,6 +229,12 @@ def main() -> int:
         check=False,
     )
 
+    rows = load_rows(result_path)
+    summary = build_summary(rows)
+    if summary is not None:
+        write_summary_csv(summary_path, summary)
+        write_aggregate_csv(aggregate_path, rows)
+
     payload: dict = {
         "status": "completed" if completed.returncode == 0 else "failed",
         "message": (
@@ -182,9 +246,10 @@ def main() -> int:
         "stderr": completed.stderr.strip(),
         "command": command,
         "resultPath": str(result_path),
+        "aggregatePath": str(aggregate_path),
+        "summaryPath": str(summary_path),
     }
 
-    summary = build_summary(result_path)
     if summary is not None:
         payload["summary"] = summary
 
