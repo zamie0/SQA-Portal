@@ -1,11 +1,23 @@
 "use client";
 
 import { useState, type ComponentType } from "react";
-import { Activity, Database, FileText, Key, KeyRound, Layers, Users, Wrench } from "lucide-react";
+import {
+  Activity,
+  ClipboardCheck,
+  Database,
+  FileText,
+  Key,
+  KeyRound,
+  Layers,
+  LifeBuoy,
+  Users,
+  Wrench,
+} from "lucide-react";
 import { PendingRegistrations, PasswordResetRequests, AllUsers } from "./index";
 import {
   AdminOverviewCards,
   AuditLogsView,
+  HelpItemsAdminView,
   PermissionsView,
   ProjectMembersView,
   ProjectsAdminView,
@@ -51,7 +63,8 @@ const menuItems: AdminMenuItem[] = [
   { id: "sonar-qube-configs", label: "SonarQube configs", icon: Database, category: "SonarQube" },
   { id: "sonar-qube-scans", label: "SonarQube scans", icon: Activity, category: "SonarQube" },
   { id: "sonar-qube-issues", label: "SonarQube issues", icon: FileText, category: "SonarQube" },
-  { id: "audit-logs", label: "Audit logs", icon: Activity, category: "System" },
+  { id: "help-items", label: "Help", icon: LifeBuoy, category: "System" },
+  { id: "audit-logs", label: "Audit logs", icon: ClipboardCheck, category: "System" },
 ];
 
 const categories = [
@@ -129,6 +142,8 @@ function renderContent(
       return <ProjectMembersView data={adminData} onMutate={onAdminMutate} />;
     case "tools":
       return <ToolsAdminView data={adminData} onMutate={onAdminMutate} />;
+    case "help-items":
+      return <HelpItemsAdminView data={adminData} onMutate={onAdminMutate} />;
     case "project-tools":
       return <ProjectToolsView data={adminData} onMutate={onAdminMutate} />;
     case "sonar-qube-configs":

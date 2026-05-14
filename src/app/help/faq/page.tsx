@@ -1,3 +1,9 @@
 import Page from "@/modules/help/pages/faq-page";
+import { listPortalFaqGroups } from "@/shared/lib/portal-content";
 
-export default Page;
+export const dynamic = "force-dynamic";
+
+export default async function FaqRoute() {
+  const faqGroups = await listPortalFaqGroups();
+  return <Page faqGroups={faqGroups} />;
+}

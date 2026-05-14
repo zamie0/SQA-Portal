@@ -5,6 +5,11 @@ export type AdminOverview = {
   projects: AdminProject[];
   projectMembers: AdminProjectMember[];
   tools: AdminTool[];
+  helpItems: AdminHelpItem[];
+  helpFaqGroups: AdminHelpFaqGroup[];
+  helpFaqItems: AdminHelpFaqItem[];
+  helpTutorialSteps: AdminHelpTutorialStep[];
+  helpContact: AdminHelpContact[];
   projectTools: AdminProjectTool[];
   sonarqubeConfigs: AdminSonarQubeConfig[];
   sonarqubeScans: AdminSonarQubeScan[];
@@ -55,6 +60,53 @@ export type AdminTool = AdminRecord & {
   isActive?: boolean;
   isBuiltIn?: boolean;
   source?: string;
+};
+
+export type AdminHelpItem = AdminRecord & {
+  title?: string;
+  slug?: string;
+  description?: string;
+  href?: string;
+  icon?: string;
+  color?: string;
+  category?: string;
+  sortOrder?: number;
+  isActive?: boolean;
+};
+
+export type AdminHelpFaqGroup = AdminRecord & {
+  label?: string;
+  sortOrder?: number;
+  isActive?: boolean;
+};
+
+export type AdminHelpFaqItem = AdminRecord & {
+  groupId?: string;
+  question?: string;
+  answer?: string;
+  sortOrder?: number;
+  isActive?: boolean;
+};
+
+export type AdminHelpTutorialStep = AdminRecord & {
+  title?: string;
+  icon?: string;
+  summary?: string;
+  detail?: string[];
+  sortOrder?: number;
+  isActive?: boolean;
+};
+
+export type AdminHelpContact = AdminRecord & {
+  name?: string;
+  initials?: string;
+  role?: string;
+  phone?: string;
+  email?: string;
+  availability?: string;
+  githubUrl?: string;
+  linkedinUrl?: string;
+  supportMessage?: string;
 };
 
 export type AdminProjectTool = AdminRecord & {
@@ -108,6 +160,11 @@ export const emptyAdminOverview: AdminOverview = {
   projects: [],
   projectMembers: [],
   tools: [],
+  helpItems: [],
+  helpFaqGroups: [],
+  helpFaqItems: [],
+  helpTutorialSteps: [],
+  helpContact: [],
   projectTools: [],
   sonarqubeConfigs: [],
   sonarqubeScans: [],

@@ -2,13 +2,33 @@
 
 import { Shell } from "@/shared/components/layout/Shell";
 import { useEffect, useState } from "react";
-import { GraduationCap, CheckCircle2, ChevronRight, ChevronLeft, RotateCcw } from "lucide-react";
-import { tutorialSteps } from "@/modules/help";
+import {
+  BarChart3,
+  BookOpen,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  ClipboardList,
+  Cpu,
+  GraduationCap,
+  PlayCircle,
+  RotateCcw,
+} from "lucide-react";
+import type { PortalTutorialStep } from "@/shared/lib/portal-content";
 import ReactMarkdown from "react-markdown";
 
 const STORAGE_KEY = "qe-hub:tutorial-progress";
 
-function TutorialPage() {
+const tutorialIcons = {
+  "bar-chart-3": BarChart3,
+  "book-open": BookOpen,
+  "clipboard-list": ClipboardList,
+  cpu: Cpu,
+  "graduation-cap": GraduationCap,
+  "play-circle": PlayCircle,
+} as const;
+
+function TutorialPage({ tutorialSteps }: { tutorialSteps: PortalTutorialStep[] }) {
   const [active, setActive] = useState(0);
   const [done, setDone] = useState<Set<string>>(new Set());
 
@@ -33,10 +53,10 @@ function TutorialPage() {
     }
   }, [done, active]);
 
-  const step = tutorialSteps[active];
+  const step = tutorialSteps[active] ?? tutorialSteps[0];
 
   const completed = done.size;
-  const total = tutorialSteps.length;
+  const total = Math.max(tutorialSteps.length, 1);
   const percent = Math.round((completed / total) * 100);
 
   const toggleDone = (id: string) => {
@@ -53,7 +73,17 @@ function TutorialPage() {
     setActive(0);
   };
 
-  const Icon = step.icon;
+  const Icon = tutorialIcons[step?.icon as keyof typeof tutorialIcons] ?? GraduationCap;
+
+  if (tutorialSteps.length === 0) {
+    return (
+      <Shell>
+        <div className="rounded-3xl glass p-10 text-center text-sm text-muted-foreground">
+          No active tutorial steps found in the database yet.
+        </div>
+      </Shell>
+    );
+  }
 
   return (
     <Shell>
@@ -68,7 +98,7 @@ function TutorialPage() {
             </div>
 
             <div>
-              <h1 className="text-3xl font-bold">Get started in 7 steps</h1>
+              <h1 className="text-3xl font-bold">Get started in {tutorialSteps.length} steps</h1>
               <p className="mt-1 text-sm text-muted-foreground max-w-xl">
                 A guided walkthrough from creating your first project to scheduling nightly runs.
               </p>
@@ -149,7 +179,7 @@ function TutorialPage() {
           <p className="text-muted-foreground">{step.summary}</p>
 
           <div className="mt-5 space-y-3">
-            {step.detail.map((line, idx) => (
+            {(step.detail ?? []).map((line, idx) => (
               <div key={idx} className="flex gap-3 rounded-2xl bg-white/50 border p-4">
                 <span className="h-6 w-6 grid place-items-center rounded-full bg-gradient-to-r from-emerald-400 to-sky-500 text-white text-xs font-bold">
                   {idx + 1}
