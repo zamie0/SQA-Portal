@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Shell } from "@/shared/components/layout/Shell";
 import { RequireAuth } from "@/shared/components/RequireAuth";
-import { Bot, Brain, Sparkles, Gauge, ArrowUpRight } from "lucide-react";
+import { Bot, Brain, Sparkles, Gauge, ArrowUpRight, RadioTower, ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/portal/tools")({
   head: () => ({ meta: [{ title: "Tools — SQA Portal" }] }),
@@ -14,12 +14,28 @@ export const Route = createFileRoute("/portal/tools")({
 
 const tools = [
   {
+    to: "/tools/security-scanner",
+    name: "Security Scanner",
+    desc: "Scanner for code quality and security issues.",
+    icon: ShieldCheck,
+    color: "from-rose-500 to-orange-500",
+    status: "Built-in",
+  },
+  {
+    to: "/tools/stt",
+    name: "STT",
+    desc: "Video Streaming Test Tool placeholder workspace.",
+    icon: RadioTower,
+    color: "from-sky-500 to-blue-600",
+    status: "Built-in",
+  },
+  {
     to: "/tools/orca",
     name: "Orca",
     desc: "Smart test orchestration with AI agents.",
     icon: Bot,
     color: "from-blue-500 to-cyan-500",
-    status: "Beta",
+    status: "Built-in",
   },
   {
     to: "/tools/qa-genius",
@@ -27,7 +43,7 @@ const tools = [
     desc: "Generate test cases from requirements with AI.",
     icon: Brain,
     color: "from-fuchsia-500 to-violet-600",
-    status: "Beta",
+    status: "Built-in",
   },
   {
     to: "/tools/qe",
@@ -35,7 +51,7 @@ const tools = [
     desc: "Manage automation projects, runs, RPA flows and results.",
     icon: Sparkles,
     color: "from-violet-500 to-indigo-500",
-    status: "Live",
+    status: "Built-in",
   },
   {
     to: "/tools/performance",
@@ -43,7 +59,7 @@ const tools = [
     desc: "Load, stress and scalability testing dashboards.",
     icon: Gauge,
     color: "from-emerald-500 to-teal-500",
-    status: "Beta",
+    status: "Built-in",
   },
 ] as const;
 

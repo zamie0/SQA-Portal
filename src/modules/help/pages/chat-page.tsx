@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Shell } from "@/shared/components/layout/Shell";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -88,6 +89,7 @@ function newConversation(): Conversation {
 }
 
 function ChatPage() {
+  const router = useRouter();
   const [conversations, setConversations] = useLocalStorage<Conversation[]>("qe-hub.ai-chats.v1", [
     newConversation(),
   ]);
@@ -181,7 +183,8 @@ function ChatPage() {
 
     setSending(true);
     try {
-      const response = await fetch("/api/chat", {
+      const endpoint = shouldUseAgenticTesting(trimmed) ? "/api/copilot/agent" : "/api/chat";
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: history }),
@@ -384,9 +387,9 @@ function ChatPage() {
           </div>
         </div>
 
-        <div className="grid min-h-0 flex-1 lg:grid-cols-[280px_1fr] gap-4">
+        <div className="grid min-h-0 flex-1 grid-rows-[minmax(8rem,12rem)_minmax(0,1fr)] gap-4 overflow-hidden lg:grid-cols-[280px_1fr] lg:grid-rows-none">
           {/* Sidebar of chats */}
-          <aside className="rounded-3xl glass p-3 flex flex-col overflow-hidden">
+          <aside className="min-h-0 rounded-3xl glass p-3 flex flex-col overflow-hidden">
             <button
               onClick={newChat}
               className="w-full inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-[image:var(--gradient-primary)] text-white text-sm font-medium shadow"
@@ -474,12 +477,14 @@ function ChatPage() {
           </aside>
 
           {/* Chat panel */}
-          <div className="rounded-3xl glass flex flex-col overflow-hidden">
+          <div className="min-h-0 rounded-3xl glass flex flex-col overflow-hidden">
             <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-4">
               {!active || active.messages.length === 0 ? (
                 <EmptyState onPick={(s) => send(s)} />
               ) : (
-                active.messages.map((m) => <Bubble key={m.id} message={m} />)
+                active.messages.map((m) => (
+                  <Bubble key={m.id} message={m} onOpenTool={(href) => router.push(href)} />
+                ))
               )}
             </div>
 
@@ -572,6 +577,26 @@ function ChatPage() {
       </div>
     </Shell>
   );
+}
+
+function shouldUseAgenticTesting(input: string) {
+  const normalized = input.toLowerCase();
+  const asksForAgent =
+    /\bagentic\b/.test(normalized) ||
+    /\bagent\b/.test(normalized) ||
+    /\bdo testing\b/.test(normalized) ||
+    /\brun (?:all )?tests?\b/.test(normalized) ||
+    /\btest (?:everything|all)\b/.test(normalized);
+
+  const hasTestingScope =
+    /\btest(?:ing|s)?\b/.test(normalized) ||
+    /\bqa\b/.test(normalized) ||
+    /\bautomation\b/.test(normalized) ||
+    /\bperformance\b/.test(normalized) ||
+    /\bjmeter\b/.test(normalized) ||
+    /\brobot\b/.test(normalized);
+
+  return asksForAgent && hasTestingScope;
 }
 
 function attachmentOnlyPrompt(attachments: AttachmentDraft[]) {
@@ -725,8 +750,17 @@ function EmptyState({ onPick }: { onPick: (s: string) => void }) {
   );
 }
 
-function Bubble({ message }: { message: UiMessage }) {
+function Bubble({
+  message,
+  onOpenTool,
+}: {
+  message: UiMessage;
+  onOpenTool: (href: string) => void;
+}) {
   const isUser = message.role === "user";
+  const toolSuggestions =
+    !isUser && !message.pending ? getAssistantToolSuggestions(message.content) : [];
+
   return (
     <div className={`flex gap-3 ${isUser ? "flex-row-reverse" : ""}`}>
       <div
@@ -740,68 +774,174 @@ function Bubble({ message }: { message: UiMessage }) {
         {isUser ? "HZ" : <Sparkles className="h-4 w-4" />}
       </div>
       <div
-        className={[
-          "max-w-[78%] rounded-2xl px-4 py-2.5 text-sm",
-          isUser
-            ? "bg-foreground text-background rounded-tr-sm"
-            : "bg-white/70 border border-white/70 rounded-tl-sm",
-        ].join(" ")}
+        className={["flex max-w-[78%] flex-col", isUser ? "items-end" : "items-start"].join(" ")}
       >
-        {message.pending ? (
-          <TypingIndicator />
-        ) : isUser ? (
-          <>
-            <p className="whitespace-pre-wrap">{message.content}</p>
-            {!!message.attachments?.length && (
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {message.attachments.map((attachment) => (
-                  <span
-                    key={`${attachment.name}-${attachment.size}`}
-                    className="inline-flex items-center gap-1 rounded-lg bg-background/10 px-2 py-1 text-[11px]"
-                  >
-                    <AttachmentIcon mimeType={attachment.mimeType} />
-                    {attachment.name}
-                  </span>
-                ))}
-              </div>
-            )}
-          </>
-        ) : (
-          <div className="prose prose-sm max-w-none prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5 prose-a:font-semibold prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-strong:text-foreground prose-code:text-foreground prose-code:bg-white/80 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none prose-pre:bg-foreground prose-pre:text-background">
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              components={{
-                a: ({ href, children }) => (
-                  <Link href={href ?? "#"} className="rounded-md bg-primary/10 px-1.5 py-0.5">
-                    {children}
-                  </Link>
-                ),
-                table: ({ children }) => (
-                  <div className="my-3 w-full overflow-x-auto rounded-xl border border-white/70 bg-white/70">
-                    <table className="m-0 w-full min-w-max border-collapse text-left text-xs">
+        <div
+          className={[
+            "w-full rounded-2xl px-4 py-2.5 text-sm",
+            isUser
+              ? "bg-foreground text-background rounded-tr-sm"
+              : "bg-white/70 border border-white/70 rounded-tl-sm",
+          ].join(" ")}
+        >
+          {message.pending ? (
+            <TypingIndicator />
+          ) : isUser ? (
+            <>
+              <p className="whitespace-pre-wrap">{message.content}</p>
+              {!!message.attachments?.length && (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {message.attachments.map((attachment) => (
+                    <span
+                      key={`${attachment.name}-${attachment.size}`}
+                      className="inline-flex items-center gap-1 rounded-lg bg-background/10 px-2 py-1 text-[11px]"
+                    >
+                      <AttachmentIcon mimeType={attachment.mimeType} />
+                      {attachment.name}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="prose prose-sm max-w-none prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5 prose-a:font-semibold prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-strong:text-foreground prose-code:text-foreground prose-code:bg-white/80 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none prose-pre:bg-foreground prose-pre:text-background">
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  a: ({ href, children }) =>
+                    isFloatingToolHref(href) ? (
+                      <>{children}</>
+                    ) : (
+                      <Link
+                        href={href ?? "#"}
+                        className="font-semibold text-primary underline-offset-2 hover:underline"
+                      >
+                        {children}
+                      </Link>
+                    ),
+                  table: ({ children }) => (
+                    <div className="my-3 w-full overflow-x-auto rounded-xl border border-white/70 bg-white/70">
+                      <table className="m-0 w-full min-w-max border-collapse text-left text-xs">
+                        {children}
+                      </table>
+                    </div>
+                  ),
+                  thead: ({ children }) => <thead className="bg-foreground/5">{children}</thead>,
+                  th: ({ children }) => (
+                    <th className="whitespace-nowrap border-b border-white/70 px-3 py-2 font-semibold text-foreground">
                       {children}
-                    </table>
-                  </div>
-                ),
-                thead: ({ children }) => <thead className="bg-foreground/5">{children}</thead>,
-                th: ({ children }) => (
-                  <th className="whitespace-nowrap border-b border-white/70 px-3 py-2 font-semibold text-foreground">
-                    {children}
-                  </th>
-                ),
-                td: ({ children }) => (
-                  <td className="max-w-[240px] border-b border-white/60 px-3 py-2 align-top text-foreground/80">
-                    {children}
-                  </td>
-                ),
-                tr: ({ children }) => <tr className="last:[&_td]:border-b-0">{children}</tr>,
-              }}
-            >
-              {message.content}
-            </ReactMarkdown>
+                    </th>
+                  ),
+                  td: ({ children }) => (
+                    <td className="max-w-[240px] border-b border-white/60 px-3 py-2 align-top text-foreground/80">
+                      {children}
+                    </td>
+                  ),
+                  tr: ({ children }) => <tr className="last:[&_td]:border-b-0">{children}</tr>,
+                }}
+              >
+                {message.content}
+              </ReactMarkdown>
+            </div>
+          )}
+        </div>
+        {toolSuggestions.length > 0 && (
+          <div className="mt-2 flex w-full flex-wrap gap-2">
+            {toolSuggestions.map((suggestion) => (
+              <AssistantToolSuggestion
+                key={suggestion.href}
+                suggestion={suggestion}
+                onAllow={() => onOpenTool(suggestion.href)}
+              />
+            ))}
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function getAssistantToolSuggestions(content: string) {
+  const normalized = content.toLowerCase();
+  const suggestions = [
+    {
+      label: "QA Genius",
+      href: "/tools/qa-genius",
+      description: "Test cases",
+      matches: [
+        "/tools/qa-genius",
+        "qa genius",
+        "test case",
+        "test cases",
+        "test scenario",
+        "test scenarios",
+      ],
+    },
+    {
+      label: "QE Automation Hub",
+      href: "/tools/qe",
+      description: "Automation",
+      matches: [
+        "/tools/qe",
+        "qe automation hub",
+        "robot framework",
+        "automation script",
+        "automation suite",
+        "rpa",
+      ],
+    },
+    {
+      label: "Performance Test",
+      href: "/tools/performance",
+      description: "Performance",
+      matches: [
+        "/tools/performance",
+        "performance testing",
+        "performance test",
+        "load testing",
+        "stress testing",
+        "jmeter",
+        "response time",
+        "throughput",
+        "latency",
+        "virtual users",
+        "ramp-up",
+      ],
+    },
+  ];
+
+  return suggestions
+    .filter((suggestion) => suggestion.matches.some((match) => normalized.includes(match)))
+    .map(({ matches, ...suggestion }) => suggestion);
+}
+
+function isFloatingToolHref(href?: string) {
+  return href === "/tools/qa-genius" || href === "/tools/qe" || href === "/tools/performance";
+}
+
+function AssistantToolSuggestion({
+  suggestion,
+  onAllow,
+}: {
+  suggestion: { label: string; href: string; description: string };
+  onAllow: () => void;
+}) {
+  return (
+    <div className="flex w-full max-w-[16rem] items-center gap-2 rounded-xl border border-sky-200/80 bg-sky-50/90 px-3 py-2 text-left text-sky-950 shadow-md shadow-sky-900/10 backdrop-blur-xl transition-all duration-200 animate-in fade-in-0 zoom-in-95 slide-in-from-top-1 sm:w-auto">
+      <span className="min-w-0 flex-1">
+        <span className="block text-[10px] font-medium uppercase tracking-wide text-sky-600">
+          Allow Copilot to open
+        </span>
+        <span className="block text-xs font-semibold leading-tight">{suggestion.label}</span>
+        <span className="block truncate text-[11px] text-sky-700">{suggestion.description}</span>
+      </span>
+      <button
+        type="button"
+        onClick={onAllow}
+        className="shrink-0 rounded-lg bg-sky-600 px-2.5 py-1.5 text-[11px] font-semibold text-white shadow-sm transition hover:bg-sky-700"
+      >
+        Allow
+      </button>
     </div>
   );
 }

@@ -3,16 +3,23 @@
 import Link from "next/link";
 import { Shell } from "@/shared/components/layout/Shell";
 import { Phone, Mail, Clock, Briefcase, MessageCircle, Github, Linkedin } from "lucide-react";
+import type { PortalContactInfo } from "@/shared/lib/portal-content";
 
-const CONTACT = {
+const fallbackContact = {
   name: "Hazami",
+  initials: "HZ",
   role: "System Developer & Owner",
   phone: "+60 19-736 6813",
   email: "muhdhazami157@gmail.com",
-  availability: "Mon – Fri · 9:00 AM – 6:00 PM (GMT+8)",
+  availability: "Mon - Fri / 9:00 AM - 6:00 PM (GMT+8)",
+  githubUrl: "https://github.com/zamie0",
+  linkedinUrl: "https://www.linkedin.com/in/muhd-hazami-3a84112a2/",
+  supportMessage: "For bug reports, account help, feature requests or anything else about QE Hub.",
 };
 
-function ContactPage() {
+function ContactPage({ contact }: { contact: PortalContactInfo | null }) {
+  const CONTACT = { ...fallbackContact, ...contact };
+
   return (
     <Shell>
       <div className="rounded-3xl glass-strong p-6 mb-4 relative overflow-hidden">
@@ -25,7 +32,7 @@ function ContactPage() {
             <div>
               <h1 className="text-3xl font-bold">Contact the system owner</h1>
               <p className="mt-1 text-sm text-muted-foreground max-w-xl">
-                For bug reports, account help, feature requests or anything else about QE Hub.
+                {CONTACT.supportMessage}
               </p>
             </div>
           </div>
@@ -42,7 +49,7 @@ function ContactPage() {
         {/* Contact card */}
         <div className="rounded-3xl glass p-6 flex flex-col items-center text-center">
           <div className="h-24 w-24 rounded-3xl bg-[image:var(--gradient-primary)] grid place-items-center text-white text-3xl font-bold shadow-lg">
-            HZ
+            {CONTACT.initials}
           </div>
           <h2 className="mt-4 text-2xl font-bold">{CONTACT.name}</h2>
           <p className="text-sm text-muted-foreground inline-flex items-center gap-1.5 mt-1">
@@ -68,25 +75,29 @@ function ContactPage() {
           </div>
 
           <div className="mt-5 flex gap-2">
-            <a
-              href="https://github.com/zamie0"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="h-9 w-9 grid place-items-center rounded-xl bg-white/60 border border-white/70"
-              aria-label="GitHub"
-            >
-              <Github className="h-4 w-4" />
-            </a>
+            {CONTACT.githubUrl && (
+              <a
+                href={CONTACT.githubUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="h-9 w-9 grid place-items-center rounded-xl bg-white/60 border border-white/70"
+                aria-label="GitHub"
+              >
+                <Github className="h-4 w-4" />
+              </a>
+            )}
 
-            <a
-              href="https://www.linkedin.com/in/muhd-hazami-3a84112a2/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="h-9 w-9 grid place-items-center rounded-xl bg-white/60 border border-white/70"
-              aria-label="LinkedIn"
-            >
-              <Linkedin className="h-4 w-4" />
-            </a>
+            {CONTACT.linkedinUrl && (
+              <a
+                href={CONTACT.linkedinUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="h-9 w-9 grid place-items-center rounded-xl bg-white/60 border border-white/70"
+                aria-label="LinkedIn"
+              >
+                <Linkedin className="h-4 w-4" />
+              </a>
+            )}
           </div>
         </div>
 
@@ -114,7 +125,7 @@ function ContactPage() {
 
           <div className="rounded-3xl glass p-6">
             <h3 className="font-semibold mb-1">Send a quick message</h3>
-            <ContactForm />
+            <ContactForm contact={CONTACT} />
           </div>
         </div>
       </div>
@@ -149,19 +160,19 @@ function Detail({
   return href ? <a href={href}>{inner}</a> : inner;
 }
 
-function ContactForm() {
+function ContactForm({ contact }: { contact: typeof fallbackContact }) {
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault();
         const f = e.currentTarget;
         const subject = encodeURIComponent(
-          (f.elements.namedItem("subject") as HTMLInputElement)?.value || "QE Hub — message",
+          (f.elements.namedItem("subject") as HTMLInputElement)?.value || "QE Hub message",
         );
         const body = encodeURIComponent(
           (f.elements.namedItem("message") as HTMLTextAreaElement)?.value || "",
         );
-        window.location.href = `mailto:${CONTACT.email}?subject=${subject}&body=${body}`;
+        window.location.href = `mailto:${contact.email}?subject=${subject}&body=${body}`;
       }}
       className="space-y-3"
     >
@@ -173,7 +184,7 @@ function ContactForm() {
       <textarea
         name="message"
         rows={5}
-        placeholder="Tell Hazami what's on your mind..."
+        placeholder={`Tell ${contact.name} what's on your mind...`}
         className="w-full px-4 py-2.5 rounded-xl bg-white/70 border border-white/70 outline-none focus:border-primary text-sm resize-none"
       />
       <button

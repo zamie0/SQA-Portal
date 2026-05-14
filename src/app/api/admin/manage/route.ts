@@ -26,6 +26,13 @@ function roleLabel(value: string) {
   return value.replace(/_/g, " ");
 }
 
+function slug(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 function badRequest(message: string) {
   return NextResponse.json({ ok: false, message }, { status: 400 });
 }
@@ -273,6 +280,259 @@ export async function POST(request: Request) {
     const toolName = text(tool?.name) || id;
     await writeAudit(actorId, "delete", "tool", id, toolName, `${toolName} tool was deleted`);
     return NextResponse.json({ ok: true });
+  }
+
+  if (action === "createHelpItem" || action === "updateHelpItem") {
+    const id = action === "createHelpItem" ? randomUUID() : text(input.id);
+    const title = text(input.title);
+    if (!id || !title) return badRequest("Missing help title");
+    await db.collection<AdminDocument>("help_items").updateOne(
+      documentFilter(id),
+      {
+        $set: {
+          title,
+          slug: text(input.slug) || slug(title),
+          description: text(input.description),
+          href: text(input.href) || "/help",
+          icon: text(input.icon) || "life-buoy",
+          color: text(input.color) || "from-sky-500 to-cyan-500",
+          category: text(input.category) || "support",
+          sortOrder: Number(input.sortOrder) || 0,
+          isActive: bool(input.isActive),
+          updatedAt: Date.now(),
+        },
+        $setOnInsert: {
+          _id: id,
+          createdAt: Date.now(),
+        },
+      },
+      { upsert: true },
+    );
+    await writeAudit(
+      actorId,
+      action === "createHelpItem" ? "create" : "update",
+      "help_item",
+      id,
+      title,
+      `${title} help item was ${action === "createHelpItem" ? "created" : "updated"}`,
+      { isActive: bool(input.isActive) },
+    );
+    return NextResponse.json({ ok: true, id });
+  }
+
+  if (action === "deleteHelpItem") {
+    const id = text(input.id);
+    if (!id) return badRequest("Missing help item");
+    const helpItem = await db.collection<AdminDocument>("help_items").findOne(documentFilter(id));
+    await db.collection<AdminDocument>("help_items").deleteOne(documentFilter(id));
+    const helpTitle = text(helpItem?.title) || id;
+    await writeAudit(
+      actorId,
+      "delete",
+      "help_item",
+      id,
+      helpTitle,
+      `${helpTitle} help item was deleted`,
+    );
+    return NextResponse.json({ ok: true });
+  }
+
+  if (action === "createHelpFaqGroup" || action === "updateHelpFaqGroup") {
+    const label = text(input.label);
+    const id =
+      action === "createHelpFaqGroup" ? `faq-${slug(label) || randomUUID()}` : text(input.id);
+    if (!id || !label) return badRequest("Missing FAQ group label");
+    await db.collection<AdminDocument>("help_faq_groups").updateOne(
+      documentFilter(id),
+      {
+        $set: {
+          label,
+          sortOrder: Number(input.sortOrder) || 0,
+          isActive: bool(input.isActive),
+          updatedAt: Date.now(),
+        },
+        $setOnInsert: {
+          _id: id,
+          createdAt: Date.now(),
+        },
+      },
+      { upsert: true },
+    );
+    await writeAudit(
+      actorId,
+      action === "createHelpFaqGroup" ? "create" : "update",
+      "help_faq_group",
+      id,
+      label,
+      `${label} FAQ group was ${action === "createHelpFaqGroup" ? "created" : "updated"}`,
+    );
+    return NextResponse.json({ ok: true, id });
+  }
+
+  if (action === "deleteHelpFaqGroup") {
+    const id = text(input.id);
+    if (!id) return badRequest("Missing FAQ group");
+    const group = await db.collection<AdminDocument>("help_faq_groups").findOne(documentFilter(id));
+    await Promise.all([
+      db.collection<AdminDocument>("help_faq_groups").deleteOne(documentFilter(id)),
+      db.collection<AdminDocument>("help_faq_items").deleteMany({ groupId: id }),
+    ]);
+    const groupName = text(group?.label) || id;
+    await writeAudit(
+      actorId,
+      "delete",
+      "help_faq_group",
+      id,
+      groupName,
+      `${groupName} FAQ group was deleted`,
+    );
+    return NextResponse.json({ ok: true });
+  }
+
+  if (action === "createHelpFaqItem" || action === "updateHelpFaqItem") {
+    const groupId = text(input.groupId);
+    const question = text(input.question);
+    const id =
+      action === "createHelpFaqItem" ? `faq-${slug(question) || randomUUID()}` : text(input.id);
+    if (!id || !groupId || !question) return badRequest("Missing FAQ item");
+    await db.collection<AdminDocument>("help_faq_items").updateOne(
+      documentFilter(id),
+      {
+        $set: {
+          groupId,
+          question,
+          answer: text(input.answer),
+          sortOrder: Number(input.sortOrder) || 0,
+          isActive: bool(input.isActive),
+          updatedAt: Date.now(),
+        },
+        $setOnInsert: {
+          _id: id,
+          createdAt: Date.now(),
+        },
+      },
+      { upsert: true },
+    );
+    await writeAudit(
+      actorId,
+      action === "createHelpFaqItem" ? "create" : "update",
+      "help_faq_item",
+      id,
+      question,
+      `${question} FAQ was ${action === "createHelpFaqItem" ? "created" : "updated"}`,
+    );
+    return NextResponse.json({ ok: true, id });
+  }
+
+  if (action === "deleteHelpFaqItem") {
+    const id = text(input.id);
+    if (!id) return badRequest("Missing FAQ item");
+    const faq = await db.collection<AdminDocument>("help_faq_items").findOne(documentFilter(id));
+    await db.collection<AdminDocument>("help_faq_items").deleteOne(documentFilter(id));
+    const question = text(faq?.question) || id;
+    await writeAudit(
+      actorId,
+      "delete",
+      "help_faq_item",
+      id,
+      question,
+      `${question} FAQ was deleted`,
+    );
+    return NextResponse.json({ ok: true });
+  }
+
+  if (action === "createHelpTutorialStep" || action === "updateHelpTutorialStep") {
+    const title = text(input.title);
+    const id =
+      action === "createHelpTutorialStep"
+        ? `tutorial-${slug(title) || randomUUID()}`
+        : text(input.id);
+    if (!id || !title) return badRequest("Missing tutorial step title");
+    const detail = Array.isArray(input.detail)
+      ? input.detail.map(text).filter(Boolean)
+      : text(input.detail).split(/\r?\n/).map(text).filter(Boolean);
+    await db.collection<AdminDocument>("help_tutorial_steps").updateOne(
+      documentFilter(id),
+      {
+        $set: {
+          title,
+          icon: text(input.icon) || "graduation-cap",
+          summary: text(input.summary),
+          detail,
+          sortOrder: Number(input.sortOrder) || 0,
+          isActive: bool(input.isActive),
+          updatedAt: Date.now(),
+        },
+        $setOnInsert: {
+          _id: id,
+          createdAt: Date.now(),
+        },
+      },
+      { upsert: true },
+    );
+    await writeAudit(
+      actorId,
+      action === "createHelpTutorialStep" ? "create" : "update",
+      "help_tutorial_step",
+      id,
+      title,
+      `${title} tutorial step was ${action === "createHelpTutorialStep" ? "created" : "updated"}`,
+    );
+    return NextResponse.json({ ok: true, id });
+  }
+
+  if (action === "deleteHelpTutorialStep") {
+    const id = text(input.id);
+    if (!id) return badRequest("Missing tutorial step");
+    const step = await db
+      .collection<AdminDocument>("help_tutorial_steps")
+      .findOne(documentFilter(id));
+    await db.collection<AdminDocument>("help_tutorial_steps").deleteOne(documentFilter(id));
+    const title = text(step?.title) || id;
+    await writeAudit(
+      actorId,
+      "delete",
+      "help_tutorial_step",
+      id,
+      title,
+      `${title} tutorial step was deleted`,
+    );
+    return NextResponse.json({ ok: true });
+  }
+
+  if (action === "updateHelpContact") {
+    const contact = {
+      name: text(input.name),
+      initials: text(input.initials),
+      role: text(input.role),
+      phone: text(input.phone),
+      email: text(input.email),
+      availability: text(input.availability),
+      githubUrl: text(input.githubUrl),
+      linkedinUrl: text(input.linkedinUrl),
+      supportMessage: text(input.supportMessage),
+      updatedAt: Date.now(),
+    };
+    await db.collection<AdminDocument>("help_contact").updateOne(
+      { _id: "primary" },
+      {
+        $set: contact,
+        $setOnInsert: {
+          _id: "primary",
+          createdAt: Date.now(),
+        },
+      },
+      { upsert: true },
+    );
+    await writeAudit(
+      actorId,
+      "update",
+      "help_contact",
+      "primary",
+      contact.name || "Primary contact",
+      `Help contact was updated`,
+    );
+    return NextResponse.json({ ok: true, id: "primary" });
   }
 
   if (action === "upsertProjectTool") {

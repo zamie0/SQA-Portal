@@ -67,7 +67,7 @@ const qeNav: NavItem[] = [
 
 const helpNav: NavItem[] = [
   { to: "/help", label: "Help", icon: LifeBuoy, exact: true },
-  { to: "/help/chat", label: "AI Assistant", icon: MessageCircle },
+  { to: "/help/chat", label: "SQA Copilot", icon: MessageCircle },
 ];
 
 const orcaNav: NavItem[] = [
@@ -112,6 +112,7 @@ export function Shell({ children }: { children: ReactNode }) {
   const path = usePathname() ?? "/";
   const ctx = getContext(path);
   const user = useAuth();
+  const isCopilotPage = path === "/help/chat";
 
   const items =
     ctx === "qe"
@@ -151,7 +152,11 @@ export function Shell({ children }: { children: ReactNode }) {
               : "Quality Assurance";
 
   return (
-    <div className="min-h-screen flex overflow-visible">
+    <div
+      className={
+        isCopilotPage ? "flex h-screen overflow-hidden" : "min-h-screen flex overflow-visible"
+      }
+    >
       <aside className="hidden lg:flex flex-col w-64 m-4 mr-0 rounded-3xl glass p-5 sticky top-4 self-start h-[calc(100vh-2rem)] overflow-visible">
         <SmartLogo heading={heading} subheading={subheading} />
 
@@ -209,7 +214,7 @@ export function Shell({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 min-h-0">
         <header className="lg:hidden sticky top-0 z-30 m-4 rounded-3xl glass px-4 py-3 flex items-center gap-3">
           <div className="h-9 w-9 rounded-xl bg-[image:var(--gradient-primary)] grid place-items-center">
             <Sparkles className="h-4 w-4 text-white" />
@@ -218,7 +223,9 @@ export function Shell({ children }: { children: ReactNode }) {
           <ProfileMenu />
         </header>
 
-        <main className="p-4 pb-10 flex-1">{children}</main>
+        <main className={isCopilotPage ? "p-4 flex-1 min-h-0 overflow-hidden" : "p-4 pb-10 flex-1"}>
+          {children}
+        </main>
       </div>
     </div>
   );
