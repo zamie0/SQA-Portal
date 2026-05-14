@@ -130,7 +130,11 @@ function normalizeText(value: unknown, fallback: string) {
   return typeof value === "string" && value.trim() ? value.trim() : fallback;
 }
 
-function normalizeTestCases(testCases: unknown[], selectedType: TestType, selectedPriority: Priority) {
+function normalizeTestCases(
+  testCases: unknown[],
+  selectedType: TestType,
+  selectedPriority: Priority,
+) {
   return testCases
     .filter((item): item is GeneratedTestCase => !!item && typeof item === "object")
     .map((item, index): NormalizedTestCase => {
@@ -145,7 +149,10 @@ function normalizeTestCases(testCases: unknown[], selectedType: TestType, select
           item.description,
           `AI-generated ${selectedType.toLowerCase()} scenario derived from the provided requirement.`,
         ),
-        preconditions: normalizeText(item.preconditions, "Relevant test data and access are available."),
+        preconditions: normalizeText(
+          item.preconditions,
+          "Relevant test data and access are available.",
+        ),
         steps,
         expectedResults: normalizeLines(
           item.expectedResult,
@@ -253,7 +260,8 @@ export default function QAGeniusPage() {
         description: `${file.name} was added to the generator input.`,
       });
     } catch {
-      const message = "QA Genius could not read that file. Please paste the requirement text instead.";
+      const message =
+        "QA Genius could not read that file. Please paste the requirement text instead.";
       setErrorMessage(message);
       toast.error("File upload failed", { description: message });
     }
@@ -290,9 +298,7 @@ export default function QAGeniusPage() {
 
       if (!response.ok) {
         const message = await response.text();
-        throw new Error(
-          message || "QA Genius could not generate test cases. Please try again.",
-        );
+        throw new Error(message || "QA Genius could not generate test cases. Please try again.");
       }
 
       const data = (await response.json()) as { testCases?: unknown };
@@ -302,7 +308,9 @@ export default function QAGeniusPage() {
 
       const normalized = normalizeTestCases(data.testCases, testType, priority);
       if (normalized.length === 0) {
-        throw new Error("QA Genius did not return any test cases. Please add more requirement detail.");
+        throw new Error(
+          "QA Genius did not return any test cases. Please add more requirement detail.",
+        );
       }
 
       setResults(normalized);
@@ -604,7 +612,9 @@ export default function QAGeniusPage() {
               <div className="grid min-h-96 place-items-center rounded-2xl border border-white/70 bg-white/50 p-8 text-center">
                 <div>
                   <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
-                  <p className="mt-3 text-sm font-medium">Generating enterprise SQA test cases...</p>
+                  <p className="mt-3 text-sm font-medium">
+                    Generating enterprise SQA test cases...
+                  </p>
                   <p className="mt-1 text-xs text-muted-foreground">
                     QA Genius is analyzing the requirement and structuring the output.
                   </p>
@@ -613,75 +623,75 @@ export default function QAGeniusPage() {
             ) : hasResults ? (
               <div className="w-full max-w-full overflow-x-scroll overflow-y-visible rounded-2xl border border-slate-200 bg-white/60 pb-4">
                 <table className="w-[1800px] min-w-[1800px] table-fixed border-collapse text-left text-sm">
-                    <tbody>
-                      <tr>
-                        <td
-                          colSpan={5}
-                          className="border border-emerald-800 bg-emerald-600 px-4 py-2 text-sm font-bold text-white"
-                        >
-                          Test Flow: Generated QA Test Cases
+                  <tbody>
+                    <tr>
+                      <td
+                        colSpan={5}
+                        className="border border-emerald-800 bg-emerald-600 px-4 py-2 text-sm font-bold text-white"
+                      >
+                        Test Flow: Generated QA Test Cases
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        colSpan={5}
+                        className="border border-emerald-800 bg-emerald-500 px-4 py-2 text-sm font-bold text-white"
+                      >
+                        Part A - {testType} Test Cases
+                      </td>
+                    </tr>
+                    <tr className="bg-slate-900 text-white">
+                      <th className="w-[120px] border border-slate-700 px-3 py-3 align-top font-bold break-words whitespace-normal">
+                        TC ID
+                      </th>
+                      <th className="w-[320px] border border-slate-700 px-3 py-3 align-top font-bold break-words whitespace-normal">
+                        Test Scenario
+                      </th>
+                      <th className="w-[360px] border border-slate-700 px-3 py-3 align-top font-bold break-words whitespace-normal">
+                        Objective
+                      </th>
+                      <th className="w-[520px] border border-slate-700 px-3 py-3 align-top font-bold break-words whitespace-normal">
+                        Test Procedure
+                      </th>
+                      <th className="w-[520px] border border-slate-700 px-3 py-3 align-top font-bold break-words whitespace-normal">
+                        Expected Results
+                      </th>
+                    </tr>
+                    {results.map((result, rowIndex) => (
+                      <tr
+                        key={result.id}
+                        className={rowIndex % 2 === 0 ? "bg-white/90" : "bg-slate-50/90"}
+                      >
+                        <td className="border border-slate-300 px-3 py-3 align-top font-semibold text-slate-900 break-words whitespace-normal">
+                          {result.id}
+                        </td>
+                        <td className="border border-slate-300 px-3 py-3 align-top font-medium text-slate-900 break-words whitespace-normal">
+                          {result.title}
+                        </td>
+                        <td className="border border-slate-300 px-3 py-3 align-top text-slate-800 break-words whitespace-normal">
+                          {result.description}
+                        </td>
+                        <td className="border border-slate-300 px-3 py-3 align-top text-slate-800 break-words whitespace-normal">
+                          <ol className="list-decimal space-y-1 pl-5">
+                            {result.steps.map((step, index) => (
+                              <li key={`${result.id}-step-${index}`} className="pl-1">
+                                {step}
+                              </li>
+                            ))}
+                          </ol>
+                        </td>
+                        <td className="border border-slate-300 px-3 py-3 align-top text-slate-800 break-words whitespace-normal">
+                          <ol className="list-decimal space-y-1 pl-5">
+                            {result.expectedResults.map((expected, index) => (
+                              <li key={`${result.id}-expected-${index}`} className="pl-1">
+                                {expected}
+                              </li>
+                            ))}
+                          </ol>
                         </td>
                       </tr>
-                      <tr>
-                        <td
-                          colSpan={5}
-                          className="border border-emerald-800 bg-emerald-500 px-4 py-2 text-sm font-bold text-white"
-                        >
-                          Part A - {testType} Test Cases
-                        </td>
-                      </tr>
-                      <tr className="bg-slate-900 text-white">
-                        <th className="w-[120px] border border-slate-700 px-3 py-3 align-top font-bold break-words whitespace-normal">
-                          TC ID
-                        </th>
-                        <th className="w-[320px] border border-slate-700 px-3 py-3 align-top font-bold break-words whitespace-normal">
-                          Test Scenario
-                        </th>
-                        <th className="w-[360px] border border-slate-700 px-3 py-3 align-top font-bold break-words whitespace-normal">
-                          Objective
-                        </th>
-                        <th className="w-[520px] border border-slate-700 px-3 py-3 align-top font-bold break-words whitespace-normal">
-                          Test Procedure
-                        </th>
-                        <th className="w-[520px] border border-slate-700 px-3 py-3 align-top font-bold break-words whitespace-normal">
-                          Expected Results
-                        </th>
-                      </tr>
-                      {results.map((result, rowIndex) => (
-                        <tr
-                          key={result.id}
-                          className={rowIndex % 2 === 0 ? "bg-white/90" : "bg-slate-50/90"}
-                        >
-                          <td className="border border-slate-300 px-3 py-3 align-top font-semibold text-slate-900 break-words whitespace-normal">
-                            {result.id}
-                          </td>
-                          <td className="border border-slate-300 px-3 py-3 align-top font-medium text-slate-900 break-words whitespace-normal">
-                            {result.title}
-                          </td>
-                          <td className="border border-slate-300 px-3 py-3 align-top text-slate-800 break-words whitespace-normal">
-                            {result.description}
-                          </td>
-                          <td className="border border-slate-300 px-3 py-3 align-top text-slate-800 break-words whitespace-normal">
-                            <ol className="list-decimal space-y-1 pl-5">
-                              {result.steps.map((step, index) => (
-                                <li key={`${result.id}-step-${index}`} className="pl-1">
-                                  {step}
-                                </li>
-                              ))}
-                            </ol>
-                          </td>
-                          <td className="border border-slate-300 px-3 py-3 align-top text-slate-800 break-words whitespace-normal">
-                            <ol className="list-decimal space-y-1 pl-5">
-                              {result.expectedResults.map((expected, index) => (
-                                <li key={`${result.id}-expected-${index}`} className="pl-1">
-                                  {expected}
-                                </li>
-                              ))}
-                            </ol>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
+                    ))}
+                  </tbody>
                 </table>
               </div>
             ) : (

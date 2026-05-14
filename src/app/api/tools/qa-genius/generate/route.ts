@@ -62,8 +62,7 @@ function getQaGeniusModelConfig() {
     return {
       modelName: process.env.GEMINI_MODEL,
       source: "GEMINI_MODEL",
-      fallbackBehavior:
-        "QAGENIUS_GEMINI_MODEL is not set. Falling back to shared GEMINI_MODEL.",
+      fallbackBehavior: "QAGENIUS_GEMINI_MODEL is not set. Falling back to shared GEMINI_MODEL.",
     };
   }
 
@@ -253,7 +252,9 @@ function toStringArray(value: unknown): string[] {
       .map((step) => step.trim())
       .filter(Boolean);
 
-    return steps.length > 0 ? steps : ["Review the requirement and execute the relevant user flow."];
+    return steps.length > 0
+      ? steps
+      : ["Review the requirement and execute the relevant user flow."];
   }
 
   if (typeof value === "string" && value.trim()) {
@@ -262,7 +263,9 @@ function toStringArray(value: unknown): string[] {
       .map((step) => step.trim())
       .filter(Boolean);
 
-    return steps.length > 0 ? steps : ["Review the requirement and execute the relevant user flow."];
+    return steps.length > 0
+      ? steps
+      : ["Review the requirement and execute the relevant user flow."];
   }
 
   return ["Review the requirement and execute the relevant user flow."];
