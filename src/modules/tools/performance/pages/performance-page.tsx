@@ -322,28 +322,47 @@ function PerformancePage() {
         method: "POST",
         body: formData,
       });
+
       const data = (await response.json()) as
         | UploadedJmxRef
-        | { message?: string; scenarioId?: string; scenarioName?: string; fileId?: string; fileName?: string; createdAt?: string };
+        | {
+            message?: string;
+            scenarioId?: string;
+            scenarioName?: string;
+            fileId?: string;
+            fileName?: string;
+            createdAt?: string;
+          };
 
-      if (!response.ok || !("fileId" in data) || !data.fileId || !data.fileName || !data.scenarioId || !data.scenarioName || !data.createdAt) {
+      if (
+        !response.ok ||
+        !("fileId" in data) ||
+        typeof data.fileId !== "string" ||
+        typeof data.fileName !== "string" ||
+        typeof data.scenarioId !== "string" ||
+        typeof data.scenarioName !== "string" ||
+        typeof data.createdAt !== "string"
+      ) {
         throw new Error(("message" in data && data.message) || "Unable to upload the JMX file.");
       }
 
+      const uploadedJmx: UploadedJmxRef = {
+        fileId: data.fileId,
+        fileName: data.fileName,
+        scenarioId: data.scenarioId,
+        scenarioName: data.scenarioName,
+        createdAt: data.createdAt,
+      };
+
       updateProject(projectId, (current) => ({
         ...current,
-        lastFileName: data.fileName,
-        uploadedJmx: {
-          fileId: data.fileId,
-          fileName: data.fileName,
-          scenarioId: data.scenarioId,
-          scenarioName: data.scenarioName,
-          createdAt: data.createdAt,
-        },
+        lastFileName: uploadedJmx.fileName,
+        uploadedJmx,
       }));
+
       setFeedback({
         tone: "success",
-        text: `${data.fileName} uploaded and linked to scenario "${data.scenarioName}".`,
+        text: `${uploadedJmx.fileName} uploaded and linked to scenario "${uploadedJmx.scenarioName}".`,
       });
     } catch (error) {
       setFeedback({
@@ -515,7 +534,7 @@ function PerformancePage() {
 
       setFeedback({ tone: "error", text: message });
     } finally {
-      await loadProjectReports(selectedProject.name);
+      await loadProjectReports(selectedProject.id);
       setRunningProjectId(null);
     }
   }
@@ -777,7 +796,7 @@ function PerformancePage() {
                     },
                   }))
                 }
-                onRefreshResults={() => loadProjectReports(selectedProject.name)}
+                onRefreshResults={() => loadProjectReports(selectedProject.id)}
                 onRun={runTest}
               />
             ) : (
