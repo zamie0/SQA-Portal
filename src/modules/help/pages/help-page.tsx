@@ -1,7 +1,6 @@
-"use client";
-
 import Link from "next/link";
 import { Shell } from "@/shared/components/layout/Shell";
+import { listPortalHelpItems, type PortalHelpItem } from "@/shared/lib/portal-content";
 import {
   ArrowUpRight,
   GraduationCap,
@@ -11,71 +10,106 @@ import {
   Phone,
 } from "lucide-react";
 
-const cards = [
-  {
-    to: "/help/faq",
-    name: "FAQ",
-    desc: "Answers to common questions about projects, runs, RPA and integrations.",
-    icon: HelpCircle,
-    color: "from-amber-400 to-rose-500",
-  },
-  {
-    to: "/help/tutorial",
-    name: "Tutorial",
-    desc: "Step-by-step walkthrough to get productive in minutes.",
-    icon: GraduationCap,
-    color: "from-emerald-400 to-sky-500",
-  },
-  {
-    to: "/help/contact",
-    name: "Contact",
-    desc: "Reach the system owner directly via phone or email.",
-    icon: Phone,
-    color: "from-violet-500 to-indigo-500",
-  },
-] as const;
+const helpIcons = {
+  "graduation-cap": GraduationCap,
+  "help-circle": HelpCircle,
+  "life-buoy": LifeBuoy,
+  "message-circle": MessageCircle,
+  phone: Phone,
+} as const;
 
-export default function HelpPage() {
+function helpView(item: PortalHelpItem) {
+  return {
+    to: item.href || "/help",
+    name: item.title || "Untitled help item",
+    desc: item.description || "No description available.",
+    icon: helpIcons[item.icon as keyof typeof helpIcons] ?? LifeBuoy,
+    color: item.color || "from-sky-500 to-cyan-500",
+  };
+}
+
+export default async function HelpPage() {
+  const cards = await listPortalHelpItems();
+  const primaryCards = cards.map(helpView);
+
   return (
     <Shell>
-      <section className="rounded-3xl glass-strong p-8 mb-6 relative overflow-hidden">
-        <div className="absolute -top-20 -right-20 h-72 w-72 rounded-full bg-gradient-to-br from-amber-300 to-rose-400 opacity-20 blur-3xl" />
-        <div className="relative flex items-start gap-4">
-          <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-amber-400 to-rose-500 grid place-items-center text-white shadow-lg">
-            <LifeBuoy className="h-7 w-7" />
+      <section className="mb-6 overflow-hidden rounded-3xl glass-strong">
+        <div className="grid gap-6 p-6 lg:grid-cols-[1fr_360px] lg:p-8">
+          <div className="flex min-w-0 flex-col justify-between gap-8">
+            <div className="flex items-start gap-4">
+              <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-[image:var(--gradient-primary)] text-white shadow-lg">
+                <LifeBuoy className="h-7 w-7" />
+              </div>
+              <div className="min-w-0">
+                <div className="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                  Support center
+                </div>
+                <h1 className="text-3xl font-bold font-display md:text-4xl">Help center</h1>
+                <p className="mt-2 max-w-2xl text-sm text-muted-foreground md:text-base">
+                  Choose a support path, learn the workflow, or reach the team when you need a human
+                  answer.
+                </p>
+              </div>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="rounded-2xl border border-white/70 bg-white/60 p-4">
+                <div className="text-2xl font-semibold">{cards.length}</div>
+                <div className="text-xs text-muted-foreground">Published paths</div>
+              </div>
+              <div className="rounded-2xl border border-white/70 bg-white/60 p-4">
+                <div className="text-2xl font-semibold">24/7</div>
+                <div className="text-xs text-muted-foreground">AI assistant</div>
+              </div>
+              <div className="rounded-2xl border border-white/70 bg-white/60 p-4">
+                <div className="text-2xl font-semibold">Live</div>
+                <div className="text-xs text-muted-foreground">Admin-managed</div>
+              </div>
+            </div>
           </div>
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold font-display">Help center</h1>
-            <p className="text-muted-foreground mt-2 max-w-2xl">
-              Find answers, learn the workflow, or talk to the system owner.
+
+          <div className="rounded-3xl border border-white/70 bg-white/70 p-5 shadow-sm">
+            <Link
+              href="/help/chat"
+              className="flex items-center justify-between rounded-2xl bg-[image:var(--gradient-primary)] px-4 py-4 text-sm font-semibold text-white shadow-lg transition hover:shadow-xl"
+            >
+              <span className="inline-flex items-center gap-2">
+                <MessageCircle className="h-4 w-4" /> Ask SQA Copilot
+              </span>
+              <ArrowUpRight className="h-4 w-4" />
+            </Link>
+            <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
+              Good for quick explanations, workflow reminders, and finding the right place to go
+              next.
             </p>
           </div>
         </div>
-        <div className="relative mt-6">
-          <Link
-            href="/help/chat"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[image:var(--gradient-primary)] text-white text-sm font-medium shadow-lg"
-          >
-            <MessageCircle className="h-4 w-4" /> Ask SQA Copilot
-          </Link>
-        </div>
       </section>
 
-      <section className="grid md:grid-cols-3 gap-4">
-        {cards.map((c) => (
-          <Link key={c.to} href={c.to} className="rounded-3xl glass glass-hover p-6 block group">
-            <div
-              className={`h-12 w-12 rounded-2xl bg-gradient-to-br ${c.color} grid place-items-center text-white shadow-lg mb-4`}
-            >
-              <c.icon className="h-5 w-5" />
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="font-semibold text-lg group-hover:text-primary transition">
-                {c.name}
+      <section className="grid gap-4 md:grid-cols-3">
+        {cards.length === 0 && (
+          <div className="rounded-3xl glass p-6 text-sm text-muted-foreground md:col-span-3">
+            No active help items found in the database yet.
+          </div>
+        )}
+        {primaryCards.map((card) => (
+          <Link
+            key={card.to}
+            href={card.to}
+            className="group flex min-h-52 flex-col justify-between rounded-3xl glass glass-hover p-6"
+          >
+            <div>
+              <div
+                className={`mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br ${card.color} text-white shadow-lg`}
+              >
+                <card.icon className="h-5 w-5" />
               </div>
+              <div className="text-lg font-semibold transition group-hover:text-primary">
+                {card.name}
+              </div>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{card.desc}</p>
             </div>
-            <p className="text-sm text-muted-foreground mt-1">{c.desc}</p>
-            <div className="mt-3 inline-flex items-center gap-1 text-sm text-primary font-medium">
+            <div className="mt-5 inline-flex items-center gap-1 text-sm font-medium text-primary">
               Open <ArrowUpRight className="h-4 w-4" />
             </div>
           </Link>

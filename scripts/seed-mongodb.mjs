@@ -43,6 +43,11 @@ const collections = [
   "projects",
   "project_members",
   "tools",
+  "help_items",
+  "help_faq_groups",
+  "help_faq_items",
+  "help_tutorial_steps",
+  "help_contact",
   "project_tools",
   "files",
   "gallery_items",
@@ -189,9 +194,8 @@ const tools = [
     slug: "security-scanner",
     description: "Scanner for code quality and security issues",
     logoUrl: "/media/images/tools/Scanner.png",
-    url: "/sonarqube/",
+    url: "/tools/security-scanner",
     category: "built-in",
-    isScanner: true,
     isBuiltIn: true,
     isActive: true,
     source: "built-in",
@@ -202,9 +206,8 @@ const tools = [
     slug: "stt",
     description: "Video Streaming Test Tool",
     logoUrl: "",
-    url: "",
+    url: "/tools/stt",
     category: "built-in",
-    isScanner: false,
     isBuiltIn: true,
     isActive: true,
     source: "built-in",
@@ -217,7 +220,6 @@ const tools = [
     logoUrl: "",
     url: "/tools/orca",
     category: "built-in",
-    isScanner: false,
     isBuiltIn: true,
     isActive: true,
     source: "built-in",
@@ -230,7 +232,6 @@ const tools = [
     logoUrl: "",
     url: "/tools/qa-genius",
     category: "built-in",
-    isScanner: false,
     isBuiltIn: true,
     isActive: true,
     source: "built-in",
@@ -243,7 +244,6 @@ const tools = [
     logoUrl: "",
     url: "/tools/qe",
     category: "built-in",
-    isScanner: false,
     isBuiltIn: true,
     isActive: true,
     source: "built-in",
@@ -256,10 +256,262 @@ const tools = [
     logoUrl: "",
     url: "/tools/performance",
     category: "built-in",
-    isScanner: false,
     isBuiltIn: true,
     isActive: true,
     source: "built-in",
+  },
+];
+
+const helpItems = [
+  {
+    _id: "help-faq",
+    title: "FAQ",
+    slug: "faq",
+    description: "Answers to common questions about projects, runs, RPA and integrations.",
+    href: "/help/faq",
+    icon: "help-circle",
+    color: "from-amber-400 to-rose-500",
+    category: "support",
+    sortOrder: 10,
+    isActive: true,
+  },
+  {
+    _id: "help-tutorial",
+    title: "Tutorial",
+    slug: "tutorial",
+    description: "Step-by-step walkthrough to get productive in minutes.",
+    href: "/help/tutorial",
+    icon: "graduation-cap",
+    color: "from-emerald-400 to-sky-500",
+    category: "support",
+    sortOrder: 20,
+    isActive: true,
+  },
+  {
+    _id: "help-contact",
+    title: "Contact",
+    slug: "contact",
+    description: "Reach the system owner directly via phone or email.",
+    href: "/help/contact",
+    icon: "phone",
+    color: "from-violet-500 to-indigo-500",
+    category: "support",
+    sortOrder: 30,
+    isActive: true,
+  },
+];
+
+const helpFaqGroups = [
+  {
+    _id: "faq-getting-started",
+    label: "Getting started",
+    sortOrder: 10,
+    isActive: true,
+  },
+  {
+    _id: "faq-test-cases-scripts",
+    label: "Test cases & scripts",
+    sortOrder: 20,
+    isActive: true,
+  },
+  {
+    _id: "faq-execution-results",
+    label: "Execution & results",
+    sortOrder: 30,
+    isActive: true,
+  },
+  {
+    _id: "faq-api-rpa",
+    label: "API & RPA",
+    sortOrder: 40,
+    isActive: true,
+  },
+  {
+    _id: "faq-integrations-settings",
+    label: "Integrations & settings",
+    sortOrder: 50,
+    isActive: true,
+  },
+];
+
+const helpFaqItems = [
+  {
+    _id: "faq-what-is-qe-automation-hub",
+    groupId: "faq-getting-started",
+    question: "What is QE Automation Hub?",
+    answer:
+      "QE Automation Hub is a unified workspace where QE teams manage Test Automation suites and RPA bots. You can create projects, store scripts, define API endpoints, build RPA flows, run tests, and review results in one place.",
+    sortOrder: 10,
+    isActive: true,
+  },
+  {
+    _id: "faq-create-new-project",
+    groupId: "faq-getting-started",
+    question: "How do I create a new project?",
+    answer:
+      "Open the **Projects** page from the sidebar, click **Create project**, add a name, description, and project type, then submit the form.",
+    sortOrder: 20,
+    isActive: true,
+  },
+  {
+    _id: "faq-project-types",
+    groupId: "faq-getting-started",
+    question: "What's the difference between Test Automation and RPA projects?",
+    answer:
+      "**Test Automation** projects focus on scripts, suites, and execution results. **RPA** projects focus on step-based automation flows such as Open, Click, Extract, and Save.",
+    sortOrder: 30,
+    isActive: true,
+  },
+  {
+    _id: "faq-add-test-case",
+    groupId: "faq-test-cases-scripts",
+    question: "How do I add a test case?",
+    answer:
+      "Inside a project, open the **Test Cases** tab and create a new case with steps, expected result, priority, and tags.",
+    sortOrder: 10,
+    isActive: true,
+  },
+  {
+    _id: "faq-frameworks",
+    groupId: "faq-test-cases-scripts",
+    question: "Which automation frameworks are supported?",
+    answer:
+      "The portal is designed around Playwright, Cypress, Selenium, Robot Framework, Python, and JavaScript automation scripts.",
+    sortOrder: 20,
+    isActive: true,
+  },
+  {
+    _id: "faq-run-test",
+    groupId: "faq-execution-results",
+    question: "How do I run a test or suite?",
+    answer:
+      "Open a project and use the run controls from the project workspace. Results and logs are recorded after the run finishes.",
+    sortOrder: 10,
+    isActive: true,
+  },
+  {
+    _id: "faq-schedule-runs",
+    groupId: "faq-execution-results",
+    question: "Can I schedule runs?",
+    answer:
+      "Yes. Open the **Schedule** page from the sidebar to configure recurring runs for selected suites.",
+    sortOrder: 20,
+    isActive: true,
+  },
+  {
+    _id: "faq-api-testing",
+    groupId: "faq-api-rpa",
+    question: "How does the API Testing module work?",
+    answer:
+      "Inside a project, define an endpoint with method, URL, headers, and body, then send the request and review the response.",
+    sortOrder: 10,
+    isActive: true,
+  },
+  {
+    _id: "faq-rpa-flow",
+    groupId: "faq-api-rpa",
+    question: "How do I build an RPA flow?",
+    answer:
+      "Create a sequence of typed steps such as Open, Input, Click, Extract, API, and Save, then run the flow from the project workspace.",
+    sortOrder: 20,
+    isActive: true,
+  },
+  {
+    _id: "faq-cicd",
+    groupId: "faq-integrations-settings",
+    question: "Can I connect CI/CD?",
+    answer:
+      "Yes. The project settings area is intended for CI/CD integrations such as Jenkins, GitHub Actions, and GitLab CI.",
+    sortOrder: 10,
+    isActive: true,
+  },
+];
+
+const helpTutorialSteps = [
+  {
+    _id: "tutorial-create-project",
+    title: "Create your first project",
+    icon: "book-open",
+    summary: "Spin up a workspace for a Test Automation suite or an RPA bot.",
+    detail: [
+      "Open **Projects** from the left sidebar.",
+      "Click the **Create project** button.",
+      "Give the project a name, description, and type.",
+      "Create the project and open its workspace.",
+    ],
+    sortOrder: 10,
+    isActive: true,
+  },
+  {
+    _id: "tutorial-add-cases",
+    title: "Add test cases",
+    icon: "clipboard-list",
+    summary: "Capture what you're testing with steps, expected result, priority, and tags.",
+    detail: [
+      "Inside a project, open the **Test Cases** tab.",
+      "Create a new case and fill in the main details.",
+      "Add tags so the case is easier to filter later.",
+      "Link it to scripts or API endpoints when needed.",
+    ],
+    sortOrder: 20,
+    isActive: true,
+  },
+  {
+    _id: "tutorial-scripts",
+    title: "Upload or write automation scripts",
+    icon: "cpu",
+    summary: "Store your automation scripts inside the project workspace.",
+    detail: [
+      "Go to the **Scripts** tab.",
+      "Upload a file or create a new script entry.",
+      "Choose the framework or script type.",
+      "Keep the script connected to the related test case.",
+    ],
+    sortOrder: 30,
+    isActive: true,
+  },
+  {
+    _id: "tutorial-run",
+    title: "Run your tests",
+    icon: "play-circle",
+    summary: "Trigger single cases, suites, or the whole project.",
+    detail: [
+      "Open the execution area in the project.",
+      "Choose what you want to run.",
+      "Watch the status while the run is processed.",
+      "Review logs and results after completion.",
+    ],
+    sortOrder: 40,
+    isActive: true,
+  },
+  {
+    _id: "tutorial-results",
+    title: "Review results & share reports",
+    icon: "bar-chart-3",
+    summary: "Spot trends, drill into failures, and export reports.",
+    detail: [
+      "Open the **Results** tab.",
+      "Select a run to inspect failures and artifacts.",
+      "Use reports to share findings with stakeholders.",
+    ],
+    sortOrder: 50,
+    isActive: true,
+  },
+];
+
+const helpContact = [
+  {
+    _id: "primary",
+    name: "Hazami",
+    initials: "HZ",
+    role: "System Developer & Owner",
+    phone: "+60 19-736 6813",
+    email: "muhdhazami157@gmail.com",
+    availability: "Mon - Fri / 9:00 AM - 6:00 PM (GMT+8)",
+    githubUrl: "https://github.com/zamie0",
+    linkedinUrl: "https://www.linkedin.com/in/muhd-hazami-3a84112a2/",
+    supportMessage:
+      "For bug reports, account help, feature requests or anything else about QE Hub.",
   },
 ];
 
@@ -336,6 +588,9 @@ async function upsertTools(collection, documents) {
           ...tool,
           updatedAt: new Date(),
         },
+        $unset: {
+          isScanner: "",
+        },
         $setOnInsert: {
           _id,
           seededAt: new Date(),
@@ -354,6 +609,11 @@ async function ensureIndexes(db) {
     db.collection("password_resets").createIndex({ status: 1, createdAt: -1 }),
     db.collection("project_members").createIndex({ projectId: 1, userId: 1 }, { unique: true }),
     db.collection("tools").createIndex({ name: 1 }),
+    db.collection("help_items").createIndex({ slug: 1 }, { unique: true }),
+    db.collection("help_items").createIndex({ isActive: 1, sortOrder: 1 }),
+    db.collection("help_faq_groups").createIndex({ sortOrder: 1 }),
+    db.collection("help_faq_items").createIndex({ groupId: 1, sortOrder: 1 }),
+    db.collection("help_tutorial_steps").createIndex({ sortOrder: 1 }),
     db.collection("project_tools").createIndex({ projectId: 1, toolId: 1 }, { unique: true }),
     db.collection("files").createIndex({ projectId: 1 }),
     db.collection("gallery_items").createIndex({ projectId: 1 }),
@@ -382,6 +642,11 @@ async function seed() {
   await upsertSeed(db.collection("permissions"), permissions);
   await upsertSeed(db.collection("roles"), roles);
   await upsertTools(db.collection("tools"), tools);
+  await insertMissing(db.collection("help_items"), helpItems);
+  await insertMissing(db.collection("help_faq_groups"), helpFaqGroups);
+  await insertMissing(db.collection("help_faq_items"), helpFaqItems);
+  await insertMissing(db.collection("help_tutorial_steps"), helpTutorialSteps);
+  await insertMissing(db.collection("help_contact"), helpContact);
   await insertMissing(db.collection("users"), users);
   await ensureIndexes(db);
 

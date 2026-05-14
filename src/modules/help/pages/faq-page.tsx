@@ -4,10 +4,10 @@ import Link from "next/link";
 import { Shell } from "@/shared/components/layout/Shell";
 import { useMemo, useState } from "react";
 import { Search, HelpCircle, ChevronDown, MessageCircle } from "lucide-react";
-import { faqGroups } from "@/modules/help";
+import type { PortalFaqGroup } from "@/shared/lib/portal-content";
 import ReactMarkdown from "react-markdown";
 
-function FaqPage() {
+function FaqPage({ faqGroups }: { faqGroups: PortalFaqGroup[] }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState<string | null>(null);
 
@@ -19,11 +19,13 @@ function FaqPage() {
       .map((g) => ({
         ...g,
         items: g.items.filter(
-          (i) => i.q.toLowerCase().includes(q) || i.a.toLowerCase().includes(q),
+          (i) =>
+            (i.question ?? "").toLowerCase().includes(q) ||
+            (i.answer ?? "").toLowerCase().includes(q),
         ),
       }))
       .filter((g) => g.items.length > 0);
-  }, [query]);
+  }, [faqGroups, query]);
 
   const total = filtered.reduce((acc, g) => acc + g.items.length, 0);
 
@@ -91,7 +93,7 @@ function FaqPage() {
 
               <div className="divide-y divide-white/40">
                 {group.items.map((item) => {
-                  const id = `${group.label}::${item.q}`;
+                  const id = `${group.label}::${item.question}`;
                   const isOpen = open === id;
 
                   return (
@@ -101,7 +103,7 @@ function FaqPage() {
                         onClick={() => setOpen(isOpen ? null : id)}
                         className="w-full flex items-center justify-between gap-3 text-left"
                       >
-                        <span className="font-medium">{item.q}</span>
+                        <span className="font-medium">{item.question}</span>
 
                         <ChevronDown
                           className={`h-4 w-4 text-muted-foreground transition-transform duration-300 ${
@@ -120,7 +122,7 @@ function FaqPage() {
                       >
                         <div className="overflow-hidden">
                           <div className="prose prose-sm max-w-none text-sm text-muted-foreground prose-strong:text-foreground prose-code:text-foreground prose-code:bg-white/60 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none">
-                            <ReactMarkdown>{item.a}</ReactMarkdown>
+                            <ReactMarkdown>{item.answer}</ReactMarkdown>
                           </div>
                         </div>
                       </div>

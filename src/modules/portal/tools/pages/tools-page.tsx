@@ -1,44 +1,62 @@
 import Link from "next/link";
 import { Shell } from "@/shared/components/layout/Shell";
-import { RequireAuth } from "@/shared/components/RequireAuth";
-import { Bot, Brain, Sparkles, Gauge, ArrowUpRight } from "lucide-react";
+import { listPortalTools, type PortalTool } from "@/shared/lib/portal-content";
+import {
+  ArrowUpRight,
+  Bot,
+  Brain,
+  Gauge,
+  RadioTower,
+  ShieldCheck,
+  Sparkles,
+  Wrench,
+} from "lucide-react";
 
-const tools = [
-  {
-    to: "/tools/orca",
-    name: "Orca",
-    desc: "Smart test orchestration with AI agents.",
+const toolStyles = {
+  "security-scanner": {
+    icon: ShieldCheck,
+    color: "from-rose-500 to-orange-500",
+  },
+  stt: {
+    icon: RadioTower,
+    color: "from-sky-500 to-blue-600",
+  },
+  orca: {
     icon: Bot,
     color: "from-blue-500 to-cyan-500",
-    status: "Beta",
   },
-  {
-    to: "/tools/qa-genius",
-    name: "QA Genius",
-    desc: "Generate test cases from requirements with AI.",
+  "qa-genius": {
     icon: Brain,
     color: "from-fuchsia-500 to-violet-600",
-    status: "Beta",
   },
-  {
-    to: "/tools/qe",
-    name: "QE Automation Hub",
-    desc: "Manage automation projects, runs, RPA flows and results.",
+  "qe-robot-framework-automation": {
     icon: Sparkles,
     color: "from-violet-500 to-indigo-500",
-    status: "Live",
   },
-  {
-    to: "/tools/performance",
-    name: "Performance Testing",
-    desc: "Load, stress and scalability testing dashboards.",
+  "performance-testing": {
     icon: Gauge,
     color: "from-emerald-500 to-teal-500",
-    status: "Beta",
   },
-] as const;
+} as const;
 
-function ToolsPage() {
+function toolView(tool: PortalTool) {
+  const style = toolStyles[tool.slug as keyof typeof toolStyles] ?? {
+    icon: Wrench,
+    color: "from-slate-500 to-zinc-600",
+  };
+
+  return {
+    to: tool.url || "/portal/tools",
+    name: tool.name || "Untitled tool",
+    desc: tool.description || "No description available.",
+    status: tool.isBuiltIn ? "Built-in" : "External",
+    ...style,
+  };
+}
+
+async function ToolsPage() {
+  const tools = await listPortalTools();
+
   return (
     <Shell>
       <section className="rounded-3xl glass-strong p-8 mb-6">
@@ -48,7 +66,12 @@ function ToolsPage() {
         </p>
       </section>
       <section className="grid md:grid-cols-2 gap-4">
-        {tools.map((t) => (
+        {tools.length === 0 && (
+          <div className="rounded-3xl glass p-6 text-sm text-muted-foreground md:col-span-2">
+            No active tools found in the database yet.
+          </div>
+        )}
+        {tools.map(toolView).map((t) => (
           <Link key={t.to} href={t.to} className="rounded-3xl glass glass-hover p-6 block group">
             <div className="flex items-start gap-4">
               <div

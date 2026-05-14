@@ -2,11 +2,17 @@ import {
   Activity,
   Boxes,
   Check,
+  ClipboardCheck,
+  ClipboardList,
   Database,
   Download,
   FileText,
+  GraduationCap,
+  HelpCircle,
   KeyRound,
   Layers,
+  LifeBuoy,
+  Phone,
   Plus,
   Save,
   Search,
@@ -146,6 +152,41 @@ function AdminSelect({
           })}
         </div>
       )}
+    </div>
+  );
+}
+
+function IconPicker({
+  value,
+  options,
+  onChange,
+}: {
+  value: string;
+  options: { value: string; label: string; icon: typeof Layers }[];
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div className="grid grid-cols-3 gap-2">
+      {options.map((option) => {
+        const Icon = option.icon;
+        const active = option.value === value;
+        return (
+          <button
+            key={option.value}
+            type="button"
+            onClick={() => onChange(option.value)}
+            className={[
+              "flex min-h-16 flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2 text-xs font-semibold transition",
+              active
+                ? "border-primary bg-primary/10 text-primary"
+                : "border-border/70 bg-white/70 text-muted-foreground hover:bg-white hover:text-foreground",
+            ].join(" ")}
+          >
+            <Icon className="h-4 w-4" />
+            <span>{option.label}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -359,7 +400,7 @@ export function ProjectsAdminView({
         <StatCard icon={Layers} label="Projects" value={data.projects.length} />
         <StatCard icon={Users} label="Members" value={data.projectMembers.length} />
         <StatCard icon={Wrench} label="Tools enabled" value={data.projectTools.length} />
-        <StatCard icon={Activity} label="Audit logs" value={data.auditLogs.length} />
+        <StatCard icon={ClipboardCheck} label="Audit logs" value={data.auditLogs.length} />
       </div>
       <div className="rounded-2xl border border-slate-200 bg-white/95 p-5 shadow-sm">
         <div className="mb-4 flex flex-col gap-1 border-b border-border/70 pb-3">
@@ -784,6 +825,674 @@ export function ToolsAdminView({ data, onMutate }: { data: AdminOverview; onMuta
         emptyLabel="external tools"
         onMutate={onMutate}
       />
+    </div>
+  );
+}
+
+export function HelpItemsAdminView({
+  data,
+  onMutate,
+}: {
+  data: AdminOverview;
+  onMutate: AdminMutate;
+}) {
+  const confirm = useAdminConfirm();
+  const [tab, setTab] = useState("cards");
+  const [faqGroup, setFaqGroup] = useState({
+    label: "",
+  });
+  const [faqItem, setFaqItem] = useState({
+    groupId: data.helpFaqGroups[0]?.id ?? "",
+    question: "",
+    answer: "",
+  });
+  const [tutorialStep, setTutorialStep] = useState({
+    title: "",
+    icon: "book-open",
+    summary: "",
+    detail: "",
+  });
+  const contact = data.helpContact[0];
+
+  const tutorialIcons = [
+    { value: "book-open", label: "Guide", icon: FileText },
+    { value: "clipboard-list", label: "Checklist", icon: ClipboardList },
+    { value: "cpu", label: "Technical", icon: Wrench },
+    { value: "play-circle", label: "Run", icon: Activity },
+    { value: "bar-chart-3", label: "Report", icon: Database },
+    { value: "graduation-cap", label: "Learning", icon: GraduationCap },
+  ];
+
+  async function saveFaqGroup() {
+    await onMutate({
+      action: "createHelpFaqGroup",
+      label: faqGroup.label,
+      sortOrder: (data.helpFaqGroups.length + 1) * 10,
+      isActive: true,
+    });
+    setFaqGroup({ label: "" });
+  }
+
+  async function saveFaqItem() {
+    await onMutate({
+      action: "createHelpFaqItem",
+      groupId: faqItem.groupId || data.helpFaqGroups[0]?.id,
+      question: faqItem.question,
+      answer: faqItem.answer,
+      sortOrder:
+        (data.helpFaqItems.filter((item) => item.groupId === faqItem.groupId).length + 1) * 10,
+      isActive: true,
+    });
+    setFaqItem({ groupId: faqItem.groupId, question: "", answer: "" });
+  }
+
+  async function saveTutorialStep() {
+    await onMutate({
+      action: "createHelpTutorialStep",
+      title: tutorialStep.title,
+      icon: tutorialStep.icon,
+      summary: tutorialStep.summary,
+      detail: tutorialStep.detail,
+      sortOrder: (data.helpTutorialSteps.length + 1) * 10,
+      isActive: true,
+    });
+    setTutorialStep({ title: "", icon: "book-open", summary: "", detail: "" });
+  }
+
+  const publishedCards = data.helpItems.filter((item) => item.isActive !== false).length;
+  const publishedFaqs = data.helpFaqItems.filter((item) => item.isActive !== false).length;
+  const publishedTutorialSteps = data.helpTutorialSteps.filter(
+    (step) => step.isActive !== false,
+  ).length;
+  const tabs = [
+    {
+      id: "cards",
+      label: "Help home",
+      detail: `${publishedCards} published`,
+      icon: LifeBuoy,
+    },
+    {
+      id: "faq",
+      label: "FAQ",
+      detail: `${publishedFaqs} questions`,
+      icon: HelpCircle,
+    },
+    {
+      id: "tutorial",
+      label: "Tutorial",
+      detail: `${publishedTutorialSteps} steps`,
+      icon: GraduationCap,
+    },
+    {
+      id: "contact",
+      label: "Contact",
+      detail: contact?.email ? "Configured" : "Needs setup",
+      icon: Phone,
+    },
+  ];
+
+  return (
+    <div className="space-y-5">
+      <div className="rounded-3xl border border-white/70 bg-white/75 p-5 shadow-sm">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+              Help content
+            </div>
+            <h3 className="mt-1 text-xl font-semibold">Manage the portal support experience</h3>
+            <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+              Keep help cards, answers, tutorials, and contact details clear for portal users.
+            </p>
+          </div>
+          <div className="grid grid-cols-3 gap-2 sm:min-w-80">
+            <div className="rounded-2xl border border-border/70 bg-background/80 p-3">
+              <div className="text-lg font-semibold">{publishedCards}</div>
+              <div className="text-[11px] text-muted-foreground">Cards</div>
+            </div>
+            <div className="rounded-2xl border border-border/70 bg-background/80 p-3">
+              <div className="text-lg font-semibold">{publishedFaqs}</div>
+              <div className="text-[11px] text-muted-foreground">FAQs</div>
+            </div>
+            <div className="rounded-2xl border border-border/70 bg-background/80 p-3">
+              <div className="text-lg font-semibold">{publishedTutorialSteps}</div>
+              <div className="text-[11px] text-muted-foreground">Steps</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-4">
+        {tabs.map((item) => {
+          const Icon = item.icon;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setTab(item.id)}
+              className={[
+                "flex min-h-24 items-start gap-3 rounded-2xl border p-4 text-left transition",
+                tab === item.id
+                  ? "border-primary/30 bg-primary/10 text-primary shadow-sm"
+                  : "border-border/70 bg-white/70 text-foreground hover:bg-white",
+              ].join(" ")}
+            >
+              <span className="grid h-9 w-9 place-items-center rounded-xl bg-white/80">
+                <Icon className="h-4 w-4" />
+              </span>
+              <span>
+                <span className="block text-sm font-semibold">{item.label}</span>
+                <span className="mt-1 block text-xs text-muted-foreground">{item.detail}</span>
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {tab === "cards" && (
+        <div className="space-y-4">
+          {data.helpItems.length === 0 ? (
+            <EmptyState label="help items" />
+          ) : (
+            data.helpItems.map((item, index) => (
+              <HelpCardEditor key={`${item.id}-${index}`} item={item} onMutate={onMutate} />
+            ))
+          )}
+        </div>
+      )}
+
+      {tab === "faq" && (
+        <div className="space-y-4">
+          <div className="rounded-2xl border border-slate-200 bg-white/90 p-5 shadow-sm">
+            <div className="mb-3 text-sm font-semibold">Add FAQ group</div>
+            <div className="grid gap-3 md:grid-cols-[1fr_auto]">
+              <Field label="Group name">
+                <input
+                  value={faqGroup.label}
+                  onChange={(event) => setFaqGroup({ label: event.target.value })}
+                  className={inputClass()}
+                />
+              </Field>
+              <div className="flex items-end">
+                <ActionButton onClick={saveFaqGroup} disabled={!faqGroup.label.trim()}>
+                  <Plus className="h-3.5 w-3.5" /> Add group
+                </ActionButton>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-white/90 p-5 shadow-sm">
+            <div className="mb-3 text-sm font-semibold">Add FAQ question</div>
+            <div className="grid gap-3 lg:grid-cols-2">
+              <Field label="Group">
+                <AdminSelect
+                  value={faqItem.groupId || data.helpFaqGroups[0]?.id || ""}
+                  onChange={(groupId) => setFaqItem((current) => ({ ...current, groupId }))}
+                  options={data.helpFaqGroups.map((group) => ({
+                    value: group.id,
+                    label: group.label ?? "Untitled group",
+                  }))}
+                />
+              </Field>
+              <Field label="Question">
+                <input
+                  value={faqItem.question}
+                  onChange={(event) =>
+                    setFaqItem((current) => ({ ...current, question: event.target.value }))
+                  }
+                  className={inputClass()}
+                />
+              </Field>
+              <div className="lg:col-span-2">
+                <Field label="Answer">
+                  <textarea
+                    value={faqItem.answer}
+                    onChange={(event) =>
+                      setFaqItem((current) => ({ ...current, answer: event.target.value }))
+                    }
+                    className={inputClass()}
+                    rows={3}
+                  />
+                </Field>
+              </div>
+              <div className="lg:col-span-2">
+                <ActionButton
+                  onClick={saveFaqItem}
+                  disabled={!faqItem.question.trim() || !data.helpFaqGroups.length}
+                >
+                  <Plus className="h-3.5 w-3.5" /> Add question
+                </ActionButton>
+              </div>
+            </div>
+          </div>
+
+          {data.helpFaqGroups.map((group) => (
+            <div key={group.id} className="rounded-2xl border border-border/70 bg-white/70 p-4">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                <input
+                  defaultValue={group.label ?? ""}
+                  className={inputClass("max-w-md")}
+                  onBlur={(event) =>
+                    void onMutate({
+                      action: "updateHelpFaqGroup",
+                      ...group,
+                      label: event.target.value,
+                    })
+                  }
+                />
+                <DangerButton
+                  onClick={async () => {
+                    if (
+                      !(await confirm({
+                        title: "Delete FAQ group",
+                        message: `Delete ${group.label ?? "this group"} and its questions?`,
+                        confirmLabel: "Delete",
+                        tone: "danger",
+                      }))
+                    )
+                      return;
+                    void onMutate({ action: "deleteHelpFaqGroup", id: group.id });
+                  }}
+                >
+                  <Trash2 className="h-3.5 w-3.5" /> Delete group
+                </DangerButton>
+              </div>
+              <div className="space-y-3">
+                {data.helpFaqItems
+                  .filter((item) => item.groupId === group.id)
+                  .map((item) => (
+                    <div
+                      key={item.id}
+                      className="rounded-xl border border-border/70 bg-white/70 p-3"
+                    >
+                      <Field label="Question">
+                        <input
+                          defaultValue={item.question ?? ""}
+                          className={inputClass()}
+                          onBlur={(event) =>
+                            void onMutate({
+                              action: "updateHelpFaqItem",
+                              ...item,
+                              question: event.target.value,
+                            })
+                          }
+                        />
+                      </Field>
+                      <div className="mt-3">
+                        <Field label="Answer">
+                          <textarea
+                            defaultValue={item.answer ?? ""}
+                            className={inputClass()}
+                            rows={3}
+                            onBlur={(event) =>
+                              void onMutate({
+                                action: "updateHelpFaqItem",
+                                ...item,
+                                answer: event.target.value,
+                              })
+                            }
+                          />
+                        </Field>
+                      </div>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <ActionButton
+                          onClick={() =>
+                            void onMutate({
+                              action: "updateHelpFaqItem",
+                              ...item,
+                              isActive: item.isActive === false,
+                            })
+                          }
+                        >
+                          {item.isActive === false ? "Publish" : "Hide"}
+                        </ActionButton>
+                        <DangerButton
+                          onClick={async () => {
+                            if (
+                              !(await confirm({
+                                title: "Delete FAQ",
+                                message: `Delete ${item.question ?? "this question"}?`,
+                                confirmLabel: "Delete",
+                                tone: "danger",
+                              }))
+                            )
+                              return;
+                            void onMutate({ action: "deleteHelpFaqItem", id: item.id });
+                          }}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" /> Delete
+                        </DangerButton>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {tab === "tutorial" && (
+        <div className="space-y-4">
+          <div className="rounded-2xl border border-slate-200 bg-white/90 p-5 shadow-sm">
+            <div className="mb-3 text-sm font-semibold">Add tutorial step</div>
+            <div className="grid gap-3 lg:grid-cols-2">
+              <Field label="Title">
+                <input
+                  value={tutorialStep.title}
+                  onChange={(event) =>
+                    setTutorialStep((current) => ({ ...current, title: event.target.value }))
+                  }
+                  className={inputClass()}
+                />
+              </Field>
+              <Field label="Icon">
+                <IconPicker
+                  value={tutorialStep.icon}
+                  options={tutorialIcons}
+                  onChange={(icon) => setTutorialStep((current) => ({ ...current, icon }))}
+                />
+              </Field>
+              <div className="lg:col-span-2">
+                <Field label="Summary">
+                  <input
+                    value={tutorialStep.summary}
+                    onChange={(event) =>
+                      setTutorialStep((current) => ({ ...current, summary: event.target.value }))
+                    }
+                    className={inputClass()}
+                  />
+                </Field>
+              </div>
+              <div className="lg:col-span-2">
+                <Field label="Step details">
+                  <textarea
+                    value={tutorialStep.detail}
+                    onChange={(event) =>
+                      setTutorialStep((current) => ({ ...current, detail: event.target.value }))
+                    }
+                    className={inputClass()}
+                    rows={4}
+                    placeholder="Write one instruction per line"
+                  />
+                </Field>
+              </div>
+              <div className="lg:col-span-2">
+                <ActionButton onClick={saveTutorialStep} disabled={!tutorialStep.title.trim()}>
+                  <Plus className="h-3.5 w-3.5" /> Add step
+                </ActionButton>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-2">
+            {data.helpTutorialSteps.map((step) => (
+              <div key={step.id} className="rounded-2xl border border-border/70 bg-white/70 p-4">
+                <div className="grid gap-3">
+                  <Field label="Title">
+                    <input
+                      defaultValue={step.title ?? ""}
+                      className={inputClass()}
+                      onBlur={(event) =>
+                        void onMutate({
+                          action: "updateHelpTutorialStep",
+                          ...step,
+                          title: event.target.value,
+                        })
+                      }
+                    />
+                  </Field>
+                  <Field label="Icon">
+                    <IconPicker
+                      value={step.icon ?? "graduation-cap"}
+                      options={tutorialIcons}
+                      onChange={(icon) =>
+                        void onMutate({
+                          action: "updateHelpTutorialStep",
+                          ...step,
+                          icon,
+                        })
+                      }
+                    />
+                  </Field>
+                  <Field label="Summary">
+                    <input
+                      defaultValue={step.summary ?? ""}
+                      className={inputClass()}
+                      onBlur={(event) =>
+                        void onMutate({
+                          action: "updateHelpTutorialStep",
+                          ...step,
+                          summary: event.target.value,
+                        })
+                      }
+                    />
+                  </Field>
+                  <Field label="Step details">
+                    <textarea
+                      defaultValue={(step.detail ?? []).join("\n")}
+                      className={inputClass()}
+                      rows={4}
+                      onBlur={(event) =>
+                        void onMutate({
+                          action: "updateHelpTutorialStep",
+                          ...step,
+                          detail: event.target.value,
+                        })
+                      }
+                    />
+                  </Field>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <ActionButton
+                    onClick={() =>
+                      void onMutate({
+                        action: "updateHelpTutorialStep",
+                        ...step,
+                        sortOrder: Number(step.sortOrder ?? 0) - 15,
+                      })
+                    }
+                  >
+                    Move up
+                  </ActionButton>
+                  <ActionButton
+                    onClick={() =>
+                      void onMutate({
+                        action: "updateHelpTutorialStep",
+                        ...step,
+                        sortOrder: Number(step.sortOrder ?? 0) + 15,
+                      })
+                    }
+                  >
+                    Move down
+                  </ActionButton>
+                  <ActionButton
+                    onClick={() =>
+                      void onMutate({
+                        action: "updateHelpTutorialStep",
+                        ...step,
+                        isActive: step.isActive === false,
+                      })
+                    }
+                  >
+                    {step.isActive === false ? "Publish" : "Hide"}
+                  </ActionButton>
+                  <DangerButton
+                    onClick={async () => {
+                      if (
+                        !(await confirm({
+                          title: "Delete tutorial step",
+                          message: `Delete ${step.title ?? "this step"}?`,
+                          confirmLabel: "Delete",
+                          tone: "danger",
+                        }))
+                      )
+                        return;
+                      void onMutate({ action: "deleteHelpTutorialStep", id: step.id });
+                    }}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" /> Delete
+                  </DangerButton>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {tab === "contact" && (
+        <div className="rounded-2xl border border-slate-200 bg-white/90 p-5 shadow-sm">
+          <div className="mb-3 text-sm font-semibold">Contact details</div>
+          <div className="grid gap-3 lg:grid-cols-2">
+            {[
+              ["name", "Name"],
+              ["initials", "Initials"],
+              ["role", "Role"],
+              ["phone", "Phone"],
+              ["email", "Email"],
+              ["availability", "Availability"],
+              ["githubUrl", "GitHub URL"],
+              ["linkedinUrl", "LinkedIn URL"],
+            ].map(([key, label]) => (
+              <Field key={key} label={label}>
+                <input
+                  defaultValue={String(contact?.[key] ?? "")}
+                  className={inputClass()}
+                  data-contact-field={key}
+                />
+              </Field>
+            ))}
+            <div className="lg:col-span-2">
+              <Field label="Support message">
+                <textarea
+                  defaultValue={contact?.supportMessage ?? ""}
+                  className={inputClass()}
+                  rows={3}
+                  data-contact-field="supportMessage"
+                />
+              </Field>
+            </div>
+            <div className="lg:col-span-2">
+              <ActionButton
+                onClick={() => {
+                  const fields = document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
+                    "[data-contact-field]",
+                  );
+                  const payload: Record<string, unknown> = { action: "updateHelpContact" };
+                  fields.forEach((field) => {
+                    payload[field.dataset.contactField ?? ""] = field.value;
+                  });
+                  void onMutate(payload);
+                }}
+              >
+                <Save className="h-3.5 w-3.5" /> Save contact
+              </ActionButton>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function HelpCardEditor({
+  item,
+  onMutate,
+}: {
+  item: AdminOverview["helpItems"][number];
+  onMutate: AdminMutate;
+}) {
+  const confirm = useAdminConfirm();
+  const [draft, setDraft] = useState({
+    title: item.title ?? "",
+    description: item.description ?? "",
+  });
+  const changed =
+    draft.title.trim() !== String(item.title ?? "").trim() ||
+    draft.description.trim() !== String(item.description ?? "").trim();
+
+  async function save() {
+    if (
+      !(await confirm({
+        title: "Save help card",
+        message: `Save changes to ${item.title ?? "this help card"}?`,
+        confirmLabel: "Save",
+      }))
+    )
+      return;
+    await onMutate({
+      action: "updateHelpItem",
+      ...item,
+      title: draft.title,
+      description: draft.description,
+    });
+  }
+
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white/90 p-5 shadow-sm">
+      <div className="flex flex-col gap-3 border-b border-border/70 pb-4 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <div className="flex flex-wrap items-center gap-2 text-base font-semibold">
+            {item.title ?? "Untitled help card"}
+            <span
+              className={[
+                "rounded-full px-2.5 py-1 text-xs font-semibold",
+                item.isActive === false
+                  ? "bg-muted text-muted-foreground"
+                  : "bg-primary/10 text-primary",
+              ].join(" ")}
+            >
+              {item.isActive === false ? "Hidden" : "Published"}
+            </span>
+          </div>
+          <div className="mt-1 text-sm text-muted-foreground">
+            {item.description ?? "No description"}
+          </div>
+        </div>
+        <ActionButton
+          onClick={async () => {
+            const nextState = item.isActive === false ? "publish" : "hide";
+            if (
+              !(await confirm({
+                title: `${nextState === "publish" ? "Publish" : "Hide"} help card`,
+                message: `${nextState === "publish" ? "Publish" : "Hide"} ${item.title ?? "this help card"}?`,
+                confirmLabel: nextState === "publish" ? "Publish" : "Hide",
+              }))
+            )
+              return;
+            void onMutate({
+              action: "updateHelpItem",
+              ...item,
+              isActive: item.isActive === false,
+            });
+          }}
+        >
+          {item.isActive === false ? "Publish" : "Hide"}
+        </ActionButton>
+      </div>
+
+      <div className="mt-4 grid gap-4">
+        <Field label="Title">
+          <input
+            value={draft.title}
+            onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))}
+            className={inputClass()}
+          />
+        </Field>
+        <Field label="Description">
+          <textarea
+            value={draft.description}
+            onChange={(event) =>
+              setDraft((current) => ({ ...current, description: event.target.value }))
+            }
+            className={inputClass("min-h-24 resize-y")}
+            rows={3}
+          />
+        </Field>
+        <div className="flex justify-end border-t border-border/70 pt-4">
+          <ActionButton onClick={save} disabled={!draft.title.trim() || !changed}>
+            <Save className="h-3.5 w-3.5" /> Save changes
+          </ActionButton>
+        </div>
+      </div>
     </div>
   );
 }
@@ -1307,9 +2016,10 @@ export function AdminOverviewCards({ data }: { data: AdminOverview }) {
       <StatCard icon={Users} label="Users" value={data.users.length} />
       <StatCard icon={Layers} label="Projects" value={data.projects.length} />
       <StatCard icon={Wrench} label="Tools" value={data.tools.length} />
+      <StatCard icon={LifeBuoy} label="Help items" value={data.helpItems.length} />
       <StatCard icon={Database} label="SonarQube scans" value={data.sonarqubeScans.length} />
       <StatCard icon={FileText} label="SonarQube issues" value={data.sonarqubeIssues.length} />
-      <StatCard icon={Activity} label="Audit logs" value={data.auditLogs.length} />
+      <StatCard icon={ClipboardCheck} label="Audit logs" value={data.auditLogs.length} />
       <StatCard icon={Boxes} label="Project tools" value={data.projectTools.length} />
       <StatCard icon={Shield} label="Roles" value={data.roles.length} />
     </div>
