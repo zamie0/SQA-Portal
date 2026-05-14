@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Shell } from "@/shared/components/layout/Shell";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -88,6 +89,7 @@ function newConversation(): Conversation {
 }
 
 function ChatPage() {
+  const router = useRouter();
   const [conversations, setConversations] = useLocalStorage<Conversation[]>("qe-hub.ai-chats.v1", [
     newConversation(),
   ]);
@@ -181,7 +183,8 @@ function ChatPage() {
 
     setSending(true);
     try {
-      const response = await fetch("/api/chat", {
+      const endpoint = shouldUseAgenticTesting(trimmed) ? "/api/copilot/agent" : "/api/chat";
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: history }),
@@ -479,7 +482,9 @@ function ChatPage() {
               {!active || active.messages.length === 0 ? (
                 <EmptyState onPick={(s) => send(s)} />
               ) : (
-                active.messages.map((m) => <Bubble key={m.id} message={m} />)
+                active.messages.map((m) => (
+                  <Bubble key={m.id} message={m} onOpenTool={(href) => router.push(href)} />
+                ))
               )}
             </div>
 
@@ -572,6 +577,26 @@ function ChatPage() {
       </div>
     </Shell>
   );
+}
+
+function shouldUseAgenticTesting(input: string) {
+  const normalized = input.toLowerCase();
+  const asksForAgent =
+    /\bagentic\b/.test(normalized) ||
+    /\bagent\b/.test(normalized) ||
+    /\bdo testing\b/.test(normalized) ||
+    /\brun (?:all )?tests?\b/.test(normalized) ||
+    /\btest (?:everything|all)\b/.test(normalized);
+
+  const hasTestingScope =
+    /\btest(?:ing|s)?\b/.test(normalized) ||
+    /\bqa\b/.test(normalized) ||
+    /\bautomation\b/.test(normalized) ||
+    /\bperformance\b/.test(normalized) ||
+    /\bjmeter\b/.test(normalized) ||
+    /\brobot\b/.test(normalized);
+
+  return asksForAgent && hasTestingScope;
 }
 
 function attachmentOnlyPrompt(attachments: AttachmentDraft[]) {
@@ -725,7 +750,13 @@ function EmptyState({ onPick }: { onPick: (s: string) => void }) {
   );
 }
 
-function Bubble({ message }: { message: UiMessage }) {
+function Bubble({
+  message,
+  onOpenTool,
+}: {
+  message: UiMessage;
+  onOpenTool: (href: string) => void;
+}) {
   const isUser = message.role === "user";
   const toolSuggestions =
     !isUser && !message.pending ? getAssistantToolSuggestions(message.content) : [];
@@ -817,7 +848,11 @@ function Bubble({ message }: { message: UiMessage }) {
         {toolSuggestions.length > 0 && (
           <div className="mt-2 flex w-full flex-wrap gap-2">
             {toolSuggestions.map((suggestion) => (
-              <AssistantToolSuggestion key={suggestion.href} suggestion={suggestion} />
+              <AssistantToolSuggestion
+                key={suggestion.href}
+                suggestion={suggestion}
+                onAllow={() => onOpenTool(suggestion.href)}
+              />
             ))}
           </div>
         )}
@@ -886,19 +921,28 @@ function isFloatingToolHref(href?: string) {
 
 function AssistantToolSuggestion({
   suggestion,
+  onAllow,
 }: {
   suggestion: { label: string; href: string; description: string };
+  onAllow: () => void;
 }) {
   return (
-    <Link
-      href={suggestion.href}
-      className="inline-flex w-full max-w-[14rem] items-center rounded-xl border border-sky-200/80 bg-sky-50/90 px-3 py-2 text-left text-sky-950 shadow-md shadow-sky-900/10 backdrop-blur-xl transition-all duration-200 animate-in fade-in-0 zoom-in-95 slide-in-from-top-1 hover:-translate-y-0.5 hover:border-sky-300 hover:bg-sky-100/90 sm:w-auto"
-    >
-      <span className="min-w-0">
+    <div className="flex w-full max-w-[16rem] items-center gap-2 rounded-xl border border-sky-200/80 bg-sky-50/90 px-3 py-2 text-left text-sky-950 shadow-md shadow-sky-900/10 backdrop-blur-xl transition-all duration-200 animate-in fade-in-0 zoom-in-95 slide-in-from-top-1 sm:w-auto">
+      <span className="min-w-0 flex-1">
+        <span className="block text-[10px] font-medium uppercase tracking-wide text-sky-600">
+          Allow Copilot to open
+        </span>
         <span className="block text-xs font-semibold leading-tight">{suggestion.label}</span>
         <span className="block truncate text-[11px] text-sky-700">{suggestion.description}</span>
       </span>
-    </Link>
+      <button
+        type="button"
+        onClick={onAllow}
+        className="shrink-0 rounded-lg bg-sky-600 px-2.5 py-1.5 text-[11px] font-semibold text-white shadow-sm transition hover:bg-sky-700"
+      >
+        Allow
+      </button>
+    </div>
   );
 }
 
