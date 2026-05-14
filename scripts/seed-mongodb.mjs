@@ -328,15 +328,16 @@ async function insertMissing(collection, documents) {
 
 async function upsertTools(collection, documents) {
   for (const document of documents) {
+    const { _id, ...tool } = document;
     await collection.updateOne(
       { slug: document.slug },
       {
         $set: {
-          ...document,
+          ...tool,
           updatedAt: new Date(),
         },
         $setOnInsert: {
-          _id: document._id,
+          _id,
           seededAt: new Date(),
         },
       },
