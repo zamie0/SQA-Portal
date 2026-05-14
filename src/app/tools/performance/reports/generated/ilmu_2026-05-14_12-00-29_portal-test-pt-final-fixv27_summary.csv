@@ -1,0 +1,9 @@
+metric,value
+samples,700
+failures,442
+errorRate,63.14
+averageMs,230
+p90Ms,13
+p95Ms,71
+p99Ms,4004
+throughput,0.0

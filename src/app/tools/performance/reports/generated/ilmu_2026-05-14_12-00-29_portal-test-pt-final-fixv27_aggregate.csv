@@ -1,0 +1,142 @@
+label,samples,avgMs,minMs,maxMs,failures,errorRate
+Ensure Access Token Min Validity Before BI Question,10,2,1,2,10,100.0
+Ensure Access Token Min Validity Before BI Retry Question,10,2,1,3,10,100.0
+Ensure Access Token Min Validity Before BM Question,10,1,1,2,10,100.0
+Ensure Access Token Min Validity Before BM Retry Question,10,1,1,2,10,100.0
+Ensure Access Token Min Validity Before Math Question,10,2,1,3,10,100.0
+Ensure Access Token Min Validity Before Math Retry Question,10,2,1,3,10,100.0
+Ensure Access Token Min Validity Before Sejarah Question,10,110,1,541,10,100.0
+Ensure Access Token Min Validity Before Sejarah Retry Question,10,2,1,4,10,100.0
+GET All Questions,2,0,0,1,2,100.0
+GET Flashcards,2,1,1,1,2,100.0
+GET Learning Assessment Page/API,2,1,1,1,2,100.0
+GET Learning Study Notes BI TP1,2,2,1,2,2,100.0
+GET Learning Study Notes BI TP2,2,1,1,1,2,100.0
+GET Learning Study Notes BM TP1,2,1,1,1,2,100.0
+GET Learning Study Notes BM TP2,2,2,0,5,2,100.0
+GET Learning Study Notes Math TP1,2,1,1,1,2,100.0
+GET Learning Study Notes Math TP2,2,0,0,1,2,100.0
+GET Learning Study Notes Sejarah TP1,2,2,1,2,2,100.0
+GET Learning Study Notes Sejarah TP2,2,0,0,1,2,100.0
+GET Learning TextBook BI PT1,2,0,0,1,2,100.0
+GET Learning TextBook BI PT12,2,1,1,1,2,100.0
+GET Learning TextBook BI PT16,2,0,0,1,2,100.0
+GET Learning TextBook BI PT6,2,2,2,3,2,100.0
+GET Learning TextBook BM PT1,2,1,1,1,2,100.0
+GET Learning TextBook BM PT16,2,1,1,1,2,100.0
+GET Learning TextBook BM PT4,2,1,1,1,2,100.0
+GET Learning TextBook BM PT8,2,1,1,1,2,100.0
+GET Learning TextBook Math,2,1,1,1,2,100.0
+GET Learning TextBook Math PT1,4,1,0,3,4,100.0
+GET Learning TextBook Math PT10,2,1,1,1,2,100.0
+GET Learning TextBook Math PT4,4,2,1,3,4,100.0
+GET Learning TextBook Math PT6,2,1,1,1,2,100.0
+GET Learning TextBook Math PT8,4,1,1,1,4,100.0
+GET Learning TextBook Sejarah PT1,2,2,0,3,2,100.0
+GET Learning TextBook Sejarah PT10,2,1,1,1,2,100.0
+GET Learning TextBook Sejarah PT5,2,0,0,1,2,100.0
+GET Learning TextBook Sejarah PT8,2,0,0,0,2,100.0
+GET Navigate Study Notes,2,1,1,1,2,100.0
+GET Navigate TextBook BI,2,0,0,1,2,100.0
+GET Navigate TextBook BM,2,1,1,1,2,100.0
+GET Navigate TextBook Math,2,0,0,1,2,100.0
+GET Navigate TextBook Sejarah,2,1,1,1,2,100.0
+GET Questionnaire Page,2,0,0,1,2,100.0
+GET Quiz,2,1,1,1,2,100.0
+GET Quiz 2808,2,3,1,5,2,100.0
+GET Quiz Attempt Result ${QUIZ_ATTEMPT_ID},2,0,0,0,2,100.0
+GET Quiz Detail 2808,2,0,0,1,2,100.0
+GET Quiz Item 1826,2,2,1,3,2,100.0
+GET Quiz Item 1827,2,2,1,3,2,100.0
+GET Quiz Item 1828,2,4,4,5,2,100.0
+GET Quiz Item 1829,2,4,3,4,2,100.0
+GET Quiz Item 1830,2,4,0,8,2,100.0
+GET Quiz Item 1831,2,5,5,5,2,100.0
+GET Quiz Item 1832,2,3,3,3,2,100.0
+GET Quiz Item 1833,2,2,1,2,2,100.0
+GET Quiz Item 1834,2,6,4,8,2,100.0
+GET Quiz Item 1835,2,4,2,6,2,100.0
+GET Study Notes Details,2,1,1,1,2,100.0
+GET Subscription Active,2,0,0,0,2,100.0
+GET Tags By SubjectIds,2,1,1,1,2,100.0
+GET Textbook Learning Resources,2,2,1,2,2,100.0
+GET newUserQuestionnaire Page,2,0,0,1,2,100.0
+Init AI Tutor Socket State,2,23,23,23,0,0.0
+Init AI Verification Counter,2,34,34,34,0,0.0
+Initialize BI Question Counter,2,10,2,17,0,0.0
+Initialize BM Question Counter,2,28,28,28,0,0.0
+Initialize Math Question Counter,2,12,2,22,0,0.0
+Load and Randomize BI,2,10,4,16,0,0.0
+Load and Randomize BM,2,30,30,30,0,0.0
+Load and Randomize Math,2,24,5,44,0,0.0
+Load and Randomize Sejarah,2,179,179,179,0,0.0
+Log Assessment Completion & Summary,2,66,66,67,0,0.0
+Log BI Question Sent,10,3,0,26,0,0.0
+Log BM Question Sent,10,8,0,39,0,0.0
+Log Math Question Sent,10,5,1,33,0,0.0
+Log Sejarah Question Sent,10,13,1,58,0,0.0
+Mark AI Tutor Socket Reconnected (BI),10,1,1,2,0,0.0
+Mark AI Tutor Socket Reconnected (BM),10,2,1,2,0,0.0
+Mark AI Tutor Socket Reconnected (Math),10,2,1,3,0,0.0
+Mark AI Tutor Socket Reconnected (Sejarah),10,20,1,94,0,0.0
+POST API Login,2,2026,1,4050,2,100.0
+POST Quiz Answer 1826,2,0,0,0,2,100.0
+POST Quiz Answer 1827,2,0,0,0,2,100.0
+POST Quiz Answer 1828,2,0,0,0,2,100.0
+POST Quiz Answer 1829,2,0,0,0,2,100.0
+POST Quiz Answer 1830,2,0,0,0,2,100.0
+POST Quiz Answer 1831,2,0,0,0,2,100.0
+POST Quiz Answer 1832,2,0,0,0,2,100.0
+POST Quiz Answer 1833,2,0,0,0,2,100.0
+POST Quiz Answer 1834,2,0,0,0,2,100.0
+POST Quiz Answer 1835,2,0,0,0,2,100.0
+POST Start Quiz Attempt 2808,2,2,2,2,2,100.0
+POST Submit Quiz Attempt ${QUIZ_ATTEMPT_ID},2,0,0,0,2,100.0
+POST User Questionnaire Session ID,2,2,1,4,2,100.0
+Prepare AI Tutor Reconnect Before BI Question,10,2,0,3,0,0.0
+Prepare AI Tutor Reconnect Before BI Retry Open,10,2,1,3,0,0.0
+Prepare AI Tutor Reconnect Before BI Retry Question,10,2,1,2,0,0.0
+Prepare AI Tutor Reconnect Before BM Question,10,2,1,2,0,0.0
+Prepare AI Tutor Reconnect Before BM Retry Open,10,2,1,2,0,0.0
+Prepare AI Tutor Reconnect Before BM Retry Question,10,2,1,3,0,0.0
+Prepare AI Tutor Reconnect Before Math Question,10,3,1,8,0,0.0
+Prepare AI Tutor Reconnect Before Math Retry Open,10,2,1,10,0,0.0
+Prepare AI Tutor Reconnect Before Math Retry Question,10,4,1,19,0,0.0
+Prepare AI Tutor Reconnect Before Sejarah Question,8,2,1,3,0,0.0
+Prepare AI Tutor Reconnect Before Sejarah Retry Open,10,15,2,67,0,0.0
+Prepare AI Tutor Reconnect Before Sejarah Retry Question,10,2,2,4,0,0.0
+Prepare BI Retry,10,2,0,15,0,0.0
+Prepare BM Retry,10,4,0,16,0,0.0
+Prepare Math Retry,10,2,0,18,0,0.0
+Prepare Sejarah Retry,10,11,1,51,0,0.0
+T01_Login,2,2026,1,4050,2,100.0
+T02_Learning_Assessment,2,72,71,72,2,100.0
+T03A_Navigate_Quiz_And_Answer_10Q,2,41,37,45,2,100.0
+T03_Learning_Space,2,82,74,91,2,100.0
+T04_AI_Tutor_WebSocket,2,38088,36776,39401,2,100.0
+Verify 5 BI Questions Sent,2,116,116,116,2,100.0
+Verify 5 BM Questions Sent,2,20,0,39,2,100.0
+Verify 5 Math Questions Sent,2,23,6,40,2,100.0
+Verify 5 Sejarah Questions Sent,2,24,2,45,2,100.0
+WS Close AI Tutor Connection,2,0,0,0,2,100.0
+WS Open AI Tutor Connection,2,13,13,13,2,100.0
+WS Open AI Tutor Connection Before BI Question,10,0,0,1,10,100.0
+WS Open AI Tutor Connection Before BI Retry Question,10,2272,0,4004,10,100.0
+WS Open AI Tutor Connection Before BM Question,10,0,0,1,10,100.0
+WS Open AI Tutor Connection Before BM Retry Question,10,596,0,4002,10,100.0
+WS Open AI Tutor Connection Before Math Question,10,1066,0,4004,10,100.0
+WS Open AI Tutor Connection Before Math Retry Question,10,704,0,3989,10,100.0
+WS Open AI Tutor Connection Before Sejarah Question,8,788,0,4002,8,100.0
+WS Open AI Tutor Connection Before Sejarah Retry Question,10,1202,0,4006,10,100.0
+WS Open AI Tutor Connection Retry (BI),10,0,0,1,10,100.0
+WS Open AI Tutor Connection Retry (BM),10,801,0,4004,10,100.0
+WS Open AI Tutor Connection Retry (Math),10,1,0,1,10,100.0
+WS Open AI Tutor Connection Retry (Sejarah),10,1,0,1,10,100.0
+WS Retry BI Question,10,0,0,0,10,100.0
+WS Retry BM Question,10,0,0,0,10,100.0
+WS Retry Math Question,10,0,0,0,10,100.0
+WS Retry Sejarah Question,10,0,0,0,10,100.0
+WS Send BI Question,10,0,0,0,10,100.0
+WS Send BM Question,10,0,0,0,10,100.0
+WS Send Math Question,10,0,0,0,10,100.0
+WS Send Sejarah Question,10,0,0,0,10,100.0
