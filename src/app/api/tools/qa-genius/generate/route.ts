@@ -1,7 +1,12 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import type { GenerativeModel } from "@google/generative-ai";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import {
+  AIProviderNotImplementedError,
+  generateAIText,
+  getConfiguredAIProvider,
+  getOpenAIModel,
+  getQaGeniusGeminiApiKey,
+} from "@/shared/lib/ai-provider";
 
 type GenerateRequestBody = {
   requirement: string;
@@ -12,16 +17,23 @@ type GenerateRequestBody = {
 
 type GeneratedTestCase = {
   id: string;
+  testScenario: string;
+  objective: string;
+  testProcedure: string[];
+  expectedResults: string[];
   title: string;
+  description: string;
   preconditions: string;
   steps: string[];
   expectedResult: string;
   priority: string;
+  testType: string;
+  category: string;
 };
 
-const SYSTEM_PROMPT = `You are a professional SQA engineer.
+const SYSTEM_PROMPT = `You are QA Genius, a professional SQA engineer for TMR&D / SQA Portal users.
 
-Generate realistic, practical QA test cases from the provided requirement.
+Generate realistic, practical, audit-ready QA test cases from the provided requirement. Think like an experienced software quality engineer in a Malaysian workplace context when the requirement does not specify another context.
 
 Critical output rules:
 - Return ONLY raw JSON.
@@ -32,22 +44,28 @@ Critical output rules:
 - Do not include explanations, notes, summaries, prose, or headings.
 - Do not include any text before or after the JSON array.
 - The response must be directly parseable by JSON.parse.
+- Use double-quoted JSON strings only.
+- Do not include placeholder, dummy, lorem ipsum, or generic filler content.
 
 JSON shape:
 - Return a JSON array of test case objects only.
 - Each test case must include:
   - id
-  - title
-  - preconditions
-  - steps
-  - expectedResult
+  - testScenario
+  - objective
+  - testProcedure
+  - expectedResults
   - priority
-- steps must be an array of clear executable strings.
+  - testType
+- testProcedure must be an array of clear executable strings.
+- expectedResults must be an array of observable outcomes.
 - Use IDs in this format: TC-001, TC-002, TC-003.
 - Match the requested test type and priority.
-- Generate realistic coverage including positive, negative, boundary, and risk-based scenarios when relevant.`;
-
-const apiKey = process.env.QAGENIUS_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+- objective must be real and specific to the test scenario. It must explain the exact quality risk or behavior being verified.
+- testScenario must describe the scenario being tested, not just repeat the requirement.
+- Include positive, negative, edge, validation, security, API, usability, compatibility, or performance cases when relevant to the requirement and requested test type.
+- Keep each test case concise enough for execution, but detailed enough that another tester can run it without guessing.
+- Do not claim automation, backend tools, reports, or environments were executed. Generate test design only.`;
 
 function getQaGeniusModelConfig() {
   if (process.env.QAGENIUS_GEMINI_MODEL) {
@@ -147,13 +165,31 @@ function delay(ms: number) {
   });
 }
 
-async function generateContentWithRetry(model: GenerativeModel, prompt: string) {
+async function generateContentWithRetry({
+  apiKey,
+  modelName,
+  prompt,
+  provider,
+}: {
+  apiKey?: string;
+  modelName: string;
+  prompt: string;
+  provider: ReturnType<typeof getConfiguredAIProvider>;
+}) {
   const retryDelays = [700, 1400];
   let lastError: unknown;
 
   for (let attempt = 0; attempt <= retryDelays.length; attempt += 1) {
     try {
-      return await model.generateContent(prompt);
+      return await generateAIText({
+        provider,
+        apiKey,
+        model: modelName,
+        systemPrompt: SYSTEM_PROMPT,
+        userPrompt: prompt,
+        responseMimeType: "application/json",
+        temperature: 0.35,
+      });
     } catch (error) {
       lastError = error;
 
@@ -241,7 +277,7 @@ function parseGeminiJsonArray(rawText: string): unknown[] {
   );
 }
 
-function toStringArray(value: unknown): string[] {
+function toStringArray(value: unknown, fallback: string): string[] {
   if (Array.isArray(value)) {
     const steps = value
       .map((step) => {
@@ -252,9 +288,7 @@ function toStringArray(value: unknown): string[] {
       .map((step) => step.trim())
       .filter(Boolean);
 
-    return steps.length > 0
-      ? steps
-      : ["Review the requirement and execute the relevant user flow."];
+    return steps.length > 0 ? steps : [fallback];
   }
 
   if (typeof value === "string" && value.trim()) {
@@ -263,12 +297,10 @@ function toStringArray(value: unknown): string[] {
       .map((step) => step.trim())
       .filter(Boolean);
 
-    return steps.length > 0
-      ? steps
-      : ["Review the requirement and execute the relevant user flow."];
+    return steps.length > 0 ? steps : [fallback];
   }
 
-  return ["Review the requirement and execute the relevant user flow."];
+  return [fallback];
 }
 
 function toRequiredString(value: unknown, fallback: string) {
@@ -283,37 +315,88 @@ function toRequiredString(value: unknown, fallback: string) {
   return String(value).trim() || fallback;
 }
 
-function normalizeTestCases(value: unknown): GeneratedTestCase[] {
+function isWeakObjective(value: string) {
+  const normalized = value.toLowerCase();
+  return (
+    normalized.includes("dummy") ||
+    normalized.includes("placeholder") ||
+    normalized.includes("generated objective") ||
+    normalized.includes("ai-generated") ||
+    normalized === "objective" ||
+    normalized === "test objective" ||
+    normalized.length < 24
+  );
+}
+
+function summarizeRequirement(requirement: string) {
+  return requirement.replace(/\s+/g, " ").trim().slice(0, 160);
+}
+
+function normalizeTestCases(
+  value: unknown,
+  requirement: string,
+  requestedTestType: string,
+  requestedPriority: string,
+): GeneratedTestCase[] {
   if (!Array.isArray(value)) {
     throw new Error("Gemini response was not an array.");
   }
 
+  const requirementSummary = summarizeRequirement(requirement);
+
   const testCases = value
     .filter((item) => item && typeof item === "object")
-    .map((item, index) => {
+    .map((item, index): GeneratedTestCase => {
       if (!item || typeof item !== "object") {
         throw new Error("Gemini returned an invalid test case item.");
       }
 
       const candidate = item as Record<string, unknown>;
-      const steps = toStringArray(candidate.steps);
+      const id =
+        typeof candidate.id === "string" && candidate.id.trim()
+          ? candidate.id.trim()
+          : `TC-${String(index + 1).padStart(3, "0")}`;
+      const testType = toRequiredString(candidate.testType ?? candidate.category, requestedTestType);
+      const priority = toRequiredString(candidate.priority, requestedPriority);
+      const testScenario = toRequiredString(
+        candidate.testScenario ?? candidate.title ?? candidate.scenario,
+        `${testType} scenario for ${requirementSummary}`,
+      );
+      const candidateObjective = toRequiredString(
+        candidate.objective ?? candidate.description,
+        "",
+      );
+      const objective =
+        candidateObjective && !isWeakObjective(candidateObjective)
+          ? candidateObjective
+          : `Verify ${testScenario.toLowerCase()} so the requirement is met reliably for SQA Portal users.`;
+      const testProcedure = toStringArray(
+        candidate.testProcedure ?? candidate.steps ?? candidate.testSteps,
+        `Execute the ${testScenario.toLowerCase()} flow using valid test data.`,
+      );
+      const expectedResults = toStringArray(
+        candidate.expectedResults ?? candidate.expectedResult,
+        `The ${testScenario.toLowerCase()} outcome satisfies the stated requirement without errors or unexpected side effects.`,
+      );
+      const preconditions = toRequiredString(
+        candidate.preconditions,
+        "Relevant access, environment, and test data are available.",
+      );
 
       return {
-        id:
-          typeof candidate.id === "string" && candidate.id.trim()
-            ? candidate.id.trim()
-            : `TC-${String(index + 1).padStart(3, "0")}`,
-        title: toRequiredString(candidate.title, `Generated ${index + 1} QA test case`),
-        preconditions: toRequiredString(candidate.preconditions, "No specific preconditions."),
-        steps,
-        expectedResult: toRequiredString(
-          candidate.expectedResult,
-          "The system behaves according to the requirement.",
-        ),
-        priority:
-          typeof candidate.priority === "string" && candidate.priority.trim()
-            ? candidate.priority.trim()
-            : "Medium",
+        id,
+        testScenario,
+        objective,
+        testProcedure,
+        expectedResults,
+        priority,
+        testType,
+        title: testScenario,
+        description: objective,
+        preconditions,
+        steps: testProcedure,
+        expectedResult: expectedResults.join("\n"),
+        category: testType,
       };
     });
 
@@ -336,31 +419,33 @@ export async function POST(request: NextRequest) {
     return new Response("Requirement is required.", { status: 400 });
   }
 
-  if (!apiKey) {
-    return new Response(
-      "QA Genius is not configured. Add QAGENIUS_GEMINI_API_KEY or GEMINI_API_KEY to the server environment.",
-      { status: 500 },
-    );
-  }
-
   const maxTestCases = Math.min(Math.max(Math.round(body.maxTestCases), 1), 20);
 
   try {
-    const modelConfig = getQaGeniusModelConfig();
-    console.info("QA Genius Gemini model selected:", {
+    const provider = getConfiguredAIProvider();
+    const modelConfig =
+      provider === "gemini"
+        ? getQaGeniusModelConfig()
+        : {
+            modelName: getOpenAIModel(),
+            source: "OPENAI_MODEL",
+            fallbackBehavior:
+              "AI_PROVIDER=openai is selected, but OpenAI generation is not active yet.",
+          };
+    const apiKey = provider === "gemini" ? getQaGeniusGeminiApiKey() : undefined;
+
+    if (provider === "gemini" && !apiKey) {
+      return new Response(
+        "QA Genius is not configured. Add QAGENIUS_GEMINI_API_KEY or GEMINI_API_KEY to the server environment.",
+        { status: 500 },
+      );
+    }
+
+    console.info("QA Genius AI provider selected:", {
+      provider,
       model: modelConfig.modelName,
       source: modelConfig.source,
       fallbackBehavior: modelConfig.fallbackBehavior,
-    });
-
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-      model: modelConfig.modelName,
-      systemInstruction: SYSTEM_PROMPT,
-      generationConfig: {
-        responseMimeType: "application/json",
-        temperature: 0.35,
-      },
     });
 
     const prompt = `Requirement:
@@ -372,19 +457,30 @@ Maximum number of test cases: ${maxTestCases}
 
 Return exactly ${maxTestCases} test cases unless the requirement cannot reasonably support that many.`;
 
-    const result = await generateContentWithRetry(model, prompt);
-    const reply = result.response.text().trim();
+    const reply = await generateContentWithRetry({
+      apiKey,
+      modelName: modelConfig.modelName,
+      prompt,
+      provider,
+    });
 
     if (!reply) {
-      return new Response("Empty response from Gemini", { status: 500 });
+      return new Response("Empty response from AI provider", { status: 500 });
     }
 
     const parsed = parseGeminiJsonArray(reply);
-    const testCases = normalizeTestCases(parsed);
+    const testCases = normalizeTestCases(parsed, requirement, body.testType, body.priority);
 
     return NextResponse.json({ testCases });
   } catch (error) {
     console.error("QA Genius Gemini API Error:", error);
+
+    if (error instanceof AIProviderNotImplementedError) {
+      return new Response(
+        "AI_PROVIDER=openai is reserved for future OpenAI/Codex Enterprise migration and is not active yet. Set AI_PROVIDER=gemini to continue using QA Genius.",
+        { status: 501 },
+      );
+    }
 
     if (isQuotaError(error)) {
       console.error("QA Genius Gemini quota-related error:", {

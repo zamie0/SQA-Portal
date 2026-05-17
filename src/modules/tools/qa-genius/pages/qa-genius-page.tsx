@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   AlertTriangle,
@@ -17,6 +17,7 @@ import {
   Send,
   ShieldCheck,
   Sparkles,
+  Ticket,
   UploadCloud,
   X,
 } from "lucide-react";
@@ -25,7 +26,7 @@ import { Shell } from "@/shared/components/layout/Shell";
 import { Toaster } from "@/shared/components/ui/sonner";
 
 type TestType = "Functional" | "API" | "Security" | "Performance" | "Automation";
-type Priority = "Low" | "Medium" | "High";
+type Priority = "Low" | "Medium" | "High" | "Critical";
 
 type GeneratedTestCase = {
   id?: string;
@@ -51,8 +52,30 @@ type NormalizedTestCase = {
   category: string;
 };
 
+type QaGeniusHistoryItem = {
+  id: string;
+  requirement: string;
+  testType: TestType;
+  priority: Priority;
+  maxCases: number;
+  createdAt: string;
+  testCases: NormalizedTestCase[];
+};
+
+type SqaCopilotHandoff = {
+  source: "sqa-copilot";
+  createdAt: string;
+  requirement: string;
+  testType: TestType;
+  priority: Priority;
+  maxCases: number;
+  autoRun: boolean;
+};
+
+const historyStorageKey = "qagenius-history";
+const copilotHandoffStorageKey = "sqa-copilot-to-qagenius";
 const testTypes: TestType[] = ["Functional", "API", "Security", "Performance", "Automation"];
-const priorities: Priority[] = ["Low", "Medium", "High"];
+const priorities: Priority[] = ["Low", "Medium", "High", "Critical"];
 const maxCaseOptions = [3, 5, 8, 10, 15, 20];
 
 const featureCards = [
@@ -79,6 +102,13 @@ const featureCards = [
     description: "Create contract, response, payload, and failure-mode scenarios.",
     icon: Network,
     color: "from-sky-500 to-cyan-500",
+  },
+  {
+    title: "Generate from Jira User Story",
+    description: "Coming Soon",
+    icon: Ticket,
+    color: "from-slate-400 to-slate-500",
+    disabled: true,
   },
 ] as const;
 
@@ -130,6 +160,14 @@ function normalizeText(value: unknown, fallback: string) {
   return typeof value === "string" && value.trim() ? value.trim() : fallback;
 }
 
+function normalizePriority(value: unknown, fallback: Priority): Priority {
+  return priorities.includes(value as Priority) ? (value as Priority) : fallback;
+}
+
+function normalizeTestType(value: unknown, fallback: TestType): TestType {
+  return testTypes.includes(value as TestType) ? (value as TestType) : fallback;
+}
+
 function normalizeTestCases(
   testCases: unknown[],
   selectedType: TestType,
@@ -158,7 +196,7 @@ function normalizeTestCases(
           item.expectedResult,
           "The system behaves according to the requirement and quality expectations.",
         ),
-        priority: normalizeText(item.priority, selectedPriority),
+        priority: normalizePriority(item.priority, selectedPriority),
         category: normalizeText(item.category, selectedType),
       };
     });
@@ -188,13 +226,21 @@ function escapeCsvCell(value: string) {
 }
 
 function formatResultsForCsv(results: NormalizedTestCase[]) {
-  const headers = ["TC ID", "Test Scenario", "Objective", "Test Procedure", "Expected Results"];
+  const headers = [
+    "TC ID",
+    "Test Scenario",
+    "Objective",
+    "Test Procedure",
+    "Expected Results",
+    "Priority",
+  ];
   const rows = results.map((result) => [
     result.id,
     result.title,
     result.description,
     result.steps.map((step, index) => `${index + 1}. ${step}`).join("\n"),
     result.expectedResults.map((expected, index) => `${index + 1}. ${expected}`).join("\n"),
+    result.priority,
   ]);
 
   return [headers, ...rows].map((row) => row.map(escapeCsvCell).join(",")).join("\n");
@@ -212,6 +258,95 @@ function getFilePrefix(file: File) {
   )} KB)\n`;
 }
 
+function createHistoryId() {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+
+  return `qg-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function readQaGeniusHistory(): QaGeniusHistoryItem[] {
+  if (typeof window === "undefined") return [];
+
+  try {
+    const rawHistory = window.localStorage.getItem(historyStorageKey);
+    if (!rawHistory) return [];
+
+    const parsed = JSON.parse(rawHistory) as unknown;
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed
+      .filter((item): item is Partial<QaGeniusHistoryItem> => !!item && typeof item === "object")
+      .map((item) => ({
+        id: normalizeText(item.id, createHistoryId()),
+        requirement: normalizeText(item.requirement, ""),
+        testType: normalizeTestType(item.testType, "Functional"),
+        priority: normalizePriority(item.priority, "Medium"),
+        maxCases:
+          typeof item.maxCases === "number" && Number.isFinite(item.maxCases)
+            ? item.maxCases
+            : 5,
+        createdAt: normalizeText(item.createdAt, new Date().toISOString()),
+        testCases: Array.isArray(item.testCases)
+          ? normalizeTestCases(item.testCases, normalizeTestType(item.testType, "Functional"), normalizePriority(item.priority, "Medium"))
+          : [],
+      }))
+      .filter((item) => item.requirement || item.testCases.length > 0)
+      .sort(
+        (first, second) =>
+          new Date(second.createdAt).getTime() - new Date(first.createdAt).getTime(),
+      );
+  } catch {
+    return [];
+  }
+}
+
+function writeQaGeniusHistory(history: QaGeniusHistoryItem[]) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(historyStorageKey, JSON.stringify(history.slice(0, 25)));
+}
+
+function saveQaGeniusHistoryItem(item: QaGeniusHistoryItem) {
+  const history = readQaGeniusHistory();
+  writeQaGeniusHistory([item, ...history.filter((entry) => entry.id !== item.id)]);
+}
+
+function readSqaCopilotHandoff(): SqaCopilotHandoff | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const rawHandoff = window.localStorage.getItem(copilotHandoffStorageKey);
+    if (!rawHandoff) return null;
+
+    const parsed = JSON.parse(rawHandoff) as unknown;
+    if (!parsed || typeof parsed !== "object") return null;
+
+    const handoff = parsed as Record<string, unknown>;
+    if (handoff.source !== "sqa-copilot") return null;
+
+    return {
+      source: "sqa-copilot",
+      createdAt: normalizeText(handoff.createdAt, new Date().toISOString()),
+      requirement: normalizeText(handoff.requirement, ""),
+      testType: normalizeTestType(handoff.testType, "Functional"),
+      priority: normalizePriority(handoff.priority, "High"),
+      maxCases:
+        typeof handoff.maxCases === "number" && Number.isFinite(handoff.maxCases)
+          ? handoff.maxCases
+          : 5,
+      autoRun: handoff.autoRun === true,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function clearSqaCopilotHandoff() {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(copilotHandoffStorageKey);
+}
+
 export default function QAGeniusPage() {
   const [requirement, setRequirement] = useState("");
   const [testType, setTestType] = useState<TestType>("Functional");
@@ -222,9 +357,46 @@ export default function QAGeniusPage() {
   const [copyLabel, setCopyLabel] = useState("Copy Results");
   const [errorMessage, setErrorMessage] = useState("");
   const [uploadedFileName, setUploadedFileName] = useState("");
+  const [activeHistoryId, setActiveHistoryId] = useState("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const hasResults = results.length > 0;
+
+  useEffect(() => {
+    const handoff = readSqaCopilotHandoff();
+    if (handoff?.requirement) {
+      setRequirement(handoff.requirement);
+      setTestType(handoff.testType);
+      setPriority(handoff.priority);
+      setMaxCases(handoff.maxCases);
+      setResults([]);
+      setActiveHistoryId("");
+      clearSqaCopilotHandoff();
+
+      if (handoff.autoRun) {
+        void generateTestCases({
+          requirement: handoff.requirement,
+          testType: handoff.testType,
+          priority: handoff.priority,
+          maxCases: handoff.maxCases,
+        });
+      }
+
+      return;
+    }
+
+    clearSqaCopilotHandoff();
+
+    const [latest] = readQaGeniusHistory();
+    if (!latest) return;
+
+    setRequirement(latest.requirement);
+    setTestType(latest.testType);
+    setPriority(latest.priority);
+    setMaxCases(latest.maxCases);
+    setResults(latest.testCases);
+    setActiveHistoryId(latest.id);
+  }, []);
 
   const handleFileUpload = async (file: File | undefined) => {
     if (!file) return;
@@ -267,8 +439,18 @@ export default function QAGeniusPage() {
     }
   };
 
-  const handleGenerate = async () => {
-    if (!requirement.trim()) {
+  const generateTestCases = async ({
+    requirement: nextRequirement,
+    testType: nextTestType,
+    priority: nextPriority,
+    maxCases: nextMaxCases,
+  }: {
+    requirement: string;
+    testType: TestType;
+    priority: Priority;
+    maxCases: number;
+  }) => {
+    if (!nextRequirement.trim()) {
       const message = "Add a requirement or upload a readable requirement file before generating.";
       setErrorMessage(message);
       toast.error("Requirement needed", { description: message });
@@ -287,12 +469,12 @@ export default function QAGeniusPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          requirement,
-          type: testType,
-          testType,
-          priority,
-          maxCases,
-          maxTestCases: maxCases,
+          requirement: nextRequirement,
+          type: nextTestType,
+          testType: nextTestType,
+          priority: nextPriority,
+          maxCases: nextMaxCases,
+          maxTestCases: nextMaxCases,
         }),
       });
 
@@ -306,14 +488,26 @@ export default function QAGeniusPage() {
         throw new Error("QA Genius returned an unexpected response. Please try again.");
       }
 
-      const normalized = normalizeTestCases(data.testCases, testType, priority);
+      const normalized = normalizeTestCases(data.testCases, nextTestType, nextPriority);
       if (normalized.length === 0) {
         throw new Error(
           "QA Genius did not return any test cases. Please add more requirement detail.",
         );
       }
 
+      const historyItem: QaGeniusHistoryItem = {
+        id: createHistoryId(),
+        requirement: nextRequirement,
+        testType: nextTestType,
+        priority: nextPriority,
+        maxCases: nextMaxCases,
+        createdAt: new Date().toISOString(),
+        testCases: normalized,
+      };
+
       setResults(normalized);
+      setActiveHistoryId(historyItem.id);
+      saveQaGeniusHistoryItem(historyItem);
       toast.success("Test cases generated", {
         description: `${normalized.length} AI-generated test case${
           normalized.length === 1 ? "" : "s"
@@ -326,6 +520,10 @@ export default function QAGeniusPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleGenerate = async () => {
+    await generateTestCases({ requirement, testType, priority, maxCases });
   };
 
   const handleCopy = async () => {
@@ -359,6 +557,25 @@ export default function QAGeniusPage() {
     toast.success("CSV exported");
   };
 
+  const handleResultPriorityChange = (id: string, nextPriority: Priority) => {
+    setResults((currentResults) => {
+      const updatedResults = currentResults.map((result) =>
+        result.id === id ? { ...result, priority: nextPriority } : result,
+      );
+
+      if (activeHistoryId) {
+        const history = readQaGeniusHistory();
+        writeQaGeniusHistory(
+          history.map((item) =>
+            item.id === activeHistoryId ? { ...item, testCases: updatedResults } : item,
+          ),
+        );
+      }
+
+      return updatedResults;
+    });
+  };
+
   const handleClear = () => {
     setRequirement("");
     setTestType("Functional");
@@ -369,6 +586,7 @@ export default function QAGeniusPage() {
     setCopyLabel("Copy Results");
     setErrorMessage("");
     setUploadedFileName("");
+    setActiveHistoryId("");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -406,7 +624,11 @@ export default function QAGeniusPage() {
 
         <section className="grid md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
           {featureCards.map((feature) => (
-            <div key={feature.title} className="rounded-3xl glass p-5">
+            <div
+              key={feature.title}
+              className={`rounded-3xl glass p-5 ${"disabled" in feature ? "opacity-70" : ""}`}
+              aria-disabled={"disabled" in feature ? true : undefined}
+            >
               <div
                 className={`h-11 w-11 rounded-2xl bg-gradient-to-br ${feature.color} grid place-items-center text-white shadow-lg`}
               >
@@ -622,11 +844,11 @@ export default function QAGeniusPage() {
               </div>
             ) : hasResults ? (
               <div className="w-full max-w-full overflow-x-scroll overflow-y-visible rounded-2xl border border-slate-200 bg-white/60 pb-4">
-                <table className="w-[1800px] min-w-[1800px] table-fixed border-collapse text-left text-sm">
+                <table className="w-[1960px] min-w-[1960px] table-fixed border-collapse text-left text-sm">
                   <tbody>
                     <tr>
                       <td
-                        colSpan={5}
+                        colSpan={6}
                         className="border border-emerald-800 bg-emerald-600 px-4 py-2 text-sm font-bold text-white"
                       >
                         Test Flow: Generated QA Test Cases
@@ -634,7 +856,7 @@ export default function QAGeniusPage() {
                     </tr>
                     <tr>
                       <td
-                        colSpan={5}
+                        colSpan={6}
                         className="border border-emerald-800 bg-emerald-500 px-4 py-2 text-sm font-bold text-white"
                       >
                         Part A - {testType} Test Cases
@@ -655,6 +877,9 @@ export default function QAGeniusPage() {
                       </th>
                       <th className="w-[520px] border border-slate-700 px-3 py-3 align-top font-bold break-words whitespace-normal">
                         Expected Results
+                      </th>
+                      <th className="w-[160px] border border-slate-700 px-3 py-3 align-top font-bold break-words whitespace-normal">
+                        Priority
                       </th>
                     </tr>
                     {results.map((result, rowIndex) => (
@@ -688,6 +913,25 @@ export default function QAGeniusPage() {
                               </li>
                             ))}
                           </ol>
+                        </td>
+                        <td className="border border-slate-300 px-3 py-3 align-top text-slate-800">
+                          <select
+                            aria-label={`Priority for ${result.id}`}
+                            value={normalizePriority(result.priority, priority)}
+                            onChange={(event) =>
+                              handleResultPriorityChange(
+                                result.id,
+                                event.target.value as Priority,
+                              )
+                            }
+                            className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-sm font-medium text-slate-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                          >
+                            {priorities.map((item) => (
+                              <option key={item} value={item}>
+                                {item}
+                              </option>
+                            ))}
+                          </select>
                         </td>
                       </tr>
                     ))}

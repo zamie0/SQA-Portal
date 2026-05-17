@@ -39,6 +39,7 @@ const SUGGESTIONS = [
 
 const MAX_ATTACHMENTS = 4;
 const MAX_ATTACHMENT_BYTES = 8 * 1024 * 1024;
+const QA_GENIUS_HANDOFF_KEY = "sqa-copilot-to-qagenius";
 const ACCEPTED_ATTACHMENT_TYPES = [
   "image/*",
   "audio/*",
@@ -88,6 +89,17 @@ function newConversation(): Conversation {
   return { id: uid(), title: "New chat", createdAt: Date.now(), messages: [] };
 }
 
+function getCopilotRequirementContext(conversation?: Conversation) {
+  if (!conversation) return "";
+
+  return conversation.messages
+    .filter((message) => message.role === "user" && message.content.trim())
+    .slice(-6)
+    .map((message) => message.content.trim())
+    .join("\n\n")
+    .trim();
+}
+
 function ChatPage() {
   const router = useRouter();
   const [conversations, setConversations] = useLocalStorage<Conversation[]>("qe-hub.ai-chats.v1", [
@@ -114,6 +126,7 @@ function ChatPage() {
     () => conversations.find((c) => c.id === activeId) ?? conversations[0],
     [conversations, activeId],
   );
+  const qaGeniusContext = useMemo(() => getCopilotRequirementContext(active), [active]);
 
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
@@ -342,6 +355,24 @@ function ChatPage() {
     setRenamingId(null);
   }
 
+  function sendToQaGenius() {
+    if (!qaGeniusContext) return;
+
+    window.localStorage.setItem(
+      QA_GENIUS_HANDOFF_KEY,
+      JSON.stringify({
+        source: "sqa-copilot",
+        createdAt: new Date().toISOString(),
+        requirement: qaGeniusContext,
+        testType: "Functional",
+        priority: "High",
+        maxCases: 5,
+        autoRun: false,
+      }),
+    );
+    router.push("/tools/qa-genius");
+  }
+
   return (
     <Shell>
       <div className="flex h-full min-h-0 flex-col gap-3 overflow-hidden">
@@ -365,6 +396,14 @@ function ChatPage() {
               </div>
             </div>
             <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={sendToQaGenius}
+                disabled={!qaGeniusContext}
+                className="inline-flex items-center gap-2 px-3 py-2 rounded-xl glass text-xs font-medium disabled:pointer-events-none disabled:opacity-40"
+              >
+                <FileText className="h-3.5 w-3.5" /> Send to QA Genius
+              </button>
               <Link
                 href="/help/faq"
                 className="inline-flex items-center gap-2 px-3 py-2 rounded-xl glass text-xs font-medium"
