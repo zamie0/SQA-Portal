@@ -128,7 +128,7 @@ MONGODB_DB=sqa-portal
 SQA Copilot is the AI chat assistant under `/help/chat`.
 It requires the following environment variables in `.env.local`:
 
-```env
+```env (Key Aliss ni, jangan habiskan | Guna key sendiri kalau boleh |)
 GEMINI_API_KEY=AIzaSyCL4hG101gHs1MEd6B5bqTGW7Bj8OB57t8
 GEMINI_MODEL=gemini-2.5-flash
 ```
