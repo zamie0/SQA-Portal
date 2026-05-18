@@ -125,6 +125,14 @@ MONGODB_URI=mongodb://127.0.0.1:27017
 MONGODB_DB=sqa-portal
 ```
 
+SQA Copilot is the AI chat assistant under `/help/chat`.
+It requires the following environment variables in `.env.local`:
+
+```env
+GEMINI_API_KEY=AIzaSyCL4hG101gHs1MEd6B5bqTGW7Bj8OB57t8
+GEMINI_MODEL=gemini-2.5-flash
+```
+
 After seeding, MongoDB Compass should show the `sqa-portal` database. The seeded demo admin account is:
 
 ```text
