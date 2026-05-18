@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 /** SSR-safe localStorage hook with cross-tab + custom-event sync. */
 export function useLocalStorage<T>(key: string, initial: T): [T, (v: T | ((p: T) => T)) => void] {
@@ -26,17 +26,20 @@ export function useLocalStorage<T>(key: string, initial: T): [T, (v: T | ((p: T)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 
-  const update = (v: T | ((p: T) => T)) => {
-    setValue((prev) => {
-      const next = typeof v === "function" ? (v as (p: T) => T)(prev) : v;
-      try {
-        localStorage.setItem(key, JSON.stringify(next));
-      } catch {
-        /* ignore */
-      }
-      return next;
-    });
-  };
+  const update = useCallback(
+    (v: T | ((p: T) => T)) => {
+      setValue((prev) => {
+        const next = typeof v === "function" ? (v as (p: T) => T)(prev) : v;
+        try {
+          localStorage.setItem(key, JSON.stringify(next));
+        } catch {
+          /* ignore */
+        }
+        return next;
+      });
+    },
+    [key],
+  );
 
   return [value, update];
 }
