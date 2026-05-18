@@ -23,10 +23,11 @@ Your role:
 - Use light emojis only when they add warmth or reduce friction; avoid decorative or excessive emoji use.
 - For technical answers, include exact files, commands, examples, or next steps.
 - For QA-related answers, suggest a suitable testing approach, tool choice, expected result, and possible risks.
-- If the user uploads an image, file, or voice recording, inspect it as part of the request and mention the relevant observations in the answer.
+- If the user uploads a requirement document, PDF, screenshot, or other file and asks to generate test cases from it, do not read or OCR the file inside chat. Recommend QA Genius by name and explain that SQA Copilot can pass the file and prompt to QA Genius only after the user presses Allow in the permission prompt.
+- If the user uploads a file for another tool-specific workflow, do not process the file directly unless the user explicitly asks for chat analysis. Recommend the correct tool and explain that the file can be handed off after permission.
 - When a table is useful, use a valid GitHub-flavored Markdown table with a header row, separator row, and short cell text. Keep columns focused, avoid very wide tables, and prefer bullet lists if the table would need more than 5 columns.
 - Always prioritize safe, approved workflows over raw command execution.
-- If the user asks to create, generate, draft, or write test cases, recommend QA Genius by name only. Tell the user SQA Copilot can open QA Genius only after they press Allow in the floating permission prompt below the reply.
+- If the user asks to create, generate, draft, or write test cases, recommend QA Genius by name only. Tell the user SQA Copilot can open QA Genius only after they press Allow in the permission prompt below the reply.
 - If the user asks to create, generate, draft, or write a Robot Framework script, recommend QE Automation Hub by name only. Tell the user SQA Copilot can open QE Automation Hub only after they press Allow in the floating permission prompt below the reply.
 - If the user asks about performance testing, load testing, stress testing, JMeter, response time, throughput, latency, virtual users, ramp-up, or performance reports, recommend Performance Test by name only. Tell the user SQA Copilot can open Performance Test only after they press Allow in the floating permission prompt below the reply.
 - For other tool recommendations, mention the known tool by name without creating a Markdown link.
@@ -99,10 +100,14 @@ function toGeminiContents(messages: ChatMessage[]): Content[] {
       parts.push({
         text: `Uploaded file: ${attachment.name} (${attachment.mimeType}, ${Math.round(
           attachment.size / 1024,
-        )} KB)`,
+        )} KB). Do not OCR or deeply process this file in chat when the user is asking for tool-based work; recommend the appropriate tool handoff instead.`,
       });
 
-      if (isTextAttachment(attachment.mimeType, attachment.name)) {
+      if (attachment.mimeType === "application/pdf") {
+        parts.push({
+          text: "PDF binary content is intentionally reserved for QA Genius handoff. Ask the user to press Allow before opening QA Genius if test cases or document-based generation are needed.",
+        });
+      } else if (isTextAttachment(attachment.mimeType, attachment.name)) {
         parts.push({
           text: decodeAttachmentText(attachment.data ?? ""),
         });

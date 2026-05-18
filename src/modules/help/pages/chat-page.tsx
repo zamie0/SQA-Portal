@@ -9,6 +9,7 @@ import {
   MessageCircle,
   Sparkles,
   AlertTriangle,
+  ClipboardCopy,
   HelpCircle,
   GraduationCap,
   Settings,
@@ -24,11 +25,13 @@ import {
   FileText,
   Image as ImageIcon,
   Volume2,
+  BookOpen,
+  Bot,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { ChatMessage } from "@/shared/lib/chat-types";
-import { useLocalStorage } from "@/shared/state";
+import { useAuth, useLocalStorage } from "@/shared/state";
 
 const SUGGESTIONS = [
   "How do I create my first test automation project?",
@@ -39,7 +42,6 @@ const SUGGESTIONS = [
 
 const MAX_ATTACHMENTS = 4;
 const MAX_ATTACHMENT_BYTES = 8 * 1024 * 1024;
-const QA_GENIUS_HANDOFF_KEY = "sqa-copilot-to-qagenius";
 const ACCEPTED_ATTACHMENT_TYPES = [
   "image/*",
   "audio/*",
@@ -74,6 +76,18 @@ interface AttachmentDraft {
   previewUrl: string;
 }
 
+interface ToolHandoff {
+  href: string;
+  prompt: string;
+  autoGenerate?: boolean;
+  attachments: Array<{
+    name: string;
+    mimeType: string;
+    size: number;
+    data: string;
+  }>;
+}
+
 interface Conversation {
   id: string;
   title: string;
@@ -100,8 +114,22 @@ function getCopilotRequirementContext(conversation?: Conversation) {
     .trim();
 }
 
+function stripConversationForMemory(conversation: Conversation): Conversation {
+  return {
+    ...conversation,
+    messages: conversation.messages
+      .filter((message) => !message.pending)
+      .slice(-80)
+      .map((message) => ({
+        ...message,
+        attachments: message.attachments?.map(({ data, ...attachment }) => attachment),
+      })),
+  };
+}
+
 function ChatPage() {
   const router = useRouter();
+  const user = useAuth();
   const [conversations, setConversations] = useLocalStorage<Conversation[]>("qe-hub.ai-chats.v1", [
     newConversation(),
   ]);
@@ -135,12 +163,22 @@ function ChatPage() {
   const [recording, setRecording] = useState(false);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
+  const [editingPromptId, setEditingPromptId] = useState<string | null>(null);
+  const [editingPromptValue, setEditingPromptValue] = useState("");
+  const [copiedPromptId, setCopiedPromptId] = useState<string | null>(null);
+  const [tutorialDismissed, setTutorialDismissed] = useLocalStorage<boolean>(
+    "sqa-copilot:tutorial-dismissed",
+    false,
+  );
+  const [showTutorial, setShowTutorial] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordingChunksRef = useRef<Blob[]>([]);
   const recordingStreamRef = useRef<MediaStream | null>(null);
+  const remoteMemoryReadyRef = useRef(false);
+  const saveTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -150,12 +188,116 @@ function ChatPage() {
     () => () => {
       recordingStreamRef.current?.getTracks().forEach((track) => track.stop());
       recordingStreamRef.current = null;
+      if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current);
     },
     [],
   );
 
+  useEffect(() => {
+    remoteMemoryReadyRef.current = false;
+    if (!user?.id) return;
+
+    let active = true;
+    const loadMemory = async () => {
+      try {
+        const response = await fetch(
+          `/api/copilot/conversations?userId=${encodeURIComponent(user.id)}`,
+        );
+        if (!response.ok) throw new Error(await response.text());
+        const data = (await response.json()) as {
+          activeId?: string;
+          conversations?: Conversation[];
+        };
+
+        if (!active) return;
+
+        if (data.conversations?.length) {
+          setConversations(data.conversations);
+          setActiveId(data.activeId || data.conversations[0].id);
+        }
+      } catch (error) {
+        console.warn("Unable to load SQA Copilot memory.", error);
+      } finally {
+        if (active) remoteMemoryReadyRef.current = true;
+      }
+    };
+
+    void loadMemory();
+
+    return () => {
+      active = false;
+    };
+  }, [setActiveId, setConversations, user?.id]);
+
+  useEffect(() => {
+    if (!user?.id || !remoteMemoryReadyRef.current) return;
+    if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current);
+
+    saveTimerRef.current = window.setTimeout(() => {
+      void fetch("/api/copilot/conversations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user.id,
+          activeId,
+          conversations: conversations.map(stripConversationForMemory),
+        }),
+      }).catch((error) => {
+        console.warn("Unable to save SQA Copilot memory.", error);
+      });
+    }, 600);
+  }, [activeId, conversations, user?.id]);
+
   function patchActive(fn: (c: Conversation) => Conversation) {
     setConversations((prev) => prev.map((c) => (c.id === activeId ? fn(c) : c)));
+  }
+
+  async function executePrompt({
+    prompt,
+    sourceAttachments,
+    history,
+    pendingId,
+    onFailure,
+  }: {
+    prompt: string;
+    sourceAttachments: NonNullable<ChatMessage["attachments"]>;
+    history: ChatMessage[];
+    pendingId: string;
+    onFailure: () => void;
+  }) {
+    setSending(true);
+    try {
+      const endpoint = shouldUseAgenticTesting(prompt) ? "/api/copilot/agent" : "/api/chat";
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: history }),
+      });
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(text || "SQA Copilot failed");
+      }
+      const data = (await response.json()) as { reply: string };
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === activeId
+            ? {
+                ...c,
+                messages: c.messages.map((m) =>
+                  m.id === pendingId ? { ...m, content: data.reply, pending: false } : m,
+                ),
+              }
+            : c,
+        ),
+      );
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Something went wrong";
+      setError(msg);
+      onFailure();
+    } finally {
+      setSending(false);
+      inputRef.current?.focus();
+    }
   }
 
   async function send(text: string) {
@@ -166,16 +308,20 @@ function ChatPage() {
     const outgoingAttachments = attachments;
     setAttachments([]);
 
+    const prompt = trimmed || attachmentOnlyPrompt(outgoingAttachments);
+    const messageAttachments = outgoingAttachments.map(
+      ({ previewUrl, id, ...attachment }) => attachment,
+    );
     const userMsg: UiMessage = {
       id: uid(),
       role: "user",
-      content: trimmed || attachmentOnlyPrompt(outgoingAttachments),
-      attachments: outgoingAttachments.map(({ data, previewUrl, id, ...attachment }) => attachment),
+      content: prompt,
+      attachments: messageAttachments,
     };
     const apiUserMsg: ChatMessage = {
       role: "user",
-      content: trimmed || attachmentOnlyPrompt(outgoingAttachments),
-      attachments: outgoingAttachments.map(({ previewUrl, id, ...attachment }) => attachment),
+      content: prompt,
+      attachments: messageAttachments,
     };
     const pending: UiMessage = { id: uid(), role: "assistant", content: "", pending: true };
     const isFirstUserMessage = active.messages.filter((m) => m.role === "user").length === 0;
@@ -194,44 +340,117 @@ function ChatPage() {
       attachments: m.attachments?.filter((attachment) => attachment.data),
     }));
 
-    setSending(true);
+    await executePrompt({
+      prompt,
+      sourceAttachments: messageAttachments,
+      history,
+      pendingId: pending.id,
+      onFailure: () => {
+        setConversations((prev) =>
+          prev.map((c) =>
+            c.id === activeId
+              ? { ...c, messages: c.messages.filter((m) => m.id !== pending.id) }
+              : c,
+          ),
+        );
+        setAttachments(outgoingAttachments);
+      },
+    });
+  }
+
+  async function copyPrompt(message: UiMessage) {
+    if (message.role !== "user" || !message.content.trim()) return;
+
     try {
-      const endpoint = shouldUseAgenticTesting(trimmed) ? "/api/copilot/agent" : "/api/chat";
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: history }),
-      });
-      if (!response.ok) {
-        const text = await response.text();
-        throw new Error(text || "SQA Copilot failed");
-      }
-      const data = (await response.json()) as { reply: string };
-      setConversations((prev) =>
-        prev.map((c) =>
-          c.id === activeId
-            ? {
-                ...c,
-                messages: c.messages.map((m) =>
-                  m.id === pending.id ? { ...m, content: data.reply, pending: false } : m,
-                ),
-              }
-            : c,
-        ),
+      await navigator.clipboard.writeText(message.content);
+      setCopiedPromptId(message.id);
+      window.setTimeout(
+        () => setCopiedPromptId((current) => (current === message.id ? null : current)),
+        1400,
       );
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Something went wrong";
-      setError(msg);
-      setConversations((prev) =>
-        prev.map((c) =>
-          c.id === activeId ? { ...c, messages: c.messages.filter((m) => m.id !== pending.id) } : c,
-        ),
-      );
-      setAttachments(outgoingAttachments);
-    } finally {
-      setSending(false);
-      inputRef.current?.focus();
+    } catch {
+      setError("Browser clipboard access failed. Select the prompt text and copy it manually.");
     }
+  }
+
+  function startEditPrompt(message: UiMessage) {
+    if (message.role !== "user" || sending || recording) return;
+    setError(null);
+    setEditingPromptId(message.id);
+    setEditingPromptValue(message.content);
+  }
+
+  function cancelEditPrompt() {
+    setEditingPromptId(null);
+    setEditingPromptValue("");
+  }
+
+  async function saveEditedPrompt(messageId: string) {
+    const prompt = editingPromptValue.trim();
+    if (!prompt || sending || recording || !active) return;
+
+    const messageIndex = active.messages.findIndex((message) => message.id === messageId);
+    const original = active.messages[messageIndex];
+    if (messageIndex < 0 || original?.role !== "user") return;
+
+    if (prompt === original.content) {
+      cancelEditPrompt();
+      return;
+    }
+
+    setError(null);
+    cancelEditPrompt();
+
+    const retainedMessages = active.messages.slice(0, messageIndex);
+    const updatedUserMessage: UiMessage = {
+      ...original,
+      content: prompt,
+    };
+    const pending: UiMessage = { id: uid(), role: "assistant", content: "", pending: true };
+
+    setConversations((prev) =>
+      prev.map((conversation) =>
+        conversation.id === activeId
+          ? {
+              ...conversation,
+              title:
+                messageIndex === active.messages.findIndex((message) => message.role === "user")
+                  ? prompt.slice(0, 40)
+                  : conversation.title,
+              messages: [...retainedMessages, updatedUserMessage, pending],
+            }
+          : conversation,
+      ),
+    );
+
+    const apiUserMessage: ChatMessage = {
+      role: "user",
+      content: prompt,
+      attachments: updatedUserMessage.attachments?.filter((attachment) => attachment.data),
+    };
+    const history: ChatMessage[] = [...retainedMessages, apiUserMessage].map((message) => ({
+      role: message.role,
+      content: message.content,
+      attachments: message.attachments?.filter((attachment) => attachment.data),
+    }));
+
+    await executePrompt({
+      prompt,
+      sourceAttachments: updatedUserMessage.attachments ?? [],
+      history,
+      pendingId: pending.id,
+      onFailure: () => {
+        setConversations((prev) =>
+          prev.map((conversation) =>
+            conversation.id === activeId
+              ? { ...conversation, messages: active.messages }
+              : conversation,
+          ),
+        );
+        setEditingPromptId(messageId);
+        setEditingPromptValue(prompt);
+      },
+    });
   }
 
   async function addFiles(files: FileList | File[]) {
@@ -359,23 +578,30 @@ function ChatPage() {
     if (!qaGeniusContext) return;
 
     window.localStorage.setItem(
-      QA_GENIUS_HANDOFF_KEY,
+      "sqa-copilot:tool-handoff",
       JSON.stringify({
-        source: "sqa-copilot",
-        createdAt: new Date().toISOString(),
-        requirement: qaGeniusContext,
-        testType: "Functional",
-        priority: "High",
-        maxCases: 5,
-        autoRun: false,
+        href: "/tools/qa-genius",
+        prompt: qaGeniusContext,
+        autoGenerate: false,
+        attachments: [],
       }),
     );
     router.push("/tools/qa-genius");
   }
 
+  function openTutorial() {
+    setTutorialDismissed(true);
+    setShowTutorial(true);
+  }
+
+  function skipTutorial() {
+    setTutorialDismissed(true);
+    setShowTutorial(false);
+  }
+
   return (
     <Shell>
-      <div className="flex h-full min-h-0 flex-col gap-3 overflow-hidden">
+      <div className="relative flex h-full min-h-0 flex-col gap-3 overflow-hidden">
         <div className="shrink-0 rounded-2xl glass-strong p-3 relative overflow-hidden">
           <div className="absolute -top-20 -right-20 h-56 w-56 rounded-full bg-gradient-to-br from-violet-300 to-sky-400 opacity-20 blur-3xl" />
           <div className="relative flex flex-wrap items-center justify-between gap-3">
@@ -425,6 +651,12 @@ function ChatPage() {
             </div>
           </div>
         </div>
+
+        {!tutorialDismissed && !showTutorial && (
+          <FloatingTutorialPrompt onView={openTutorial} onSkip={skipTutorial} />
+        )}
+
+        {showTutorial && <CopilotTutorialDialog onClose={() => setShowTutorial(false)} />}
 
         <div className="grid min-h-0 flex-1 grid-rows-[minmax(8rem,12rem)_minmax(0,1fr)] gap-4 overflow-hidden lg:grid-cols-[280px_1fr] lg:grid-rows-none">
           {/* Sidebar of chats */}
@@ -521,8 +753,34 @@ function ChatPage() {
               {!active || active.messages.length === 0 ? (
                 <EmptyState onPick={(s) => send(s)} />
               ) : (
-                active.messages.map((m) => (
-                  <Bubble key={m.id} message={m} onOpenTool={(href) => router.push(href)} />
+                active.messages.map((m, index) => (
+                  <Bubble
+                    key={m.id}
+                    message={m}
+                    handoff={buildToolHandoff(handoffSourceFor(active.messages, index), m)}
+                    isEditing={editingPromptId === m.id}
+                    editingValue={editingPromptId === m.id ? editingPromptValue : ""}
+                    copied={copiedPromptId === m.id}
+                    disabled={sending || recording}
+                    onCopyPrompt={() => void copyPrompt(m)}
+                    onStartEdit={() => startEditPrompt(m)}
+                    onEditChange={setEditingPromptValue}
+                    onCancelEdit={cancelEditPrompt}
+                    onSaveEdit={() => void saveEditedPrompt(m.id)}
+                    onOpenTool={(href, handoff) => {
+                      if (handoff) {
+                        const approvedHandoff =
+                          href === "/tools/qa-genius"
+                            ? { ...handoff, href, autoGenerate: true }
+                            : { ...handoff, href };
+                        window.localStorage.setItem(
+                          "sqa-copilot:tool-handoff",
+                          JSON.stringify(approvedHandoff),
+                        );
+                      }
+                      router.push(href);
+                    }}
+                  />
                 ))
               )}
             </div>
@@ -638,10 +896,149 @@ function shouldUseAgenticTesting(input: string) {
   return asksForAgent && hasTestingScope;
 }
 
+function handoffSourceFor(messages: UiMessage[], index: number) {
+  for (let i = index - 1; i >= 0; i -= 1) {
+    if (messages[i]?.role === "user") return messages[i];
+  }
+
+  return null;
+}
+
+function buildToolHandoff(
+  source: UiMessage | null,
+  assistantMessage: UiMessage,
+): ToolHandoff | null {
+  if (!source || assistantMessage.role !== "assistant" || assistantMessage.pending) return null;
+
+  return {
+    href: "",
+    prompt: source.content,
+    attachments:
+      source.attachments
+        ?.filter((attachment) => attachment.data)
+        .map((attachment) => ({
+          name: attachment.name,
+          mimeType: attachment.mimeType,
+          size: attachment.size,
+          data: attachment.data ?? "",
+        })) ?? [],
+  };
+}
+
 function attachmentOnlyPrompt(attachments: AttachmentDraft[]) {
   return attachments.length === 1
-    ? `Please analyze this uploaded ${attachmentKind(attachments[0].mimeType)}.`
+    ? `Please use this uploaded ${attachmentKind(attachments[0].mimeType)} with the appropriate SQA tool.`
     : "Please analyze these uploaded files.";
+}
+
+function FloatingTutorialPrompt({ onView, onSkip }: { onView: () => void; onSkip: () => void }) {
+  return (
+    <div className="pointer-events-none absolute bottom-24 right-6 z-20 w-[min(22rem,calc(100vw-2rem))] animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-2">
+      <div className="pointer-events-auto rounded-2xl border border-sky-200/80 bg-white/95 p-4 text-sm shadow-2xl shadow-sky-950/10 backdrop-blur-xl">
+        <div className="flex items-start gap-3">
+          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-sky-100 text-sky-700">
+            <BookOpen className="h-4 w-4" />
+          </div>
+          <div className="min-w-0">
+            <div className="font-semibold text-foreground">View SQA Copilot tutorial?</div>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">
+              Learn chat basics, tool permission bubbles, agentic testing, and document handoff.
+            </p>
+          </div>
+        </div>
+        <div className="mt-3 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={onSkip}
+            className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:bg-slate-100 hover:text-foreground"
+          >
+            Not now
+          </button>
+          <button
+            type="button"
+            onClick={onView}
+            className="rounded-lg bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-sky-700"
+          >
+            View tutorial
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CopilotTutorialDialog({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="absolute inset-0 z-30 grid place-items-center bg-foreground/20 p-4 backdrop-blur-sm animate-in fade-in-0">
+      <div className="w-full max-w-2xl rounded-3xl border border-white/80 bg-white/95 p-5 shadow-2xl shadow-slate-950/15 animate-in zoom-in-95 slide-in-from-bottom-2">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[image:var(--gradient-primary)] text-white shadow-md">
+              <Bot className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold">SQA Copilot quick tutorial</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                A short guide to using Copilot safely and effectively.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            title="Close tutorial"
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-xl text-muted-foreground transition hover:bg-slate-100 hover:text-foreground"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          {[
+            {
+              title: "Ask QA questions",
+              body: "Ask about test cases, automation scripts, logs, bugs, requirements, or testing strategy.",
+            },
+            {
+              title: "Use tool bubbles",
+              body: "Copilot asks for your approval before opening an SQA tool workspace.",
+            },
+            {
+              title: "Run agentic testing",
+              body: "Say: Use agentic AI to do all testing for https://your-url. Copilot will coordinate approved tools.",
+            },
+            {
+              title: "Send documents to tools",
+              body: "Attach a PDF or scenario document, then press Allow when Copilot offers QA Genius.",
+            },
+          ].map((item, index) => (
+            <div key={item.title} className="rounded-2xl border border-sky-100 bg-sky-50/70 p-3">
+              <div className="text-[11px] font-semibold uppercase tracking-wide text-sky-600">
+                Step {index + 1}
+              </div>
+              <div className="mt-1 text-sm font-semibold text-sky-950">{item.title}</div>
+              <p className="mt-1 text-xs leading-5 text-sky-800">{item.body}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-5 rounded-2xl bg-slate-50 p-3 text-xs leading-5 text-muted-foreground">
+          Copilot only uses whitelisted SQA workflows. For test case generation, it waits for your
+          Allow click before moving the prompt into QA Genius.
+        </div>
+
+        <div className="mt-4 flex justify-end">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-xl bg-foreground px-4 py-2 text-sm font-semibold text-background shadow-sm transition hover:opacity-90"
+          >
+            Got it
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function isSupportedAttachment(file: File) {
@@ -791,17 +1188,37 @@ function EmptyState({ onPick }: { onPick: (s: string) => void }) {
 
 function Bubble({
   message,
+  handoff,
+  isEditing,
+  editingValue,
+  copied,
+  disabled,
+  onCopyPrompt,
+  onStartEdit,
+  onEditChange,
+  onCancelEdit,
+  onSaveEdit,
   onOpenTool,
 }: {
   message: UiMessage;
-  onOpenTool: (href: string) => void;
+  handoff: ToolHandoff | null;
+  isEditing: boolean;
+  editingValue: string;
+  copied: boolean;
+  disabled: boolean;
+  onCopyPrompt: () => void;
+  onStartEdit: () => void;
+  onEditChange: (value: string) => void;
+  onCancelEdit: () => void;
+  onSaveEdit: () => void;
+  onOpenTool: (href: string, handoff: ToolHandoff | null) => void | Promise<void>;
 }) {
   const isUser = message.role === "user";
   const toolSuggestions =
     !isUser && !message.pending ? getAssistantToolSuggestions(message.content) : [];
 
   return (
-    <div className={`flex gap-3 ${isUser ? "flex-row-reverse" : ""}`}>
+    <div className={`group flex gap-3 ${isUser ? "flex-row-reverse" : ""}`}>
       <div
         className={[
           "h-9 w-9 rounded-2xl grid place-items-center shrink-0 text-sm font-semibold shadow-sm",
@@ -825,6 +1242,49 @@ function Bubble({
         >
           {message.pending ? (
             <TypingIndicator />
+          ) : isUser && isEditing ? (
+            <div className="min-w-[min(34rem,70vw)] space-y-2">
+              <textarea
+                autoFocus
+                value={editingValue}
+                onChange={(event) => onEditChange(event.target.value)}
+                onKeyDown={(event) => {
+                  if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+                    event.preventDefault();
+                    onSaveEdit();
+                  }
+                  if (event.key === "Escape") {
+                    event.preventDefault();
+                    onCancelEdit();
+                  }
+                }}
+                className="min-h-28 w-full resize-y rounded-xl border border-background/20 bg-background/95 p-3 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/25"
+              />
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="text-[11px] text-background/70">
+                  Save reruns this prompt and replaces stale follow-up messages.
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={onCancelEdit}
+                    className="inline-flex items-center gap-1 rounded-lg bg-background/10 px-2.5 py-1.5 text-[11px] font-semibold text-background transition hover:bg-background/20"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onSaveEdit}
+                    disabled={!editingValue.trim() || disabled}
+                    className="inline-flex items-center gap-1 rounded-lg bg-background px-2.5 py-1.5 text-[11px] font-semibold text-foreground shadow-sm transition hover:opacity-90 disabled:pointer-events-none disabled:opacity-50"
+                  >
+                    <Check className="h-3.5 w-3.5" />
+                    Save and rerun
+                  </button>
+                </div>
+              </div>
+            </div>
           ) : isUser ? (
             <>
               <p className="whitespace-pre-wrap">{message.content}</p>
@@ -884,13 +1344,45 @@ function Bubble({
             </div>
           )}
         </div>
+        {isUser && !message.pending && !isEditing ? (
+          <div className="mt-1 flex gap-1 opacity-80 transition group-hover:opacity-100">
+            <button
+              type="button"
+              onClick={onCopyPrompt}
+              title="Copy prompt"
+              className="inline-flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] font-medium text-muted-foreground transition hover:bg-white/70 hover:text-foreground"
+            >
+              {copied ? (
+                <Check className="h-3.5 w-3.5" />
+              ) : (
+                <ClipboardCopy className="h-3.5 w-3.5" />
+              )}
+              {copied ? "Copied" : "Copy"}
+            </button>
+            <button
+              type="button"
+              onClick={onStartEdit}
+              disabled={disabled}
+              title="Edit and rerun prompt"
+              className="inline-flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] font-medium text-muted-foreground transition hover:bg-white/70 hover:text-foreground disabled:pointer-events-none disabled:opacity-40"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+              Edit
+            </button>
+          </div>
+        ) : null}
         {toolSuggestions.length > 0 && (
           <div className="mt-2 flex w-full flex-wrap gap-2">
             {toolSuggestions.map((suggestion) => (
               <AssistantToolSuggestion
                 key={suggestion.href}
                 suggestion={suggestion}
-                onAllow={() => onOpenTool(suggestion.href)}
+                onAllow={() =>
+                  onOpenTool(
+                    suggestion.href,
+                    handoff ? { ...handoff, href: suggestion.href } : null,
+                  )
+                }
               />
             ))}
           </div>

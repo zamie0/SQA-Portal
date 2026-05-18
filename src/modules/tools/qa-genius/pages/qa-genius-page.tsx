@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   AlertTriangle,
@@ -74,6 +74,27 @@ type SqaCopilotHandoff = {
 
 const historyStorageKey = "qagenius-history";
 const copilotHandoffStorageKey = "sqa-copilot-to-qagenius";
+
+type RequirementAttachment = {
+  name: string;
+  mimeType: string;
+  size: number;
+  data: string;
+};
+
+type CopilotToolHandoff = {
+  href: string;
+  prompt: string;
+  autoGenerate?: boolean;
+  attachments: RequirementAttachment[];
+};
+
+type CopilotImportNotice = {
+  prompt: string;
+  autoGenerate?: boolean;
+  attachmentCount: number;
+  attachmentNames: string;
+};
 const testTypes: TestType[] = ["Functional", "API", "Security", "Performance", "Automation"];
 const priorities: Priority[] = ["Low", "Medium", "High", "Critical"];
 const maxCaseOptions = [3, 5, 8, 10, 15, 20];
@@ -284,12 +305,14 @@ function readQaGeniusHistory(): QaGeniusHistoryItem[] {
         testType: normalizeTestType(item.testType, "Functional"),
         priority: normalizePriority(item.priority, "Medium"),
         maxCases:
-          typeof item.maxCases === "number" && Number.isFinite(item.maxCases)
-            ? item.maxCases
-            : 5,
+          typeof item.maxCases === "number" && Number.isFinite(item.maxCases) ? item.maxCases : 5,
         createdAt: normalizeText(item.createdAt, new Date().toISOString()),
         testCases: Array.isArray(item.testCases)
-          ? normalizeTestCases(item.testCases, normalizeTestType(item.testType, "Functional"), normalizePriority(item.priority, "Medium"))
+          ? normalizeTestCases(
+              item.testCases,
+              normalizeTestType(item.testType, "Functional"),
+              normalizePriority(item.priority, "Medium"),
+            )
           : [],
       }))
       .filter((item) => item.requirement || item.testCases.length > 0)
@@ -347,6 +370,42 @@ function clearSqaCopilotHandoff() {
   window.localStorage.removeItem(copilotHandoffStorageKey);
 }
 
+function isTextRequirementAttachment(attachment: RequirementAttachment) {
+  const ext = attachment.name.split(".").pop()?.toLowerCase();
+  return (
+    attachment.mimeType.startsWith("text/") ||
+    ["txt", "md", "csv", "json", "xml", "yaml", "yml"].includes(ext ?? "")
+  );
+}
+
+function decodeBase64Text(data: string) {
+  try {
+    const binary = window.atob(data);
+    const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+    return new TextDecoder().decode(bytes);
+  } catch {
+    return "";
+  }
+}
+
+function fileToRequirementAttachment(file: File) {
+  return new Promise<RequirementAttachment>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error(`Unable to read ${file.name}`));
+    reader.onload = () => {
+      const previewUrl = String(reader.result ?? "");
+      const [, data = ""] = previewUrl.split(",");
+      resolve({
+        name: file.name,
+        mimeType: file.type || "application/octet-stream",
+        size: file.size,
+        data,
+      });
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function QAGeniusPage() {
   const [requirement, setRequirement] = useState("");
   const [testType, setTestType] = useState<TestType>("Functional");
@@ -358,7 +417,10 @@ export default function QAGeniusPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [uploadedFileName, setUploadedFileName] = useState("");
   const [activeHistoryId, setActiveHistoryId] = useState("");
+  const [requirementAttachments, setRequirementAttachments] = useState<RequirementAttachment[]>([]);
+  const [copilotImport, setCopilotImport] = useState<CopilotImportNotice | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const autoGenerateHandoffRef = useRef(false);
 
   const hasResults = results.length > 0;
 
@@ -396,6 +458,7 @@ export default function QAGeniusPage() {
     setMaxCases(latest.maxCases);
     setResults(latest.testCases);
     setActiveHistoryId(latest.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleFileUpload = async (file: File | undefined) => {
@@ -419,7 +482,9 @@ export default function QAGeniusPage() {
 
     if (!isReadable) {
       const message =
-        "File attached. For PDF, DOC, and DOCX files, paste the key requirement text into the box so QA Genius can generate accurate test cases.";
+        "File attached. QA Genius will use this document as source material when generating test cases.";
+      const attachment = await fileToRequirementAttachment(file);
+      setRequirementAttachments((current) => [...current, attachment].slice(-4));
       setRequirement((current) => `${current}${getFilePrefix(file)}${message}`);
       toast.info("Document attached", { description: message });
       return;
@@ -439,88 +504,158 @@ export default function QAGeniusPage() {
     }
   };
 
-  const generateTestCases = async ({
-    requirement: nextRequirement,
-    testType: nextTestType,
-    priority: nextPriority,
-    maxCases: nextMaxCases,
-  }: {
-    requirement: string;
-    testType: TestType;
-    priority: Priority;
-    maxCases: number;
-  }) => {
-    if (!nextRequirement.trim()) {
-      const message = "Add a requirement or upload a readable requirement file before generating.";
-      setErrorMessage(message);
-      toast.error("Requirement needed", { description: message });
-      return;
-    }
-
-    setIsLoading(true);
-    setResults([]);
-    setErrorMessage("");
-    setCopyLabel("Copy Results");
+  useEffect(() => {
+    const raw = window.localStorage.getItem("sqa-copilot:tool-handoff");
+    if (!raw) return;
 
     try {
-      const response = await fetch("/api/tools/qa-genius/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+      const handoff = JSON.parse(raw) as CopilotToolHandoff;
+      if (handoff.href !== "/tools/qa-genius") return;
+
+      const attachments = (handoff.attachments ?? []).slice(0, 4);
+      const attachmentText = attachments
+        .map((attachment) => {
+          const prefix = `\n\nUploaded requirement source: ${attachment.name} (${
+            attachment.mimeType || "unknown type"
+          }, ${Math.ceil(attachment.size / 1024)} KB)\n`;
+
+          if (isTextRequirementAttachment(attachment)) {
+            return `${prefix}${decodeBase64Text(attachment.data).trim()}`;
+          }
+
+          return `${prefix}Attached document from SQA Copilot. QA Genius will use this file as source material.`;
+        })
+        .join("");
+
+      setRequirement(`${handoff.prompt.trim()}${attachmentText}`.trim());
+      setRequirementAttachments(
+        attachments.filter((attachment) => !isTextRequirementAttachment(attachment)),
+      );
+      setUploadedFileName(attachments.map((attachment) => attachment.name).join(", "));
+      setCopilotImport({
+        prompt: handoff.prompt.trim(),
+        autoGenerate: handoff.autoGenerate === true,
+        attachmentCount: attachments.length,
+        attachmentNames: attachments.map((attachment) => attachment.name).join(", "),
+      });
+      window.localStorage.removeItem("sqa-copilot:tool-handoff");
+
+      toast.success("Copied from SQA Copilot", {
+        description:
+          attachments.length > 0
+            ? "The prompt and attached document are ready in QA Genius."
+            : "The prompt is ready in QA Genius.",
+      });
+    } catch {
+      window.localStorage.removeItem("sqa-copilot:tool-handoff");
+    }
+  }, []);
+
+  const generateTestCases = useCallback(
+    async ({
+      requirement: nextRequirement,
+      testType: nextTestType,
+      priority: nextPriority,
+      maxCases: nextMaxCases,
+      attachments: nextAttachments = requirementAttachments,
+    }: {
+      requirement: string;
+      testType: TestType;
+      priority: Priority;
+      maxCases: number;
+      attachments?: RequirementAttachment[];
+    }) => {
+      if (!nextRequirement.trim()) {
+        const message =
+          "Add a requirement or upload a readable requirement file before generating.";
+        setErrorMessage(message);
+        toast.error("Requirement needed", { description: message });
+        return;
+      }
+
+      setIsLoading(true);
+      setResults([]);
+      setErrorMessage("");
+      setCopyLabel("Copy Results");
+
+      try {
+        const response = await fetch("/api/tools/qa-genius/generate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            requirement: nextRequirement,
+            type: nextTestType,
+            testType: nextTestType,
+            priority: nextPriority,
+            maxCases: nextMaxCases,
+            maxTestCases: nextMaxCases,
+            attachments: nextAttachments,
+          }),
+        });
+
+        if (!response.ok) {
+          const message = await response.text();
+          throw new Error(message || "QA Genius could not generate test cases. Please try again.");
+        }
+
+        const data = (await response.json()) as { testCases?: unknown };
+        if (!Array.isArray(data.testCases)) {
+          throw new Error("QA Genius returned an unexpected response. Please try again.");
+        }
+
+        const normalized = normalizeTestCases(data.testCases, nextTestType, nextPriority);
+        if (normalized.length === 0) {
+          throw new Error(
+            "QA Genius did not return any test cases. Please add more requirement detail.",
+          );
+        }
+
+        const historyItem: QaGeniusHistoryItem = {
+          id: createHistoryId(),
           requirement: nextRequirement,
-          type: nextTestType,
           testType: nextTestType,
           priority: nextPriority,
           maxCases: nextMaxCases,
-          maxTestCases: nextMaxCases,
-        }),
-      });
+          createdAt: new Date().toISOString(),
+          testCases: normalized,
+        };
 
-      if (!response.ok) {
-        const message = await response.text();
-        throw new Error(message || "QA Genius could not generate test cases. Please try again.");
+        setResults(normalized);
+        setActiveHistoryId(historyItem.id);
+        saveQaGeniusHistoryItem(historyItem);
+        toast.success("Test cases generated", {
+          description: `${normalized.length} AI-generated test case${
+            normalized.length === 1 ? "" : "s"
+          } ready for review.`,
+        });
+      } catch (error) {
+        const message = readErrorMessage(error);
+        setErrorMessage(message);
+        toast.error("Generation failed", { description: message });
+      } finally {
+        setIsLoading(false);
       }
+    },
+    [requirementAttachments],
+  );
 
-      const data = (await response.json()) as { testCases?: unknown };
-      if (!Array.isArray(data.testCases)) {
-        throw new Error("QA Genius returned an unexpected response. Please try again.");
-      }
+  useEffect(() => {
+    if (!copilotImport?.autoGenerate || autoGenerateHandoffRef.current || isLoading) return;
+    if (!requirement.trim()) return;
 
-      const normalized = normalizeTestCases(data.testCases, nextTestType, nextPriority);
-      if (normalized.length === 0) {
-        throw new Error(
-          "QA Genius did not return any test cases. Please add more requirement detail.",
-        );
-      }
-
-      const historyItem: QaGeniusHistoryItem = {
-        id: createHistoryId(),
-        requirement: nextRequirement,
-        testType: nextTestType,
-        priority: nextPriority,
-        maxCases: nextMaxCases,
-        createdAt: new Date().toISOString(),
-        testCases: normalized,
-      };
-
-      setResults(normalized);
-      setActiveHistoryId(historyItem.id);
-      saveQaGeniusHistoryItem(historyItem);
-      toast.success("Test cases generated", {
-        description: `${normalized.length} AI-generated test case${
-          normalized.length === 1 ? "" : "s"
-        } ready for review.`,
-      });
-    } catch (error) {
-      const message = readErrorMessage(error);
-      setErrorMessage(message);
-      toast.error("Generation failed", { description: message });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    autoGenerateHandoffRef.current = true;
+    void generateTestCases({ requirement, testType, priority, maxCases });
+  }, [
+    copilotImport?.autoGenerate,
+    generateTestCases,
+    isLoading,
+    maxCases,
+    priority,
+    requirement,
+    testType,
+  ]);
 
   const handleGenerate = async () => {
     await generateTestCases({ requirement, testType, priority, maxCases });
@@ -587,6 +722,8 @@ export default function QAGeniusPage() {
     setErrorMessage("");
     setUploadedFileName("");
     setActiveHistoryId("");
+    setRequirementAttachments([]);
+    setCopilotImport(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -649,6 +786,58 @@ export default function QAGeniusPage() {
               <h2 className="text-lg font-semibold">Generator</h2>
             </div>
 
+            {copilotImport ? (
+              <div
+                tabIndex={-1}
+                className="mb-5 rounded-2xl border border-sky-200 bg-sky-50/90 p-4 text-sm text-sky-950 shadow-sm"
+                aria-live="polite"
+              >
+                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                  <div className="min-w-0">
+                    <div className="font-semibold">Imported from SQA Copilot</div>
+                    <p className="mt-1 text-xs leading-5 text-sky-800">
+                      Your prompt
+                      {copilotImport.attachmentCount > 0
+                        ? ` and ${copilotImport.attachmentCount} document${
+                            copilotImport.attachmentCount === 1 ? "" : "s"
+                          }`
+                        : ""}{" "}
+                      were added to QA Genius.
+                      {copilotImport.autoGenerate
+                        ? " Test case generation will start automatically."
+                        : " Review the content, then generate when ready."}
+                    </p>
+                    {copilotImport.attachmentNames ? (
+                      <p className="mt-1 truncate text-[11px] font-medium text-sky-700">
+                        {copilotImport.attachmentNames}
+                      </p>
+                    ) : null}
+                  </div>
+                  {!copilotImport.autoGenerate ? (
+                    <div className="flex shrink-0 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setCopilotImport(null)}
+                        className="rounded-lg px-3 py-2 text-xs font-semibold text-sky-700 transition hover:bg-sky-100"
+                      >
+                        Edit first
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCopilotImport(null);
+                          void handleGenerate();
+                        }}
+                        className="rounded-lg bg-sky-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-sky-700"
+                      >
+                        Generate now
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
+
             <label className="block text-sm font-medium mb-2" htmlFor="requirement">
               Requirement, URS, user story, or extracted document text
             </label>
@@ -669,8 +858,8 @@ export default function QAGeniusPage() {
                   <div>
                     <div className="text-sm font-medium">Upload requirement file</div>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      TXT, MD, CSV, JSON, and XML are read directly. PDF/DOC/DOCX can be attached,
-                      then paste the important requirement text for best results.
+                      TXT, MD, CSV, JSON, and XML are read directly. PDF, DOC, and DOCX are passed
+                      as source documents to QA Genius.
                     </p>
                   </div>
                 </div>
@@ -698,6 +887,7 @@ export default function QAGeniusPage() {
                     type="button"
                     onClick={() => {
                       setUploadedFileName("");
+                      setRequirementAttachments([]);
                       if (fileInputRef.current) fileInputRef.current.value = "";
                     }}
                     className="grid h-5 w-5 place-items-center rounded-full hover:bg-primary/10"
@@ -919,10 +1109,7 @@ export default function QAGeniusPage() {
                             aria-label={`Priority for ${result.id}`}
                             value={normalizePriority(result.priority, priority)}
                             onChange={(event) =>
-                              handleResultPriorityChange(
-                                result.id,
-                                event.target.value as Priority,
-                              )
+                              handleResultPriorityChange(result.id, event.target.value as Priority)
                             }
                             className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-sm font-medium text-slate-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
                           >

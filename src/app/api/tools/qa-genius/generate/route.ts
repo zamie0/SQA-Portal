@@ -1,3 +1,5 @@
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import type { Part } from "@google/generative-ai";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import {
@@ -13,6 +15,14 @@ type GenerateRequestBody = {
   testType: string;
   priority: string;
   maxTestCases: number;
+  attachments?: RequirementAttachment[];
+};
+
+type RequirementAttachment = {
+  name: string;
+  mimeType: string;
+  size: number;
+  data: string;
 };
 
 type GeneratedTestCase = {
@@ -112,6 +122,23 @@ function isGenerateRequestBody(body: unknown): body is GenerateRequestBody {
     typeof candidate.maxTestCases === "number" &&
     Number.isFinite(candidate.maxTestCases)
   );
+}
+
+function cleanRequirementAttachments(value: unknown): RequirementAttachment[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .filter(
+      (attachment): attachment is RequirementAttachment =>
+        !!attachment &&
+        typeof attachment === "object" &&
+        typeof (attachment as RequirementAttachment).name === "string" &&
+        typeof (attachment as RequirementAttachment).mimeType === "string" &&
+        typeof (attachment as RequirementAttachment).size === "number" &&
+        typeof (attachment as RequirementAttachment).data === "string",
+    )
+    .filter((attachment) => attachment.data && attachment.size <= 8 * 1024 * 1024)
+    .slice(0, 4);
 }
 
 function getErrorStatus(error: unknown): number | undefined {
@@ -356,16 +383,16 @@ function normalizeTestCases(
         typeof candidate.id === "string" && candidate.id.trim()
           ? candidate.id.trim()
           : `TC-${String(index + 1).padStart(3, "0")}`;
-      const testType = toRequiredString(candidate.testType ?? candidate.category, requestedTestType);
+      const testType = toRequiredString(
+        candidate.testType ?? candidate.category,
+        requestedTestType,
+      );
       const priority = toRequiredString(candidate.priority, requestedPriority);
       const testScenario = toRequiredString(
         candidate.testScenario ?? candidate.title ?? candidate.scenario,
         `${testType} scenario for ${requirementSummary}`,
       );
-      const candidateObjective = toRequiredString(
-        candidate.objective ?? candidate.description,
-        "",
-      );
+      const candidateObjective = toRequiredString(candidate.objective ?? candidate.description, "");
       const objective =
         candidateObjective && !isWeakObjective(candidateObjective)
           ? candidateObjective
@@ -448,6 +475,7 @@ export async function POST(request: NextRequest) {
       fallbackBehavior: modelConfig.fallbackBehavior,
     });
 
+    const requirementAttachments = cleanRequirementAttachments(body.attachments);
     const prompt = `Requirement:
 ${requirement}
 
@@ -455,14 +483,52 @@ Requested test type: ${body.testType}
 Requested priority: ${body.priority}
 Maximum number of test cases: ${maxTestCases}
 
-Return exactly ${maxTestCases} test cases unless the requirement cannot reasonably support that many.`;
+Return exactly ${maxTestCases} test cases unless the requirement cannot reasonably support that many.
+${
+  requirementAttachments.length > 0
+    ? "Use the attached requirement/scenario document files as source material. For PDFs or scanned documents, extract visible text from the document content before generating test cases."
+    : ""
+}`;
 
-    const reply = await generateContentWithRetry({
-      apiKey,
-      modelName: modelConfig.modelName,
-      prompt,
-      provider,
-    });
+    const parts: Part[] = [
+      { text: prompt },
+      ...requirementAttachments.flatMap((attachment) => [
+        {
+          text: `Requirement attachment: ${attachment.name} (${attachment.mimeType}, ${Math.round(
+            attachment.size / 1024,
+          )} KB)`,
+        },
+        {
+          inlineData: {
+            mimeType: attachment.mimeType,
+            data: attachment.data,
+          },
+        },
+      ]),
+    ];
+
+    const reply =
+      provider === "gemini" && parts.length > 1
+        ? (
+            await new GoogleGenerativeAI(apiKey ?? "")
+              .getGenerativeModel({
+                model: modelConfig.modelName,
+                systemInstruction: SYSTEM_PROMPT,
+                generationConfig: {
+                  responseMimeType: "application/json",
+                  temperature: 0.35,
+                },
+              })
+              .generateContent(parts)
+          ).response
+            .text()
+            .trim()
+        : await generateContentWithRetry({
+            apiKey,
+            modelName: modelConfig.modelName,
+            prompt,
+            provider,
+          });
 
     if (!reply) {
       return new Response("Empty response from AI provider", { status: 500 });
