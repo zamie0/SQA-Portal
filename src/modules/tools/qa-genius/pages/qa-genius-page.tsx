@@ -185,6 +185,20 @@ function isTextRequirementAttachment(attachment: RequirementAttachment) {
   );
 }
 
+function isLegacyDocFile(file: File) {
+  return file.type === "application/msword" || file.name.toLowerCase().endsWith(".doc");
+}
+
+function stripDocumentAttachmentNotes(value: string) {
+  return value
+    .replace(
+      /\s*Uploaded requirement source:[^\n]*(?:\n(?:File attached\.[^\n]*|Attached document from SQA Copilot\.[^\n]*))*\s*/gi,
+      "\n",
+    )
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 function decodeBase64Text(data: string) {
   try {
     const binary = window.atob(data);
@@ -250,6 +264,8 @@ export default function QAGeniusPage() {
   const autoGenerateHandoffRef = useRef(false);
 
   const hasResults = results.length > 0;
+  const hasMixedRequirementSources =
+    requirementAttachments.length > 0 && stripDocumentAttachmentNotes(requirement).length > 0;
 
   const generateTestCases = useCallback(
     async ({
@@ -259,7 +275,7 @@ export default function QAGeniusPage() {
       requirement: string;
       attachments?: RequirementAttachment[];
     }) => {
-      if (!nextRequirement.trim()) {
+      if (!nextRequirement.trim() && nextAttachments.length === 0) {
         const message = "Add a URS/SYRS requirement or upload a requirement document first.";
         setErrorMessage(message);
         toast.error("Requirement needed", { description: message });
@@ -404,6 +420,17 @@ export default function QAGeniusPage() {
     if (!file) return;
 
     setErrorMessage("");
+
+    if (isLegacyDocFile(file)) {
+      const message =
+        "Legacy .doc files are not supported. Please save the document as .docx or PDF, then upload it again.";
+      setUploadedFileName("");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      setErrorMessage(message);
+      toast.error("Unsupported Word document", { description: message });
+      return;
+    }
+
     setUploadedFileName(file.name);
 
     const readableTypes = [
@@ -423,7 +450,7 @@ export default function QAGeniusPage() {
       try {
         const attachment = await fileToRequirementAttachment(file);
         const message =
-          "File attached. QA Genius will use this document as source material when generating UAT test cases.";
+          "File attached. DOCX files are extracted as text before generation; PDF files are used as supported source documents.";
         setRequirementAttachments((current) => [...current, attachment].slice(-4));
         setRequirement((current) => `${current}${getFilePrefix(file)}${message}`);
         toast.info("Document attached", { description: message });
@@ -627,8 +654,8 @@ export default function QAGeniusPage() {
                   <div>
                     <div className="text-sm font-medium">Upload requirement file</div>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      TXT, MD, CSV, JSON, and XML are read directly. PDF, DOC, and DOCX are passed
-                      as source documents to QA Genius.
+                      TXT, MD, CSV, JSON, and XML are read directly. DOCX files are extracted as
+                      text before generation. PDF files are used as supported source documents.
                     </p>
                   </div>
                 </div>
@@ -664,6 +691,16 @@ export default function QAGeniusPage() {
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
+                </div>
+              ) : null}
+              {hasMixedRequirementSources ? (
+                <div className="mt-3 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                  <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                  <p>
+                    Uploaded documents are treated as the primary URS/SYRS source. Text in the box
+                    is used as notes only; if it appears unrelated, QA Genius will ask you to choose
+                    one source.
+                  </p>
                 </div>
               ) : null}
             </div>
