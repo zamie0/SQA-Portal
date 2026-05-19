@@ -140,9 +140,6 @@ export async function POST(request: NextRequest) {
 
   const qa = await postTool(origin, "/api/tools/qa-genius/generate", {
     requirement: objective,
-    testType: "Functional",
-    priority: "Medium",
-    maxTestCases: 5,
   });
   results.push({
     tool: "QA Genius",

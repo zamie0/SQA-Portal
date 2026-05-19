@@ -3,72 +3,23 @@
 import { useEffect, useState } from "react";
 import { Shell } from "@/shared/components/layout/Shell";
 import { RequireAuth } from "@/shared/components/RequireAuth";
-
-type NormalizedTestCase = {
-  id: string;
-  title: string;
-  description: string;
-  preconditions: string;
-  steps: string[];
-  expectedResults: string[];
-  priority: string;
-  category: string;
-};
+import {
+  normalizeUatTestCases,
+  type UatTestCase,
+} from "@/modules/tools/qa-genius/lib/uat-test-cases";
+import { UatTestCaseTable } from "@/modules/tools/qa-genius/components/uat-test-case-table";
 
 type QaGeniusHistoryItem = {
   id: string;
   requirement: string;
-  testType: string;
-  priority: string;
-  maxCases: number;
   createdAt: string;
-  testCases: NormalizedTestCase[];
+  testCases: UatTestCase[];
 };
 
 const historyStorageKey = "qagenius-history";
 
 function normalizeText(value: unknown, fallback: string) {
   return typeof value === "string" && value.trim() ? value.trim() : fallback;
-}
-
-function normalizeLines(value: unknown, fallback: string) {
-  if (Array.isArray(value)) {
-    const lines = value
-      .map((line) => (typeof line === "string" ? line : String(line ?? "")))
-      .map((line) => line.trim())
-      .filter(Boolean);
-
-    return lines.length > 0 ? lines : [fallback];
-  }
-
-  if (typeof value === "string" && value.trim()) {
-    return [value.trim()];
-  }
-
-  return [fallback];
-}
-
-function normalizeTestCases(value: unknown): NormalizedTestCase[] {
-  if (!Array.isArray(value)) return [];
-
-  return value
-    .filter((item): item is Record<string, unknown> => !!item && typeof item === "object")
-    .map((item, index) => ({
-      id: normalizeText(item.id, `TC-${String(index + 1).padStart(3, "0")}`),
-      title: normalizeText(item.title ?? item.testScenario ?? item.scenario, "Untitled scenario"),
-      description: normalizeText(
-        item.description ?? item.objective,
-        "No objective was saved for this test case.",
-      ),
-      preconditions: normalizeText(item.preconditions, "No specific preconditions."),
-      steps: normalizeLines(item.steps ?? item.testProcedure, "No procedure was saved."),
-      expectedResults: normalizeLines(
-        item.expectedResults ?? item.expectedResult,
-        "No expected result was saved.",
-      ),
-      priority: normalizeText(item.priority, "Medium"),
-      category: normalizeText(item.category ?? item.testType, "Functional"),
-    }));
 }
 
 function readQaGeniusHistory(): QaGeniusHistoryItem[] {
@@ -83,18 +34,15 @@ function readQaGeniusHistory(): QaGeniusHistoryItem[] {
 
     return parsed
       .filter((item): item is Record<string, unknown> => !!item && typeof item === "object")
-      .map((item) => ({
-        id: normalizeText(item.id, ""),
-        requirement: normalizeText(item.requirement, ""),
-        testType: normalizeText(item.testType, "Functional"),
-        priority: normalizeText(item.priority, "Medium"),
-        maxCases:
-          typeof item.maxCases === "number" && Number.isFinite(item.maxCases)
-            ? item.maxCases
-            : 5,
-        createdAt: normalizeText(item.createdAt, new Date().toISOString()),
-        testCases: normalizeTestCases(item.testCases),
-      }))
+      .map((item) => {
+        const requirement = normalizeText(item.requirement, "");
+        return {
+          id: normalizeText(item.id, ""),
+          requirement,
+          createdAt: normalizeText(item.createdAt, new Date().toISOString()),
+          testCases: normalizeUatTestCases(item.testCases, requirement),
+        };
+      })
       .filter((item) => item.id && (item.requirement || item.testCases.length > 0))
       .sort(
         (first, second) =>
@@ -141,7 +89,7 @@ export default function QaGeniusHistoryPage() {
             <div>
               <h1 className="text-3xl font-bold font-display">History</h1>
               <p className="text-muted-foreground mt-2">
-                Past QA Genius generations saved in this browser.
+                Past QA Genius UAT generations saved in this browser.
               </p>
             </div>
             <button
@@ -172,7 +120,7 @@ export default function QaGeniusHistoryPage() {
                     }`}
                   >
                     <div className="text-sm font-semibold text-slate-900">
-                      {item.testType} - {item.priority}
+                      Formal UAT Test Cases
                     </div>
                     <div className="mt-1 text-xs text-muted-foreground">
                       {formatDate(item.createdAt)}
@@ -199,8 +147,8 @@ export default function QaGeniusHistoryPage() {
                 <div className="mb-4">
                   <h2 className="text-lg font-semibold">Generated Test Cases</h2>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    {formatDate(selectedItem.createdAt)} - {selectedItem.testType} -{" "}
-                    {selectedItem.maxCases} max cases
+                    {formatDate(selectedItem.createdAt)} - {selectedItem.testCases.length} case
+                    {selectedItem.testCases.length === 1 ? "" : "s"}
                   </p>
                 </div>
                 <div className="mb-5 rounded-2xl border border-white/70 bg-white/55 p-4">
@@ -212,77 +160,10 @@ export default function QaGeniusHistoryPage() {
                   </p>
                 </div>
 
-                <div className="w-full max-w-full overflow-x-scroll overflow-y-visible rounded-2xl border border-slate-200 bg-white/60 pb-4">
-                  <table className="w-[1960px] min-w-[1960px] table-fixed border-collapse text-left text-sm">
-                    <tbody>
-                      <tr>
-                        <td
-                          colSpan={6}
-                          className="border border-emerald-800 bg-emerald-600 px-4 py-2 text-sm font-bold text-white"
-                        >
-                          Test Flow: Saved QA Test Cases
-                        </td>
-                      </tr>
-                      <tr className="bg-slate-900 text-white">
-                        <th className="w-[120px] border border-slate-700 px-3 py-3 align-top font-bold break-words whitespace-normal">
-                          TC ID
-                        </th>
-                        <th className="w-[320px] border border-slate-700 px-3 py-3 align-top font-bold break-words whitespace-normal">
-                          Test Scenario
-                        </th>
-                        <th className="w-[360px] border border-slate-700 px-3 py-3 align-top font-bold break-words whitespace-normal">
-                          Objective
-                        </th>
-                        <th className="w-[520px] border border-slate-700 px-3 py-3 align-top font-bold break-words whitespace-normal">
-                          Test Procedure
-                        </th>
-                        <th className="w-[520px] border border-slate-700 px-3 py-3 align-top font-bold break-words whitespace-normal">
-                          Expected Results
-                        </th>
-                        <th className="w-[160px] border border-slate-700 px-3 py-3 align-top font-bold break-words whitespace-normal">
-                          Priority
-                        </th>
-                      </tr>
-                      {selectedItem.testCases.map((testCase, rowIndex) => (
-                        <tr
-                          key={testCase.id}
-                          className={rowIndex % 2 === 0 ? "bg-white/90" : "bg-slate-50/90"}
-                        >
-                          <td className="border border-slate-300 px-3 py-3 align-top font-semibold text-slate-900 break-words whitespace-normal">
-                            {testCase.id}
-                          </td>
-                          <td className="border border-slate-300 px-3 py-3 align-top font-medium text-slate-900 break-words whitespace-normal">
-                            {testCase.title}
-                          </td>
-                          <td className="border border-slate-300 px-3 py-3 align-top text-slate-800 break-words whitespace-normal">
-                            {testCase.description}
-                          </td>
-                          <td className="border border-slate-300 px-3 py-3 align-top text-slate-800 break-words whitespace-normal">
-                            <ol className="list-decimal space-y-1 pl-5">
-                              {testCase.steps.map((step, index) => (
-                                <li key={`${testCase.id}-step-${index}`} className="pl-1">
-                                  {step}
-                                </li>
-                              ))}
-                            </ol>
-                          </td>
-                          <td className="border border-slate-300 px-3 py-3 align-top text-slate-800 break-words whitespace-normal">
-                            <ol className="list-decimal space-y-1 pl-5">
-                              {testCase.expectedResults.map((expected, index) => (
-                                <li key={`${testCase.id}-expected-${index}`} className="pl-1">
-                                  {expected}
-                                </li>
-                              ))}
-                            </ol>
-                          </td>
-                          <td className="border border-slate-300 px-3 py-3 align-top font-medium text-slate-800">
-                            {testCase.priority}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <UatTestCaseTable
+                  title="Test Flow: Saved Formal UAT Test Cases"
+                  testCases={selectedItem.testCases}
+                />
               </>
             ) : (
               <div className="grid min-h-96 place-items-center rounded-2xl border border-dashed border-white/80 bg-white/40 p-8 text-center">

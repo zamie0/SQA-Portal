@@ -9,12 +9,13 @@ import {
   getOpenAIModel,
   getQaGeniusGeminiApiKey,
 } from "@/shared/lib/ai-provider";
+import {
+  normalizeUatTestCases,
+  type UatTestCase,
+} from "@/modules/tools/qa-genius/lib/uat-test-cases";
 
 type GenerateRequestBody = {
   requirement: string;
-  testType: string;
-  priority: string;
-  maxTestCases: number;
   attachments?: RequirementAttachment[];
 };
 
@@ -25,25 +26,9 @@ type RequirementAttachment = {
   data: string;
 };
 
-type GeneratedTestCase = {
-  id: string;
-  testScenario: string;
-  objective: string;
-  testProcedure: string[];
-  expectedResults: string[];
-  title: string;
-  description: string;
-  preconditions: string;
-  steps: string[];
-  expectedResult: string;
-  priority: string;
-  testType: string;
-  category: string;
-};
-
 const SYSTEM_PROMPT = `You are QA Genius, a professional SQA engineer for TMR&D / SQA Portal users.
 
-Generate realistic, practical, audit-ready QA test cases from the provided requirement. Think like an experienced software quality engineer in a Malaysian workplace context when the requirement does not specify another context.
+Generate formal UAT test cases from uploaded or pasted URS/SYRS requirement documents. Match the disciplined PRTG/Meraki-style UAT test case format: grouped by relevant system part/module, written for tester execution, and suitable for stakeholder review.
 
 Critical output rules:
 - Return ONLY raw JSON.
@@ -58,22 +43,36 @@ Critical output rules:
 - Do not include placeholder, dummy, lorem ipsum, or generic filler content.
 
 JSON shape:
-- Return a JSON array of test case objects only.
-- Each test case must include:
-  - id
+- Return a JSON array of test case objects only, already ordered by the relevant parts/modules you identify from the URS/SYRS.
+- Each test case object must include these keys:
+  - part
+  - jiraUserStorySummary
+  - tcId
   - testScenario
   - objective
   - testProcedure
   - expectedResults
+  - actualResults
   - priority
-  - testType
-- testProcedure must be an array of clear executable strings.
-- expectedResults must be an array of observable outcomes.
-- Use IDs in this format: TC-001, TC-002, TC-003.
-- Match the requested test type and priority.
-- objective must be real and specific to the test scenario. It must explain the exact quality risk or behavior being verified.
+  - remarks
+  - tags
+
+Content rules:
+- Decide the best test case coverage, modules/parts, priorities, tags, number of test cases, and scenarios from the URS/SYRS content. Do not depend on user-selected test type, priority, or count.
+- Group test cases by meaningful parts/modules derived from the source content, for example Customer Profile, Alarm View, Ticketing, Notification, Report, Admin, or better names when the document implies them.
+- The part order does not need to be fixed, but every URS/SYRS requirement must be covered without duplicate filler cases.
+- tcId must use TC01, TC02, TC03, and continue sequentially across all parts.
+- jiraUserStorySummary must be written per part in this exact style: "As a [user role], I want to [function], so that [benefit]."
+- Generate only the keys listed above. Do not add extra metadata or identifier fields.
+- testProcedure must be an array of clear numbered-step content. Each step must be executable by a UAT tester.
+- expectedResults must be an array of numbered expected outcomes aligned to the procedure.
+- actualResults must always be "Not Started".
+- priority must be decided from business risk and requirement criticality.
+- tags must be an array of concise labels relevant to the module, requirement, risk, or workflow.
+- remarks must be an empty string unless the source document provides a useful note or assumption.
+- objective must be real and specific to the test scenario. It must explain the exact business behavior or quality risk being verified.
 - testScenario must describe the scenario being tested, not just repeat the requirement.
-- Include positive, negative, edge, validation, security, API, usability, compatibility, or performance cases when relevant to the requirement and requested test type.
+- Include positive, negative, edge, validation, access-control, notification, reporting, integration, usability, or performance cases when relevant to the URS/SYRS.
 - Keep each test case concise enough for execution, but detailed enough that another tester can run it without guessing.
 - Do not claim automation, backend tools, reports, or environments were executed. Generate test design only.`;
 
@@ -115,13 +114,7 @@ function isGenerateRequestBody(body: unknown): body is GenerateRequestBody {
   }
 
   const candidate = body as Partial<GenerateRequestBody>;
-  return (
-    typeof candidate.requirement === "string" &&
-    typeof candidate.testType === "string" &&
-    typeof candidate.priority === "string" &&
-    typeof candidate.maxTestCases === "number" &&
-    Number.isFinite(candidate.maxTestCases)
-  );
+  return typeof candidate.requirement === "string";
 }
 
 function cleanRequirementAttachments(value: unknown): RequirementAttachment[] {
@@ -304,128 +297,8 @@ function parseGeminiJsonArray(rawText: string): unknown[] {
   );
 }
 
-function toStringArray(value: unknown, fallback: string): string[] {
-  if (Array.isArray(value)) {
-    const steps = value
-      .map((step) => {
-        if (typeof step === "string") return step;
-        if (step === null || step === undefined) return "";
-        return String(step);
-      })
-      .map((step) => step.trim())
-      .filter(Boolean);
-
-    return steps.length > 0 ? steps : [fallback];
-  }
-
-  if (typeof value === "string" && value.trim()) {
-    const steps = value
-      .split(/\r?\n|(?:^|\s)\d+\.\s+/)
-      .map((step) => step.trim())
-      .filter(Boolean);
-
-    return steps.length > 0 ? steps : [fallback];
-  }
-
-  return [fallback];
-}
-
-function toRequiredString(value: unknown, fallback: string) {
-  if (typeof value === "string" && value.trim()) {
-    return value.trim();
-  }
-
-  if (value === null || value === undefined) {
-    return fallback;
-  }
-
-  return String(value).trim() || fallback;
-}
-
-function isWeakObjective(value: string) {
-  const normalized = value.toLowerCase();
-  return (
-    normalized.includes("dummy") ||
-    normalized.includes("placeholder") ||
-    normalized.includes("generated objective") ||
-    normalized.includes("ai-generated") ||
-    normalized === "objective" ||
-    normalized === "test objective" ||
-    normalized.length < 24
-  );
-}
-
-function summarizeRequirement(requirement: string) {
-  return requirement.replace(/\s+/g, " ").trim().slice(0, 160);
-}
-
-function normalizeTestCases(
-  value: unknown,
-  requirement: string,
-  requestedTestType: string,
-  requestedPriority: string,
-): GeneratedTestCase[] {
-  if (!Array.isArray(value)) {
-    throw new Error("Gemini response was not an array.");
-  }
-
-  const requirementSummary = summarizeRequirement(requirement);
-
-  const testCases = value
-    .filter((item) => item && typeof item === "object")
-    .map((item, index): GeneratedTestCase => {
-      if (!item || typeof item !== "object") {
-        throw new Error("Gemini returned an invalid test case item.");
-      }
-
-      const candidate = item as Record<string, unknown>;
-      const id =
-        typeof candidate.id === "string" && candidate.id.trim()
-          ? candidate.id.trim()
-          : `TC-${String(index + 1).padStart(3, "0")}`;
-      const testType = toRequiredString(
-        candidate.testType ?? candidate.category,
-        requestedTestType,
-      );
-      const priority = toRequiredString(candidate.priority, requestedPriority);
-      const testScenario = toRequiredString(
-        candidate.testScenario ?? candidate.title ?? candidate.scenario,
-        `${testType} scenario for ${requirementSummary}`,
-      );
-      const candidateObjective = toRequiredString(candidate.objective ?? candidate.description, "");
-      const objective =
-        candidateObjective && !isWeakObjective(candidateObjective)
-          ? candidateObjective
-          : `Verify ${testScenario.toLowerCase()} so the requirement is met reliably for SQA Portal users.`;
-      const testProcedure = toStringArray(
-        candidate.testProcedure ?? candidate.steps ?? candidate.testSteps,
-        `Execute the ${testScenario.toLowerCase()} flow using valid test data.`,
-      );
-      const expectedResults = toStringArray(
-        candidate.expectedResults ?? candidate.expectedResult,
-        `The ${testScenario.toLowerCase()} outcome satisfies the stated requirement without errors or unexpected side effects.`,
-      );
-      const preconditions = toRequiredString(
-        candidate.preconditions,
-        "Relevant access, environment, and test data are available.",
-      );
-
-      return {
-        id,
-        testScenario,
-        objective,
-        testProcedure,
-        expectedResults,
-        priority,
-        testType,
-        title: testScenario,
-        description: objective,
-        preconditions,
-        steps: testProcedure,
-        expectedResult: expectedResults.join("\n"),
-        category: testType,
-      };
-    });
+function normalizeTestCases(value: unknown, requirement: string): UatTestCase[] {
+  const testCases = normalizeUatTestCases(value, requirement);
 
   if (testCases.length === 0) {
     throw new Error("Gemini returned no test cases.");
@@ -445,8 +318,6 @@ export async function POST(request: NextRequest) {
   if (!requirement) {
     return new Response("Requirement is required.", { status: 400 });
   }
-
-  const maxTestCases = Math.min(Math.max(Math.round(body.maxTestCases), 1), 20);
 
   try {
     const provider = getConfiguredAIProvider();
@@ -476,14 +347,13 @@ export async function POST(request: NextRequest) {
     });
 
     const requirementAttachments = cleanRequirementAttachments(body.attachments);
-    const prompt = `Requirement:
+    const prompt = `URS/SYRS source content:
 ${requirement}
 
-Requested test type: ${body.testType}
-Requested priority: ${body.priority}
-Maximum number of test cases: ${maxTestCases}
-
-Return exactly ${maxTestCases} test cases unless the requirement cannot reasonably support that many.
+Generate a complete formal UAT test case table from this source.
+Decide the relevant coverage, modules/parts, priority, tags, number of test cases, and test scenarios based on the URS/SYRS content.
+Use the exact JSON keys required by the system prompt so the UI can render these columns in order:
+Jira User Story Summary, TC ID, Test Scenario, Objective, Test Procedure, Expected Results, Actual Results, Priority, Remarks, Tags.
 ${
   requirementAttachments.length > 0
     ? "Use the attached requirement/scenario document files as source material. For PDFs or scanned documents, extract visible text from the document content before generating test cases."
@@ -535,7 +405,7 @@ ${
     }
 
     const parsed = parseGeminiJsonArray(reply);
-    const testCases = normalizeTestCases(parsed, requirement, body.testType, body.priority);
+    const testCases = normalizeTestCases(parsed, requirement);
 
     return NextResponse.json({ testCases });
   } catch (error) {

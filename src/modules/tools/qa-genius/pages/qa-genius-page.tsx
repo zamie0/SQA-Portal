@@ -6,7 +6,6 @@ import {
   AlertTriangle,
   Brain,
   ClipboardCopy,
-  Code2,
   Download,
   Eraser,
   FileCheck2,
@@ -15,7 +14,6 @@ import {
   Network,
   Paperclip,
   Send,
-  ShieldCheck,
   Sparkles,
   Ticket,
   UploadCloud,
@@ -24,51 +22,26 @@ import {
 import { RequireAuth } from "@/shared/components/RequireAuth";
 import { Shell } from "@/shared/components/layout/Shell";
 import { Toaster } from "@/shared/components/ui/sonner";
-
-type TestType = "Functional" | "API" | "Security" | "Performance" | "Automation";
-type Priority = "Low" | "Medium" | "High" | "Critical";
-
-type GeneratedTestCase = {
-  id?: string;
-  title?: string;
-  scenario?: string;
-  description?: string;
-  preconditions?: string;
-  steps?: string[];
-  testSteps?: string[];
-  expectedResult?: unknown;
-  priority?: string;
-  category?: string;
-};
-
-type NormalizedTestCase = {
-  id: string;
-  title: string;
-  description: string;
-  preconditions: string;
-  steps: string[];
-  expectedResults: string[];
-  priority: string;
-  category: string;
-};
+import {
+  formatUatTestCasesForCopy,
+  formatUatTestCasesForCsv,
+  formatUatTestCasesForExcelHtml,
+  normalizeUatTestCases,
+  type UatTestCase,
+} from "@/modules/tools/qa-genius/lib/uat-test-cases";
+import { UatTestCaseTable } from "@/modules/tools/qa-genius/components/uat-test-case-table";
 
 type QaGeniusHistoryItem = {
   id: string;
   requirement: string;
-  testType: TestType;
-  priority: Priority;
-  maxCases: number;
   createdAt: string;
-  testCases: NormalizedTestCase[];
+  testCases: UatTestCase[];
 };
 
 type SqaCopilotHandoff = {
   source: "sqa-copilot";
   createdAt: string;
   requirement: string;
-  testType: TestType;
-  priority: Priority;
-  maxCases: number;
   autoRun: boolean;
 };
 
@@ -90,193 +63,40 @@ type CopilotToolHandoff = {
 };
 
 type CopilotImportNotice = {
-  prompt: string;
   autoGenerate?: boolean;
   attachmentCount: number;
   attachmentNames: string;
 };
-const testTypes: TestType[] = ["Functional", "API", "Security", "Performance", "Automation"];
-const priorities: Priority[] = ["Low", "Medium", "High", "Critical"];
-const maxCaseOptions = [3, 5, 8, 10, 15, 20];
 
 const featureCards = [
   {
-    title: "Functional Coverage",
-    description: "Generate positive, negative, edge, and workflow-focused test cases.",
+    title: "URS/SYRS Coverage",
+    description: "Maps source requirements into positive, negative, edge, and workflow UAT cases.",
     icon: FileCheck2,
-    color: "from-fuchsia-500 to-violet-600",
+    color: "from-emerald-500 to-teal-600",
   },
   {
-    title: "Security Scenarios",
-    description: "Identify access, validation, abuse, and sensitive-data risks.",
-    icon: ShieldCheck,
-    color: "from-rose-500 to-orange-500",
-  },
-  {
-    title: "Robot-Ready Steps",
-    description: "Produce clear ordered actions that can be adapted into Robot Framework.",
-    icon: Code2,
-    color: "from-violet-500 to-indigo-500",
-  },
-  {
-    title: "API Validation",
-    description: "Create contract, response, payload, and failure-mode scenarios.",
+    title: "Module Grouping",
+    description: "Groups cases by the relevant parts found in the uploaded requirement content.",
     icon: Network,
     color: "from-sky-500 to-cyan-500",
   },
   {
-    title: "Generate from Jira User Story",
-    description: "Coming Soon",
+    title: "Jira-Aware Fields",
+    description: "Keeps Jira IDs blank unless the source or user input provides them.",
     icon: Ticket,
-    color: "from-slate-400 to-slate-500",
-    disabled: true,
+    color: "from-violet-500 to-indigo-500",
+  },
+  {
+    title: "Formal Export",
+    description: "Exports the UAT table with the same ordered columns used on screen.",
+    icon: Download,
+    color: "from-rose-500 to-orange-500",
   },
 ] as const;
 
-function normalizeSteps(value: unknown) {
-  if (Array.isArray(value)) {
-    const steps = value
-      .map((step) => (typeof step === "string" ? step : String(step ?? "")))
-      .map((step) => step.trim())
-      .filter(Boolean);
-
-    return steps.length > 0 ? steps : ["Review the requirement and execute the relevant flow."];
-  }
-
-  if (typeof value === "string" && value.trim()) {
-    const steps = value
-      .split(/\r?\n|(?:^|\s)\d+\.\s+/)
-      .map((step) => step.trim())
-      .filter(Boolean);
-
-    return steps.length > 0 ? steps : [value.trim()];
-  }
-
-  return ["Review the requirement and execute the relevant flow."];
-}
-
-function normalizeLines(value: unknown, fallback: string) {
-  if (Array.isArray(value)) {
-    const lines = value
-      .map((line) => (typeof line === "string" ? line : String(line ?? "")))
-      .map((line) => line.trim())
-      .filter(Boolean);
-
-    return lines.length > 0 ? lines : [fallback];
-  }
-
-  if (typeof value === "string" && value.trim()) {
-    const lines = value
-      .split(/\r?\n|(?:^|\s)\d+\.\s+/)
-      .map((line) => line.trim())
-      .filter(Boolean);
-
-    return lines.length > 0 ? lines : [value.trim()];
-  }
-
-  return [fallback];
-}
-
 function normalizeText(value: unknown, fallback: string) {
   return typeof value === "string" && value.trim() ? value.trim() : fallback;
-}
-
-function normalizePriority(value: unknown, fallback: Priority): Priority {
-  return priorities.includes(value as Priority) ? (value as Priority) : fallback;
-}
-
-function normalizeTestType(value: unknown, fallback: TestType): TestType {
-  return testTypes.includes(value as TestType) ? (value as TestType) : fallback;
-}
-
-function normalizeTestCases(
-  testCases: unknown[],
-  selectedType: TestType,
-  selectedPriority: Priority,
-) {
-  return testCases
-    .filter((item): item is GeneratedTestCase => !!item && typeof item === "object")
-    .map((item, index): NormalizedTestCase => {
-      const steps = normalizeSteps(item.steps ?? item.testSteps);
-      return {
-        id: normalizeText(item.id, `TC-${String(index + 1).padStart(3, "0")}`),
-        title: normalizeText(
-          item.title ?? item.scenario,
-          `Generated ${selectedType} test case ${index + 1}`,
-        ),
-        description: normalizeText(
-          item.description,
-          `AI-generated ${selectedType.toLowerCase()} scenario derived from the provided requirement.`,
-        ),
-        preconditions: normalizeText(
-          item.preconditions,
-          "Relevant test data and access are available.",
-        ),
-        steps,
-        expectedResults: normalizeLines(
-          item.expectedResult,
-          "The system behaves according to the requirement and quality expectations.",
-        ),
-        priority: normalizePriority(item.priority, selectedPriority),
-        category: normalizeText(item.category, selectedType),
-      };
-    });
-}
-
-function formatResultsForCopy(results: NormalizedTestCase[]) {
-  return results
-    .map((result) =>
-      [
-        `TC ID: ${result.id}`,
-        `Test Scenario: ${result.title}`,
-        `Objective: ${result.description}`,
-        `Preconditions: ${result.preconditions}`,
-        `Test Procedure:\n${result.steps.map((step, index) => `${index + 1}. ${step}`).join("\n")}`,
-        `Expected Results:\n${result.expectedResults
-          .map((expected, index) => `${index + 1}. ${expected}`)
-          .join("\n")}`,
-        `Priority: ${result.priority}`,
-        `Category: ${result.category}`,
-      ].join("\n"),
-    )
-    .join("\n\n");
-}
-
-function escapeCsvCell(value: string) {
-  return `"${value.replace(/"/g, '""')}"`;
-}
-
-function formatResultsForCsv(results: NormalizedTestCase[]) {
-  const headers = [
-    "TC ID",
-    "Test Scenario",
-    "Objective",
-    "Test Procedure",
-    "Expected Results",
-    "Priority",
-  ];
-  const rows = results.map((result) => [
-    result.id,
-    result.title,
-    result.description,
-    result.steps.map((step, index) => `${index + 1}. ${step}`).join("\n"),
-    result.expectedResults.map((expected, index) => `${index + 1}. ${expected}`).join("\n"),
-    result.priority,
-  ]);
-
-  return [headers, ...rows].map((row) => row.map(escapeCsvCell).join(",")).join("\n");
-}
-
-function readErrorMessage(error: unknown) {
-  return error instanceof Error
-    ? error.message
-    : "QA Genius could not generate test cases. Please try again.";
-}
-
-function getFilePrefix(file: File) {
-  return `\n\nUploaded requirement source: ${file.name} (${file.type || "unknown type"}, ${Math.ceil(
-    file.size / 1024,
-  )} KB)\n`;
 }
 
 function createHistoryId() {
@@ -298,23 +118,16 @@ function readQaGeniusHistory(): QaGeniusHistoryItem[] {
     if (!Array.isArray(parsed)) return [];
 
     return parsed
-      .filter((item): item is Partial<QaGeniusHistoryItem> => !!item && typeof item === "object")
-      .map((item) => ({
-        id: normalizeText(item.id, createHistoryId()),
-        requirement: normalizeText(item.requirement, ""),
-        testType: normalizeTestType(item.testType, "Functional"),
-        priority: normalizePriority(item.priority, "Medium"),
-        maxCases:
-          typeof item.maxCases === "number" && Number.isFinite(item.maxCases) ? item.maxCases : 5,
-        createdAt: normalizeText(item.createdAt, new Date().toISOString()),
-        testCases: Array.isArray(item.testCases)
-          ? normalizeTestCases(
-              item.testCases,
-              normalizeTestType(item.testType, "Functional"),
-              normalizePriority(item.priority, "Medium"),
-            )
-          : [],
-      }))
+      .filter((item): item is Record<string, unknown> => !!item && typeof item === "object")
+      .map((item) => {
+        const requirement = normalizeText(item.requirement, "");
+        return {
+          id: normalizeText(item.id, createHistoryId()),
+          requirement,
+          createdAt: normalizeText(item.createdAt, new Date().toISOString()),
+          testCases: normalizeUatTestCases(item.testCases, requirement),
+        };
+      })
       .filter((item) => item.requirement || item.testCases.length > 0)
       .sort(
         (first, second) =>
@@ -352,12 +165,6 @@ function readSqaCopilotHandoff(): SqaCopilotHandoff | null {
       source: "sqa-copilot",
       createdAt: normalizeText(handoff.createdAt, new Date().toISOString()),
       requirement: normalizeText(handoff.requirement, ""),
-      testType: normalizeTestType(handoff.testType, "Functional"),
-      priority: normalizePriority(handoff.priority, "High"),
-      maxCases:
-        typeof handoff.maxCases === "number" && Number.isFinite(handoff.maxCases)
-          ? handoff.maxCases
-          : 5,
       autoRun: handoff.autoRun === true,
     };
   } catch {
@@ -406,17 +213,37 @@ function fileToRequirementAttachment(file: File) {
   });
 }
 
+function getFilePrefix(file: File) {
+  return `\n\nUploaded requirement source: ${file.name} (${file.type || "unknown type"}, ${Math.ceil(
+    file.size / 1024,
+  )} KB)\n`;
+}
+
+function readErrorMessage(error: unknown) {
+  return error instanceof Error
+    ? error.message
+    : "QA Genius could not generate test cases. Please try again.";
+}
+
+function downloadBlob(content: BlobPart, type: string, fileName: string) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = fileName;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+}
+
 export default function QAGeniusPage() {
   const [requirement, setRequirement] = useState("");
-  const [testType, setTestType] = useState<TestType>("Functional");
-  const [priority, setPriority] = useState<Priority>("Medium");
-  const [maxCases, setMaxCases] = useState(5);
-  const [results, setResults] = useState<NormalizedTestCase[]>([]);
+  const [results, setResults] = useState<UatTestCase[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [copyLabel, setCopyLabel] = useState("Copy Results");
   const [errorMessage, setErrorMessage] = useState("");
   const [uploadedFileName, setUploadedFileName] = useState("");
-  const [activeHistoryId, setActiveHistoryId] = useState("");
   const [requirementAttachments, setRequirementAttachments] = useState<RequirementAttachment[]>([]);
   const [copilotImport, setCopilotImport] = useState<CopilotImportNotice | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -424,24 +251,86 @@ export default function QAGeniusPage() {
 
   const hasResults = results.length > 0;
 
+  const generateTestCases = useCallback(
+    async ({
+      requirement: nextRequirement,
+      attachments: nextAttachments = requirementAttachments,
+    }: {
+      requirement: string;
+      attachments?: RequirementAttachment[];
+    }) => {
+      if (!nextRequirement.trim()) {
+        const message = "Add a URS/SYRS requirement or upload a requirement document first.";
+        setErrorMessage(message);
+        toast.error("Requirement needed", { description: message });
+        return;
+      }
+
+      setIsLoading(true);
+      setResults([]);
+      setErrorMessage("");
+      setCopyLabel("Copy Results");
+
+      try {
+        const response = await fetch("/api/tools/qa-genius/generate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            requirement: nextRequirement,
+            attachments: nextAttachments,
+          }),
+        });
+
+        if (!response.ok) {
+          const message = await response.text();
+          throw new Error(message || "QA Genius could not generate test cases. Please try again.");
+        }
+
+        const data = (await response.json()) as { testCases?: unknown };
+        const normalized = normalizeUatTestCases(data.testCases, nextRequirement);
+
+        if (normalized.length === 0) {
+          throw new Error(
+            "QA Genius did not return any test cases. Please add more requirement detail.",
+          );
+        }
+
+        const historyItem: QaGeniusHistoryItem = {
+          id: createHistoryId(),
+          requirement: nextRequirement,
+          createdAt: new Date().toISOString(),
+          testCases: normalized,
+        };
+
+        setResults(normalized);
+        saveQaGeniusHistoryItem(historyItem);
+        toast.success("UAT test cases generated", {
+          description: `${normalized.length} formal test case${
+            normalized.length === 1 ? "" : "s"
+          } ready for review.`,
+        });
+      } catch (error) {
+        const message = readErrorMessage(error);
+        setErrorMessage(message);
+        toast.error("Generation failed", { description: message });
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [requirementAttachments],
+  );
+
   useEffect(() => {
     const handoff = readSqaCopilotHandoff();
     if (handoff?.requirement) {
       setRequirement(handoff.requirement);
-      setTestType(handoff.testType);
-      setPriority(handoff.priority);
-      setMaxCases(handoff.maxCases);
       setResults([]);
-      setActiveHistoryId("");
       clearSqaCopilotHandoff();
 
       if (handoff.autoRun) {
-        void generateTestCases({
-          requirement: handoff.requirement,
-          testType: handoff.testType,
-          priority: handoff.priority,
-          maxCases: handoff.maxCases,
-        });
+        void generateTestCases({ requirement: handoff.requirement });
       }
 
       return;
@@ -453,56 +342,9 @@ export default function QAGeniusPage() {
     if (!latest) return;
 
     setRequirement(latest.requirement);
-    setTestType(latest.testType);
-    setPriority(latest.priority);
-    setMaxCases(latest.maxCases);
     setResults(latest.testCases);
-    setActiveHistoryId(latest.id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const handleFileUpload = async (file: File | undefined) => {
-    if (!file) return;
-
-    setErrorMessage("");
-    setUploadedFileName(file.name);
-
-    const readableTypes = [
-      "text/plain",
-      "text/markdown",
-      "text/csv",
-      "application/json",
-      "application/xml",
-      "text/xml",
-    ];
-    const readableExtensions = [".txt", ".md", ".csv", ".json", ".xml"];
-    const isReadable =
-      readableTypes.includes(file.type) ||
-      readableExtensions.some((extension) => file.name.toLowerCase().endsWith(extension));
-
-    if (!isReadable) {
-      const message =
-        "File attached. QA Genius will use this document as source material when generating test cases.";
-      const attachment = await fileToRequirementAttachment(file);
-      setRequirementAttachments((current) => [...current, attachment].slice(-4));
-      setRequirement((current) => `${current}${getFilePrefix(file)}${message}`);
-      toast.info("Document attached", { description: message });
-      return;
-    }
-
-    try {
-      const text = await file.text();
-      setRequirement((current) => `${current}${getFilePrefix(file)}${text.trim()}`);
-      toast.success("Requirement file loaded", {
-        description: `${file.name} was added to the generator input.`,
-      });
-    } catch {
-      const message =
-        "QA Genius could not read that file. Please paste the requirement text instead.";
-      setErrorMessage(message);
-      toast.error("File upload failed", { description: message });
-    }
-  };
 
   useEffect(() => {
     const raw = window.localStorage.getItem("sqa-copilot:tool-handoff");
@@ -533,7 +375,6 @@ export default function QAGeniusPage() {
       );
       setUploadedFileName(attachments.map((attachment) => attachment.name).join(", "));
       setCopilotImport({
-        prompt: handoff.prompt.trim(),
         autoGenerate: handoff.autoGenerate === true,
         attachmentCount: attachments.length,
         attachmentNames: attachments.map((attachment) => attachment.name).join(", "),
@@ -551,121 +392,71 @@ export default function QAGeniusPage() {
     }
   }, []);
 
-  const generateTestCases = useCallback(
-    async ({
-      requirement: nextRequirement,
-      testType: nextTestType,
-      priority: nextPriority,
-      maxCases: nextMaxCases,
-      attachments: nextAttachments = requirementAttachments,
-    }: {
-      requirement: string;
-      testType: TestType;
-      priority: Priority;
-      maxCases: number;
-      attachments?: RequirementAttachment[];
-    }) => {
-      if (!nextRequirement.trim()) {
-        const message =
-          "Add a requirement or upload a readable requirement file before generating.";
-        setErrorMessage(message);
-        toast.error("Requirement needed", { description: message });
-        return;
-      }
-
-      setIsLoading(true);
-      setResults([]);
-      setErrorMessage("");
-      setCopyLabel("Copy Results");
-
-      try {
-        const response = await fetch("/api/tools/qa-genius/generate", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            requirement: nextRequirement,
-            type: nextTestType,
-            testType: nextTestType,
-            priority: nextPriority,
-            maxCases: nextMaxCases,
-            maxTestCases: nextMaxCases,
-            attachments: nextAttachments,
-          }),
-        });
-
-        if (!response.ok) {
-          const message = await response.text();
-          throw new Error(message || "QA Genius could not generate test cases. Please try again.");
-        }
-
-        const data = (await response.json()) as { testCases?: unknown };
-        if (!Array.isArray(data.testCases)) {
-          throw new Error("QA Genius returned an unexpected response. Please try again.");
-        }
-
-        const normalized = normalizeTestCases(data.testCases, nextTestType, nextPriority);
-        if (normalized.length === 0) {
-          throw new Error(
-            "QA Genius did not return any test cases. Please add more requirement detail.",
-          );
-        }
-
-        const historyItem: QaGeniusHistoryItem = {
-          id: createHistoryId(),
-          requirement: nextRequirement,
-          testType: nextTestType,
-          priority: nextPriority,
-          maxCases: nextMaxCases,
-          createdAt: new Date().toISOString(),
-          testCases: normalized,
-        };
-
-        setResults(normalized);
-        setActiveHistoryId(historyItem.id);
-        saveQaGeniusHistoryItem(historyItem);
-        toast.success("Test cases generated", {
-          description: `${normalized.length} AI-generated test case${
-            normalized.length === 1 ? "" : "s"
-          } ready for review.`,
-        });
-      } catch (error) {
-        const message = readErrorMessage(error);
-        setErrorMessage(message);
-        toast.error("Generation failed", { description: message });
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [requirementAttachments],
-  );
-
   useEffect(() => {
     if (!copilotImport?.autoGenerate || autoGenerateHandoffRef.current || isLoading) return;
     if (!requirement.trim()) return;
 
     autoGenerateHandoffRef.current = true;
-    void generateTestCases({ requirement, testType, priority, maxCases });
-  }, [
-    copilotImport?.autoGenerate,
-    generateTestCases,
-    isLoading,
-    maxCases,
-    priority,
-    requirement,
-    testType,
-  ]);
+    void generateTestCases({ requirement });
+  }, [copilotImport?.autoGenerate, generateTestCases, isLoading, requirement]);
+
+  const handleFileUpload = async (file: File | undefined) => {
+    if (!file) return;
+
+    setErrorMessage("");
+    setUploadedFileName(file.name);
+
+    const readableTypes = [
+      "text/plain",
+      "text/markdown",
+      "text/csv",
+      "application/json",
+      "application/xml",
+      "text/xml",
+    ];
+    const readableExtensions = [".txt", ".md", ".csv", ".json", ".xml"];
+    const isReadable =
+      readableTypes.includes(file.type) ||
+      readableExtensions.some((extension) => file.name.toLowerCase().endsWith(extension));
+
+    if (!isReadable) {
+      try {
+        const attachment = await fileToRequirementAttachment(file);
+        const message =
+          "File attached. QA Genius will use this document as source material when generating UAT test cases.";
+        setRequirementAttachments((current) => [...current, attachment].slice(-4));
+        setRequirement((current) => `${current}${getFilePrefix(file)}${message}`);
+        toast.info("Document attached", { description: message });
+      } catch {
+        const message = "QA Genius could not attach that file. Please try another document.";
+        setErrorMessage(message);
+        toast.error("File upload failed", { description: message });
+      }
+      return;
+    }
+
+    try {
+      const text = await file.text();
+      setRequirement((current) => `${current}${getFilePrefix(file)}${text.trim()}`);
+      toast.success("Requirement file loaded", {
+        description: `${file.name} was added to the generator input.`,
+      });
+    } catch {
+      const message = "QA Genius could not read that file. Please paste the requirement text.";
+      setErrorMessage(message);
+      toast.error("File upload failed", { description: message });
+    }
+  };
 
   const handleGenerate = async () => {
-    await generateTestCases({ requirement, testType, priority, maxCases });
+    await generateTestCases({ requirement });
   };
 
   const handleCopy = async () => {
     if (!hasResults) return;
 
     try {
-      await navigator.clipboard.writeText(formatResultsForCopy(results));
+      await navigator.clipboard.writeText(formatUatTestCasesForCopy(results));
       setCopyLabel("Copied");
       toast.success("Results copied");
       window.setTimeout(() => setCopyLabel("Copy Results"), 1400);
@@ -679,49 +470,32 @@ export default function QAGeniusPage() {
   const handleExportCsv = () => {
     if (!hasResults) return;
 
-    const csv = formatResultsForCsv(results);
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = `qa-genius-${testType.toLowerCase()}-test-cases.csv`;
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
-    URL.revokeObjectURL(url);
+    downloadBlob(
+      `\ufeff${formatUatTestCasesForCsv(results)}`,
+      "text/csv;charset=utf-8",
+      "qa-genius-uat-test-cases.csv",
+    );
     toast.success("CSV exported");
   };
 
-  const handleResultPriorityChange = (id: string, nextPriority: Priority) => {
-    setResults((currentResults) => {
-      const updatedResults = currentResults.map((result) =>
-        result.id === id ? { ...result, priority: nextPriority } : result,
-      );
+  const handleExportExcel = () => {
+    if (!hasResults) return;
 
-      if (activeHistoryId) {
-        const history = readQaGeniusHistory();
-        writeQaGeniusHistory(
-          history.map((item) =>
-            item.id === activeHistoryId ? { ...item, testCases: updatedResults } : item,
-          ),
-        );
-      }
-
-      return updatedResults;
-    });
+    downloadBlob(
+      formatUatTestCasesForExcelHtml(results),
+      "application/vnd.ms-excel;charset=utf-8",
+      "qa-genius-uat-test-cases.xls",
+    );
+    toast.success("Excel file exported");
   };
 
   const handleClear = () => {
     setRequirement("");
-    setTestType("Functional");
-    setPriority("Medium");
-    setMaxCases(5);
     setResults([]);
     setIsLoading(false);
     setCopyLabel("Copy Results");
     setErrorMessage("");
     setUploadedFileName("");
-    setActiveHistoryId("");
     setRequirementAttachments([]);
     setCopilotImport(null);
     if (fileInputRef.current) {
@@ -735,37 +509,32 @@ export default function QAGeniusPage() {
         <Toaster />
 
         <section className="rounded-3xl glass-strong p-8 mb-6 relative overflow-hidden">
-          <div className="absolute -top-20 -right-20 h-72 w-72 rounded-full bg-gradient-to-br from-fuchsia-500 to-violet-600 opacity-20 blur-3xl" />
           <div className="relative flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
             <div className="flex items-start gap-4">
-              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-fuchsia-500 to-violet-600 grid place-items-center shadow-lg">
+              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 grid place-items-center shadow-lg">
                 <Brain className="h-7 w-7 text-white" />
               </div>
               <div>
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/60 border border-white/70 text-xs font-medium">
-                  <Sparkles className="h-3.5 w-3.5 text-primary" /> AI-powered SQA workspace
+                  <Sparkles className="h-3.5 w-3.5 text-primary" /> Formal UAT generator
                 </div>
                 <h1 className="mt-3 text-3xl md:text-4xl font-bold font-display">QA Genius</h1>
                 <p className="text-muted-foreground mt-2 max-w-2xl">
-                  Generate functional test cases, negative scenarios, edge cases, API validations,
-                  security checks, and Robot Framework-ready steps from requirements.
+                  Generate module-grouped UAT test cases from URS/SYRS documents with Jira-aware
+                  fields, numbered procedures, expected results, remarks, and tags.
                 </p>
               </div>
             </div>
             <div className="rounded-2xl bg-white/60 border border-white/70 px-4 py-3 text-sm text-muted-foreground md:max-w-xs">
-              Enterprise SQA prompt alignment is handled by the Gemini backend. This page sends
-              requirements and renders structured results.
+              QA Genius now decides coverage, parts, priority, tags, scenarios, and case count from
+              the source requirement.
             </div>
           </div>
         </section>
 
         <section className="grid md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
           {featureCards.map((feature) => (
-            <div
-              key={feature.title}
-              className={`rounded-3xl glass p-5 ${"disabled" in feature ? "opacity-70" : ""}`}
-              aria-disabled={"disabled" in feature ? true : undefined}
-            >
+            <div key={feature.title} className="rounded-3xl glass p-5">
               <div
                 className={`h-11 w-11 rounded-2xl bg-gradient-to-br ${feature.color} grid place-items-center text-white shadow-lg`}
               >
@@ -830,7 +599,7 @@ export default function QAGeniusPage() {
                         }}
                         className="rounded-lg bg-sky-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-sky-700"
                       >
-                        Generate now
+                        Generate
                       </button>
                     </div>
                   ) : null}
@@ -839,13 +608,13 @@ export default function QAGeniusPage() {
             ) : null}
 
             <label className="block text-sm font-medium mb-2" htmlFor="requirement">
-              Requirement, URS, user story, or extracted document text
+              Requirement, URS, SYRS, user story, or extracted document text
             </label>
             <textarea
               id="requirement"
               value={requirement}
               onChange={(event) => setRequirement(event.target.value)}
-              placeholder="Paste a requirement, acceptance criteria, URS clause, API contract, security rule, or upload a readable file..."
+              placeholder="Paste URS/SYRS content, acceptance criteria, Jira story details, or upload a requirement document..."
               className="min-h-48 w-full resize-y rounded-2xl border border-white/70 bg-white/70 p-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
 
@@ -899,62 +668,6 @@ export default function QAGeniusPage() {
               ) : null}
             </div>
 
-            <div className="mt-5 grid md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2" htmlFor="test-type">
-                  Test type
-                </label>
-                <select
-                  id="test-type"
-                  value={testType}
-                  onChange={(event) => setTestType(event.target.value as TestType)}
-                  className="w-full rounded-xl border border-white/70 bg-white/70 px-3 py-2.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-                >
-                  {testTypes.map((type) => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2" htmlFor="priority">
-                  Priority
-                </label>
-                <select
-                  id="priority"
-                  value={priority}
-                  onChange={(event) => setPriority(event.target.value as Priority)}
-                  className="w-full rounded-xl border border-white/70 bg-white/70 px-3 py-2.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-                >
-                  {priorities.map((item) => (
-                    <option key={item} value={item}>
-                      {item}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2" htmlFor="max-cases">
-                  Max test cases
-                </label>
-                <select
-                  id="max-cases"
-                  value={maxCases}
-                  onChange={(event) => setMaxCases(Number(event.target.value))}
-                  className="w-full rounded-xl border border-white/70 bg-white/70 px-3 py-2.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-                >
-                  {maxCaseOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
               <button
                 type="button"
@@ -975,7 +688,7 @@ export default function QAGeniusPage() {
                 ) : (
                   <Send className="h-4 w-4" />
                 )}
-                Generate Test Cases
+                Generate
               </button>
             </div>
 
@@ -995,7 +708,7 @@ export default function QAGeniusPage() {
               <div>
                 <h2 className="text-lg font-semibold">Generated Results</h2>
                 <p className="text-sm text-muted-foreground">
-                  Structured AI-generated test cases appear as a formal QA test case table.
+                  Formal UAT test cases appear grouped by the relevant URS/SYRS parts.
                 </p>
               </div>
               <div className="flex flex-col gap-2 sm:flex-row">
@@ -1007,6 +720,15 @@ export default function QAGeniusPage() {
                 >
                   <Download className="h-4 w-4" />
                   Export CSV
+                </button>
+                <button
+                  type="button"
+                  onClick={handleExportExcel}
+                  disabled={!hasResults}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl glass-strong px-4 py-2.5 text-sm font-medium transition hover:bg-white/80 disabled:pointer-events-none disabled:opacity-40"
+                >
+                  <FileText className="h-4 w-4" />
+                  Export Excel
                 </button>
                 <button
                   type="button"
@@ -1024,117 +746,24 @@ export default function QAGeniusPage() {
               <div className="grid min-h-96 place-items-center rounded-2xl border border-white/70 bg-white/50 p-8 text-center">
                 <div>
                   <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
-                  <p className="mt-3 text-sm font-medium">
-                    Generating enterprise SQA test cases...
-                  </p>
+                  <p className="mt-3 text-sm font-medium">Generating formal UAT test cases...</p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    QA Genius is analyzing the requirement and structuring the output.
+                    QA Genius is analyzing requirements, modules, coverage, and risk levels.
                   </p>
                 </div>
               </div>
             ) : hasResults ? (
-              <div className="w-full max-w-full overflow-x-scroll overflow-y-visible rounded-2xl border border-slate-200 bg-white/60 pb-4">
-                <table className="w-[1960px] min-w-[1960px] table-fixed border-collapse text-left text-sm">
-                  <tbody>
-                    <tr>
-                      <td
-                        colSpan={6}
-                        className="border border-emerald-800 bg-emerald-600 px-4 py-2 text-sm font-bold text-white"
-                      >
-                        Test Flow: Generated QA Test Cases
-                      </td>
-                    </tr>
-                    <tr>
-                      <td
-                        colSpan={6}
-                        className="border border-emerald-800 bg-emerald-500 px-4 py-2 text-sm font-bold text-white"
-                      >
-                        Part A - {testType} Test Cases
-                      </td>
-                    </tr>
-                    <tr className="bg-slate-900 text-white">
-                      <th className="w-[120px] border border-slate-700 px-3 py-3 align-top font-bold break-words whitespace-normal">
-                        TC ID
-                      </th>
-                      <th className="w-[320px] border border-slate-700 px-3 py-3 align-top font-bold break-words whitespace-normal">
-                        Test Scenario
-                      </th>
-                      <th className="w-[360px] border border-slate-700 px-3 py-3 align-top font-bold break-words whitespace-normal">
-                        Objective
-                      </th>
-                      <th className="w-[520px] border border-slate-700 px-3 py-3 align-top font-bold break-words whitespace-normal">
-                        Test Procedure
-                      </th>
-                      <th className="w-[520px] border border-slate-700 px-3 py-3 align-top font-bold break-words whitespace-normal">
-                        Expected Results
-                      </th>
-                      <th className="w-[160px] border border-slate-700 px-3 py-3 align-top font-bold break-words whitespace-normal">
-                        Priority
-                      </th>
-                    </tr>
-                    {results.map((result, rowIndex) => (
-                      <tr
-                        key={result.id}
-                        className={rowIndex % 2 === 0 ? "bg-white/90" : "bg-slate-50/90"}
-                      >
-                        <td className="border border-slate-300 px-3 py-3 align-top font-semibold text-slate-900 break-words whitespace-normal">
-                          {result.id}
-                        </td>
-                        <td className="border border-slate-300 px-3 py-3 align-top font-medium text-slate-900 break-words whitespace-normal">
-                          {result.title}
-                        </td>
-                        <td className="border border-slate-300 px-3 py-3 align-top text-slate-800 break-words whitespace-normal">
-                          {result.description}
-                        </td>
-                        <td className="border border-slate-300 px-3 py-3 align-top text-slate-800 break-words whitespace-normal">
-                          <ol className="list-decimal space-y-1 pl-5">
-                            {result.steps.map((step, index) => (
-                              <li key={`${result.id}-step-${index}`} className="pl-1">
-                                {step}
-                              </li>
-                            ))}
-                          </ol>
-                        </td>
-                        <td className="border border-slate-300 px-3 py-3 align-top text-slate-800 break-words whitespace-normal">
-                          <ol className="list-decimal space-y-1 pl-5">
-                            {result.expectedResults.map((expected, index) => (
-                              <li key={`${result.id}-expected-${index}`} className="pl-1">
-                                {expected}
-                              </li>
-                            ))}
-                          </ol>
-                        </td>
-                        <td className="border border-slate-300 px-3 py-3 align-top text-slate-800">
-                          <select
-                            aria-label={`Priority for ${result.id}`}
-                            value={normalizePriority(result.priority, priority)}
-                            onChange={(event) =>
-                              handleResultPriorityChange(result.id, event.target.value as Priority)
-                            }
-                            className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-sm font-medium text-slate-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-                          >
-                            {priorities.map((item) => (
-                              <option key={item} value={item}>
-                                {item}
-                              </option>
-                            ))}
-                          </select>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <UatTestCaseTable title="Test Flow: Formal UAT Test Cases" testCases={results} />
             ) : (
               <div className="grid min-h-96 place-items-center rounded-2xl border border-dashed border-white/80 bg-white/40 p-8 text-center">
                 <div className="max-w-sm">
                   <div className="mx-auto h-14 w-14 rounded-2xl bg-[image:var(--gradient-primary)] grid place-items-center text-white shadow-lg">
                     <Brain className="h-7 w-7" />
                   </div>
-                  <h3 className="mt-4 text-base font-semibold">No test cases generated yet</h3>
+                  <h3 className="mt-4 text-base font-semibold">No UAT test cases generated yet</h3>
                   <p className="mt-2 text-sm text-muted-foreground">
-                    Paste a requirement or upload a readable requirement file, choose the generation
-                    settings, and QA Genius will produce structured test cases.
+                    Paste or upload URS/SYRS content and QA Genius will produce a formal test case
+                    table.
                   </p>
                 </div>
               </div>
