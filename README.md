@@ -133,6 +133,16 @@ GEMINI_API_KEY=AIzaSyCL4hG101gHs1MEd6B5bqTGW7Bj8OB57t8
 GEMINI_MODEL=gemini-2.5-flash
 ```
 
+SQA Copilot is also available as a floating side panel across the portal. The side panel opens from the bottom-right `SQA Copilot` button, reads the visible page as context, and can answer page-specific QA questions without leaving the current workflow. The full chat and side panel both support live voice transcription through the browser Speech Recognition API, so spoken prompts appear in the input box in real time instead of being uploaded as audio files. Use Chrome or Edge and allow microphone access for the best result.
+
+QA Genius supports DOCX requirement uploads by extracting text on the server with `mammoth`. If QA Genius shows `Module not found: Can't resolve 'mammoth'`, run:
+
+```bash
+npm install
+```
+
+This installs the dependencies from `package-lock.json`, including `mammoth`, so the QA Genius generate route can read DOCX files.
+
 After seeding, MongoDB Compass should show the `sqa-portal` database. The seeded demo admin account is:
 
 ```text
