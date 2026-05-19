@@ -27,6 +27,9 @@ import {
   Volume2,
   BookOpen,
   Bot,
+  Loader2,
+  Eye,
+  FileSearch,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -74,6 +77,11 @@ interface AttachmentDraft {
   size: number;
   data: string;
   previewUrl: string;
+  pdfReview?:
+    | NonNullable<ChatMessage["attachments"]>[number]["pdfReview"]
+    | {
+        status: "reviewing";
+      };
 }
 
 interface ToolHandoff {
@@ -95,6 +103,15 @@ interface Conversation {
   messages: UiMessage[];
 }
 
+type PdfReviewDialogState = {
+  name: string;
+  size: number;
+  data?: string;
+  summary?: string;
+  error?: string;
+  reviewedAt?: string;
+};
+
 function uid() {
   return Math.random().toString(36).slice(2, 10);
 }
@@ -109,9 +126,24 @@ function getCopilotRequirementContext(conversation?: Conversation) {
   return conversation.messages
     .filter((message) => message.role === "user" && message.content.trim())
     .slice(-6)
-    .map((message) => message.content.trim())
+    .map((message) => {
+      const pdfSummaries = getPdfReviewContext(message);
+      return [message.content.trim(), pdfSummaries].filter(Boolean).join("\n\n");
+    })
     .join("\n\n")
     .trim();
+}
+
+function getPdfReviewContext(message: Pick<UiMessage, "attachments">) {
+  return (
+    message.attachments
+      ?.filter((attachment) => attachment.pdfReview?.status === "completed")
+      .map(
+        (attachment) =>
+          `PDF Review Summary - ${attachment.name}:\n${attachment.pdfReview?.summary ?? ""}`,
+      )
+      .join("\n\n") ?? ""
+  );
 }
 
 function stripConversationForMemory(conversation: Conversation): Conversation {
@@ -166,11 +198,15 @@ function ChatPage() {
   const [editingPromptId, setEditingPromptId] = useState<string | null>(null);
   const [editingPromptValue, setEditingPromptValue] = useState("");
   const [copiedPromptId, setCopiedPromptId] = useState<string | null>(null);
+  const [pdfReviewDialog, setPdfReviewDialog] = useState<PdfReviewDialogState | null>(null);
   const [tutorialDismissed, setTutorialDismissed] = useLocalStorage<boolean>(
     "sqa-copilot:tutorial-dismissed",
     false,
   );
   const [showTutorial, setShowTutorial] = useState(false);
+  const reviewingPdf = attachments.some(
+    (attachment) => attachment.pdfReview?.status === "reviewing",
+  );
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -179,6 +215,7 @@ function ChatPage() {
   const recordingStreamRef = useRef<MediaStream | null>(null);
   const remoteMemoryReadyRef = useRef(false);
   const saveTimerRef = useRef<number | null>(null);
+  const titleRefreshKeysRef = useRef<Record<string, string>>({});
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -248,19 +285,46 @@ function ChatPage() {
     }, 600);
   }, [activeId, conversations, user?.id]);
 
+  useEffect(() => {
+    if (!active) return;
+
+    const completedMessages = active.messages.filter((message) => !message.pending);
+    const lastMessage = completedMessages.at(-1);
+    const userMessageCount = completedMessages.filter((message) => message.role === "user").length;
+
+    if (lastMessage?.role !== "assistant" || userMessageCount === 0) return;
+
+    const titleKey = completedMessages
+      .map((message) => `${message.role}:${message.content}`)
+      .join("\n")
+      .slice(-12_000);
+
+    if (titleRefreshKeysRef.current[active.id] === titleKey) return;
+    titleRefreshKeysRef.current[active.id] = titleKey;
+
+    const titleMessages: ChatMessage[] = completedMessages.slice(-8).map((message) => ({
+      role: message.role,
+      content: messageContentWithPdfContext(message),
+      attachments: message.attachments?.filter(attachmentHasPromptContext),
+    }));
+
+    void refreshConversationTitle(active.id, titleMessages);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active?.id, active?.messages]);
+
   function patchActive(fn: (c: Conversation) => Conversation) {
     setConversations((prev) => prev.map((c) => (c.id === activeId ? fn(c) : c)));
   }
 
   async function executePrompt({
     prompt,
-    sourceAttachments,
+    conversationId,
     history,
     pendingId,
     onFailure,
   }: {
     prompt: string;
-    sourceAttachments: NonNullable<ChatMessage["attachments"]>;
+    conversationId: string;
     history: ChatMessage[];
     pendingId: string;
     onFailure: () => void;
@@ -280,7 +344,7 @@ function ChatPage() {
       const data = (await response.json()) as { reply: string };
       setConversations((prev) =>
         prev.map((c) =>
-          c.id === activeId
+          c.id === conversationId
             ? {
                 ...c,
                 messages: c.messages.map((m) =>
@@ -300,18 +364,43 @@ function ChatPage() {
     }
   }
 
+  async function refreshConversationTitle(conversationId: string, messages: ChatMessage[]) {
+    try {
+      const response = await fetch("/api/copilot/title", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages }),
+      });
+      if (!response.ok) return;
+
+      const data = (await response.json()) as { title?: string };
+      const title = data.title?.trim();
+      if (!title) return;
+
+      setConversations((prev) =>
+        prev.map((conversation) =>
+          conversation.id === conversationId ? { ...conversation, title } : conversation,
+        ),
+      );
+    } catch (error) {
+      console.warn("Unable to update SQA Copilot chat title.", error);
+    }
+  }
+
   async function send(text: string) {
     const trimmed = text.trim();
-    if ((!trimmed && attachments.length === 0) || sending || recording || !active) return;
+    if ((!trimmed && attachments.length === 0) || sending || recording || reviewingPdf || !active)
+      return;
     setError(null);
     setInput("");
     const outgoingAttachments = attachments;
     setAttachments([]);
 
     const prompt = trimmed || attachmentOnlyPrompt(outgoingAttachments);
-    const messageAttachments = outgoingAttachments.map(
-      ({ previewUrl, id, ...attachment }) => attachment,
-    );
+    const messageAttachments = outgoingAttachments.map(({ previewUrl, id, ...attachment }) => ({
+      ...attachment,
+      pdfReview: attachment.pdfReview?.status === "reviewing" ? undefined : attachment.pdfReview,
+    }));
     const userMsg: UiMessage = {
       id: uid(),
       role: "user",
@@ -329,20 +418,22 @@ function ChatPage() {
     patchActive((c) => ({
       ...c,
       title: isFirstUserMessage
-        ? (trimmed || outgoingAttachments[0]?.name || "Attachment").slice(0, 40)
+        ? trimmed
+          ? "Naming chat..."
+          : `Reviewing ${outgoingAttachments[0]?.name || "attachment"}`
         : c.title,
       messages: [...c.messages, userMsg, pending],
     }));
 
     const history: ChatMessage[] = [...active.messages, apiUserMsg].map((m) => ({
       role: m.role,
-      content: m.content,
-      attachments: m.attachments?.filter((attachment) => attachment.data),
+      content: messageContentWithPdfContext(m),
+      attachments: m.attachments?.filter(attachmentHasPromptContext),
     }));
 
     await executePrompt({
       prompt,
-      sourceAttachments: messageAttachments,
+      conversationId: active.id,
       history,
       pendingId: pending.id,
       onFailure: () => {
@@ -415,7 +506,7 @@ function ChatPage() {
               ...conversation,
               title:
                 messageIndex === active.messages.findIndex((message) => message.role === "user")
-                  ? prompt.slice(0, 40)
+                  ? "Naming chat..."
                   : conversation.title,
               messages: [...retainedMessages, updatedUserMessage, pending],
             }
@@ -426,17 +517,17 @@ function ChatPage() {
     const apiUserMessage: ChatMessage = {
       role: "user",
       content: prompt,
-      attachments: updatedUserMessage.attachments?.filter((attachment) => attachment.data),
+      attachments: updatedUserMessage.attachments?.filter(attachmentHasPromptContext),
     };
     const history: ChatMessage[] = [...retainedMessages, apiUserMessage].map((message) => ({
       role: message.role,
-      content: message.content,
-      attachments: message.attachments?.filter((attachment) => attachment.data),
+      content: messageContentWithPdfContext(message),
+      attachments: message.attachments?.filter(attachmentHasPromptContext),
     }));
 
     await executePrompt({
       prompt,
-      sourceAttachments: updatedUserMessage.attachments ?? [],
+      conversationId: activeId,
       history,
       pendingId: pending.id,
       onFailure: () => {
@@ -479,11 +570,79 @@ function ChatPage() {
         continue;
       }
 
-      drafts.push(await fileToAttachmentDraft(file));
+      const draft = await fileToAttachmentDraft(file);
+      drafts.push(
+        draft.mimeType === "application/pdf"
+          ? { ...draft, pdfReview: { status: "reviewing" } }
+          : draft,
+      );
     }
 
     if (drafts.length > 0) {
       setAttachments((prev) => [...prev, ...drafts]);
+      for (const draft of drafts.filter((item) => item.mimeType === "application/pdf")) {
+        void reviewPdfAttachment(draft);
+      }
+    }
+  }
+
+  async function reviewPdfAttachment(attachment: AttachmentDraft) {
+    try {
+      const response = await fetch("/api/copilot/pdf-review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: attachment.name,
+          mimeType: attachment.mimeType,
+          size: attachment.size,
+          data: attachment.data,
+        }),
+      });
+
+      if (!response.ok) {
+        const message = await response.text();
+        throw new Error(
+          response.status >= 500
+            ? "PDF review service failed on the server. Please retry after the page reloads."
+            : message || "PDF cannot be read.",
+        );
+      }
+
+      const data = (await response.json()) as { summary?: string; reviewedAt?: string };
+      if (!data.summary?.trim()) throw new Error("PDF review returned no readable summary.");
+
+      setAttachments((current) =>
+        current.map((item) =>
+          item.id === attachment.id
+            ? {
+                ...item,
+                pdfReview: {
+                  status: "completed",
+                  summary: data.summary?.trim(),
+                  reviewedAt: data.reviewedAt ?? new Date().toISOString(),
+                },
+              }
+            : item,
+        ),
+      );
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "PDF cannot be read. Try another PDF.";
+      setError(message);
+      setAttachments((current) =>
+        current.map((item) =>
+          item.id === attachment.id
+            ? {
+                ...item,
+                pdfReview: {
+                  status: "failed",
+                  error: message,
+                  reviewedAt: new Date().toISOString(),
+                },
+              }
+            : item,
+        ),
+      );
     }
   }
 
@@ -657,6 +816,9 @@ function ChatPage() {
         )}
 
         {showTutorial && <CopilotTutorialDialog onClose={() => setShowTutorial(false)} />}
+        {pdfReviewDialog && (
+          <PdfReviewDialog attachment={pdfReviewDialog} onClose={() => setPdfReviewDialog(null)} />
+        )}
 
         <div className="grid min-h-0 flex-1 grid-rows-[minmax(8rem,12rem)_minmax(0,1fr)] gap-4 overflow-hidden lg:grid-cols-[280px_1fr] lg:grid-rows-none">
           {/* Sidebar of chats */}
@@ -780,6 +942,7 @@ function ChatPage() {
                       }
                       router.push(href);
                     }}
+                    onOpenPdfReview={setPdfReviewDialog}
                   />
                 ))
               )}
@@ -800,7 +963,11 @@ function ChatPage() {
               className="shrink-0 border-t border-white/40 bg-white/40 backdrop-blur-md p-3"
             >
               {attachments.length > 0 && (
-                <AttachmentDraftList attachments={attachments} onRemove={removeAttachment} />
+                <AttachmentDraftList
+                  attachments={attachments}
+                  onRemove={removeAttachment}
+                  onOpenPdfReview={setPdfReviewDialog}
+                />
               )}
               <input
                 ref={fileInputRef}
@@ -817,7 +984,7 @@ function ChatPage() {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  disabled={sending || attachments.length >= MAX_ATTACHMENTS}
+                  disabled={sending || reviewingPdf || attachments.length >= MAX_ATTACHMENTS}
                   title="Attach image, file, or audio"
                   className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-muted-foreground hover:bg-white disabled:opacity-40"
                 >
@@ -854,7 +1021,12 @@ function ChatPage() {
                 />
                 <button
                   type="submit"
-                  disabled={(!input.trim() && attachments.length === 0) || sending || recording}
+                  disabled={
+                    (!input.trim() && attachments.length === 0) ||
+                    sending ||
+                    recording ||
+                    reviewingPdf
+                  }
                   className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[image:var(--gradient-primary)] text-white text-sm font-medium shadow-lg disabled:opacity-40 disabled:pointer-events-none"
                 >
                   <Send className="h-4 w-4" /> Send
@@ -864,7 +1036,9 @@ function ChatPage() {
                 <span>
                   {recording
                     ? "Recording voice... press stop when finished"
-                    : "Press Enter to send | Shift + Enter for new line"}
+                    : reviewingPdf
+                      ? "Reviewing PDF... summary will be saved with this chat"
+                      : "Press Enter to send | Shift + Enter for new line"}
                 </span>
                 <span>Chats saved locally | {conversations.length} total</span>
               </div>
@@ -912,7 +1086,7 @@ function buildToolHandoff(
 
   return {
     href: "",
-    prompt: source.content,
+    prompt: [source.content, getPdfReviewContext(source)].filter(Boolean).join("\n\n"),
     attachments:
       source.attachments
         ?.filter((attachment) => attachment.data)
@@ -925,10 +1099,166 @@ function buildToolHandoff(
   };
 }
 
+function attachmentHasPromptContext(attachment: NonNullable<ChatMessage["attachments"]>[number]) {
+  return Boolean(attachment.data || attachment.pdfReview?.summary);
+}
+
+function messageContentWithPdfContext(message: Pick<UiMessage, "content" | "attachments">) {
+  return [message.content, getPdfReviewContext(message)].filter(Boolean).join("\n\n");
+}
+
 function attachmentOnlyPrompt(attachments: AttachmentDraft[]) {
   return attachments.length === 1
     ? `Please use this uploaded ${attachmentKind(attachments[0].mimeType)} with the appropriate SQA tool.`
     : "Please analyze these uploaded files.";
+}
+
+function PdfReviewDialog({
+  attachment,
+  onClose,
+}: {
+  attachment: PdfReviewDialogState;
+  onClose: () => void;
+}) {
+  const pdfSrc = attachment.data ? `data:application/pdf;base64,${attachment.data}` : "";
+
+  return (
+    <div className="absolute inset-0 z-30 grid place-items-center bg-foreground/20 p-4 backdrop-blur-sm animate-in fade-in-0">
+      <div className="flex h-[min(46rem,calc(100vh-2rem))] w-full max-w-5xl flex-col rounded-3xl border border-white/80 bg-white/95 p-4 shadow-2xl shadow-slate-950/15 animate-in zoom-in-95 slide-in-from-bottom-2">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <div className="grid h-9 w-9 shrink-0 place-items-center rounded-2xl bg-[image:var(--gradient-primary)] text-white shadow-md">
+                <FileSearch className="h-4 w-4" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="truncate text-lg font-semibold">PDF Review</h2>
+                <p className="truncate text-xs text-muted-foreground">
+                  {attachment.name} | {formatBytes(attachment.size)}
+                </p>
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            title="Close PDF review"
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-xl text-muted-foreground transition hover:bg-slate-100 hover:text-foreground"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="mt-4 grid min-h-0 flex-1 gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(18rem,0.8fr)]">
+          <section className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+            <div className="flex items-center gap-2 border-b border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700">
+              <Eye className="h-3.5 w-3.5" />
+              Preview
+            </div>
+            {pdfSrc ? (
+              <iframe
+                title={`Preview ${attachment.name}`}
+                src={pdfSrc}
+                className="min-h-0 flex-1 bg-white"
+              />
+            ) : (
+              <div className="grid flex-1 place-items-center p-6 text-center text-sm text-muted-foreground">
+                <div>
+                  <FileText className="mx-auto h-8 w-8 text-muted-foreground/70" />
+                  <p className="mt-2 font-medium text-foreground">Preview unavailable</p>
+                  <p className="mt-1 max-w-sm">
+                    The PDF file data is no longer stored in this conversation. Upload the PDF again
+                    to preview it.
+                  </p>
+                </div>
+              </div>
+            )}
+          </section>
+
+          <section className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white">
+            <div className="flex items-center gap-2 border-b border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700">
+              <FileSearch className="h-3.5 w-3.5" />
+              AI Summary
+            </div>
+            <div className="min-h-0 flex-1 overflow-y-auto p-4 text-sm leading-6 text-slate-800">
+              {attachment.summary ? (
+                <>
+                  {attachment.reviewedAt ? (
+                    <div className="mb-3 text-[11px] font-medium text-muted-foreground">
+                      Reviewed {new Date(attachment.reviewedAt).toLocaleString()}
+                    </div>
+                  ) : null}
+                  <PdfSummaryContent summary={attachment.summary} />
+                </>
+              ) : attachment.error ? (
+                <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-destructive">
+                  {attachment.error}
+                </div>
+              ) : (
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-muted-foreground">
+                  The PDF summary is not ready yet.
+                </div>
+              )}
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PdfSummaryContent({ summary }: { summary: string }) {
+  return (
+    <div className="pdf-summary-view space-y-3">
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          h2: ({ children }) => (
+            <h2 className="mt-4 first:mt-0 rounded-xl bg-slate-100 px-3 py-2 text-sm font-bold text-slate-950">
+              {children}
+            </h2>
+          ),
+          h3: ({ children }) => (
+            <h3 className="mt-3 text-sm font-semibold text-slate-900">{children}</h3>
+          ),
+          p: ({ children }) => (
+            <p className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm leading-6 text-slate-700">
+              {children}
+            </p>
+          ),
+          ul: ({ children }) => <ul className="space-y-1.5">{children}</ul>,
+          ol: ({ children }) => <ol className="list-decimal space-y-1.5 pl-5">{children}</ol>,
+          li: ({ children }) => (
+            <li className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm leading-5 text-slate-700 shadow-sm">
+              {children}
+            </li>
+          ),
+          strong: ({ children }) => (
+            <strong className="font-semibold text-slate-950">{children}</strong>
+          ),
+          table: ({ children }) => (
+            <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+              <table className="w-full min-w-max border-collapse text-left text-xs">
+                {children}
+              </table>
+            </div>
+          ),
+          th: ({ children }) => (
+            <th className="border-b border-slate-200 bg-slate-50 px-3 py-2 font-semibold text-slate-900">
+              {children}
+            </th>
+          ),
+          td: ({ children }) => (
+            <td className="border-b border-slate-100 px-3 py-2 align-top text-slate-700">
+              {children}
+            </td>
+          ),
+        }}
+      >
+        {summary}
+      </ReactMarkdown>
+    </div>
+  );
 }
 
 function FloatingTutorialPrompt({ onView, onSkip }: { onView: () => void; onSkip: () => void }) {
@@ -1106,9 +1436,11 @@ function fileToAttachmentDraft(file: File) {
 function AttachmentDraftList({
   attachments,
   onRemove,
+  onOpenPdfReview,
 }: {
   attachments: AttachmentDraft[];
   onRemove: (id: string) => void;
+  onOpenPdfReview: (attachment: PdfReviewDialogState) => void;
 }) {
   return (
     <div className="mb-2 flex flex-wrap gap-2">
@@ -1126,6 +1458,77 @@ function AttachmentDraftList({
             <div className="text-[10px] text-muted-foreground">
               {attachmentKind(attachment.mimeType)} | {formatBytes(attachment.size)}
             </div>
+            {attachment.pdfReview?.status === "reviewing" ? (
+              <div className="mt-1 flex items-center gap-1 text-[10px] font-medium text-primary">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                Reviewing PDF
+              </div>
+            ) : attachment.pdfReview?.status === "completed" ? (
+              <div className="mt-1 text-[10px] font-medium text-success">PDF summary ready</div>
+            ) : attachment.pdfReview?.status === "failed" ? (
+              <div className="mt-1 max-w-44 truncate text-[10px] font-medium text-destructive">
+                {attachment.pdfReview.error ?? "PDF could not be read"}
+              </div>
+            ) : null}
+            {attachment.mimeType === "application/pdf" ? (
+              <div className="mt-1 flex flex-wrap gap-1">
+                <button
+                  type="button"
+                  onClick={() =>
+                    onOpenPdfReview({
+                      name: attachment.name,
+                      size: attachment.size,
+                      data: attachment.data,
+                      summary:
+                        attachment.pdfReview?.status === "completed"
+                          ? attachment.pdfReview.summary
+                          : undefined,
+                      error:
+                        attachment.pdfReview?.status === "failed"
+                          ? attachment.pdfReview.error
+                          : undefined,
+                      reviewedAt:
+                        attachment.pdfReview?.status === "completed" ||
+                        attachment.pdfReview?.status === "failed"
+                          ? attachment.pdfReview.reviewedAt
+                          : undefined,
+                    })
+                  }
+                  className="inline-flex items-center gap-1 rounded-md bg-white/80 px-1.5 py-1 text-[10px] font-medium text-foreground transition hover:bg-white"
+                >
+                  <Eye className="h-3 w-3" />
+                  Preview
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    onOpenPdfReview({
+                      name: attachment.name,
+                      size: attachment.size,
+                      data: attachment.data,
+                      summary:
+                        attachment.pdfReview?.status === "completed"
+                          ? attachment.pdfReview.summary
+                          : undefined,
+                      error:
+                        attachment.pdfReview?.status === "failed"
+                          ? attachment.pdfReview.error
+                          : undefined,
+                      reviewedAt:
+                        attachment.pdfReview?.status === "completed" ||
+                        attachment.pdfReview?.status === "failed"
+                          ? attachment.pdfReview.reviewedAt
+                          : undefined,
+                    })
+                  }
+                  disabled={attachment.pdfReview?.status === "reviewing"}
+                  className="inline-flex items-center gap-1 rounded-md bg-white/80 px-1.5 py-1 text-[10px] font-medium text-foreground transition hover:bg-white disabled:opacity-50"
+                >
+                  <FileSearch className="h-3 w-3" />
+                  Summary
+                </button>
+              </div>
+            ) : null}
           </div>
           <button
             type="button"
@@ -1199,6 +1602,7 @@ function Bubble({
   onCancelEdit,
   onSaveEdit,
   onOpenTool,
+  onOpenPdfReview,
 }: {
   message: UiMessage;
   handoff: ToolHandoff | null;
@@ -1212,6 +1616,7 @@ function Bubble({
   onCancelEdit: () => void;
   onSaveEdit: () => void;
   onOpenTool: (href: string, handoff: ToolHandoff | null) => void | Promise<void>;
+  onOpenPdfReview: (attachment: PdfReviewDialogState) => void;
 }) {
   const isUser = message.role === "user";
   const toolSuggestions =
@@ -1289,15 +1694,110 @@ function Bubble({
             <>
               <p className="whitespace-pre-wrap">{message.content}</p>
               {!!message.attachments?.length && (
-                <div className="mt-2 flex flex-wrap gap-1.5">
+                <div className="mt-2 space-y-1.5">
                   {message.attachments.map((attachment) => (
-                    <span
+                    <div
                       key={`${attachment.name}-${attachment.size}`}
-                      className="inline-flex items-center gap-1 rounded-lg bg-background/10 px-2 py-1 text-[11px]"
+                      className="rounded-lg bg-background/10 px-2 py-1 text-[11px]"
                     >
-                      <AttachmentIcon mimeType={attachment.mimeType} />
-                      {attachment.name}
-                    </span>
+                      <div className="flex items-center gap-1">
+                        <AttachmentIcon mimeType={attachment.mimeType} />
+                        <span>{attachment.name}</span>
+                      </div>
+                      {attachment.mimeType === "application/pdf" ? (
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              onOpenPdfReview({
+                                name: attachment.name,
+                                size: attachment.size,
+                                data: attachment.data,
+                                summary:
+                                  attachment.pdfReview?.status === "completed"
+                                    ? attachment.pdfReview.summary
+                                    : undefined,
+                                error:
+                                  attachment.pdfReview?.status === "failed"
+                                    ? attachment.pdfReview.error
+                                    : undefined,
+                                reviewedAt:
+                                  attachment.pdfReview?.status === "completed" ||
+                                  attachment.pdfReview?.status === "failed"
+                                    ? attachment.pdfReview.reviewedAt
+                                    : undefined,
+                              })
+                            }
+                            className="inline-flex items-center gap-1 rounded-md bg-background/15 px-1.5 py-1 text-[10px] font-medium transition hover:bg-background/25"
+                          >
+                            <Eye className="h-3 w-3" />
+                            Preview
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              onOpenPdfReview({
+                                name: attachment.name,
+                                size: attachment.size,
+                                data: attachment.data,
+                                summary:
+                                  attachment.pdfReview?.status === "completed"
+                                    ? attachment.pdfReview.summary
+                                    : undefined,
+                                error:
+                                  attachment.pdfReview?.status === "failed"
+                                    ? attachment.pdfReview.error
+                                    : undefined,
+                                reviewedAt:
+                                  attachment.pdfReview?.status === "completed" ||
+                                  attachment.pdfReview?.status === "failed"
+                                    ? attachment.pdfReview.reviewedAt
+                                    : undefined,
+                              })
+                            }
+                            disabled={attachment.pdfReview?.status !== "completed"}
+                            className="inline-flex items-center gap-1 rounded-md bg-background/15 px-1.5 py-1 text-[10px] font-medium transition hover:bg-background/25 disabled:opacity-50"
+                          >
+                            <FileSearch className="h-3 w-3" />
+                            Summary
+                          </button>
+                        </div>
+                      ) : null}
+                      {attachment.pdfReview?.status === "completed" &&
+                      attachment.pdfReview.summary ? (
+                        <details className="mt-1 text-background/80">
+                          <summary className="cursor-pointer font-medium">
+                            PDF review summary
+                          </summary>
+                          <div className="mt-1 max-h-48 overflow-y-auto rounded-md bg-background/10 p-2 text-[11px] leading-4">
+                            <ReactMarkdown
+                              remarkPlugins={[remarkGfm]}
+                              components={{
+                                h2: ({ children }) => (
+                                  <div className="mt-2 first:mt-0 font-semibold">{children}</div>
+                                ),
+                                p: ({ children }) => <p className="my-1">{children}</p>,
+                                ul: ({ children }) => (
+                                  <ul className="my-1 space-y-1">{children}</ul>
+                                ),
+                                li: ({ children }) => (
+                                  <li className="border-l border-background/30 pl-2">{children}</li>
+                                ),
+                                strong: ({ children }) => (
+                                  <strong className="font-semibold">{children}</strong>
+                                ),
+                              }}
+                            >
+                              {attachment.pdfReview.summary}
+                            </ReactMarkdown>
+                          </div>
+                        </details>
+                      ) : attachment.pdfReview?.status === "failed" ? (
+                        <p className="mt-1 text-background/75">
+                          {attachment.pdfReview.error ?? "PDF could not be reviewed."}
+                        </p>
+                      ) : null}
+                    </div>
                   ))}
                 </div>
               )}

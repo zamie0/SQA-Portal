@@ -49,6 +49,33 @@ function cleanMessage(value: unknown): CopilotConversation["messages"][number] |
               name: cleanString(rawAttachment.name, "attachment"),
               mimeType: cleanString(rawAttachment.mimeType, "application/octet-stream"),
               size: typeof rawAttachment.size === "number" ? rawAttachment.size : 0,
+              pdfReview:
+                rawAttachment.pdfReview &&
+                typeof rawAttachment.pdfReview === "object" &&
+                (rawAttachment.pdfReview as Record<string, unknown>).status === "completed"
+                  ? {
+                      status: "completed" as const,
+                      summary: cleanString(
+                        (rawAttachment.pdfReview as Record<string, unknown>).summary,
+                      ).slice(0, 12_000),
+                      reviewedAt: cleanString(
+                        (rawAttachment.pdfReview as Record<string, unknown>).reviewedAt,
+                      ),
+                    }
+                  : rawAttachment.pdfReview &&
+                      typeof rawAttachment.pdfReview === "object" &&
+                      (rawAttachment.pdfReview as Record<string, unknown>).status === "failed"
+                    ? {
+                        status: "failed" as const,
+                        error: cleanString(
+                          (rawAttachment.pdfReview as Record<string, unknown>).error,
+                          "PDF could not be reviewed.",
+                        ).slice(0, 500),
+                        reviewedAt: cleanString(
+                          (rawAttachment.pdfReview as Record<string, unknown>).reviewedAt,
+                        ),
+                      }
+                    : undefined,
             };
           })
           .slice(0, 8)

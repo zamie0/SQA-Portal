@@ -5,6 +5,12 @@ export interface ChatAttachment {
   mimeType: string;
   size: number;
   data?: string;
+  pdfReview?: {
+    status: "completed" | "failed";
+    summary?: string;
+    error?: string;
+    reviewedAt?: string;
+  };
 }
 
 export interface ChatMessage {

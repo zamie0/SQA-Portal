@@ -23,7 +23,8 @@ Your role:
 - Use light emojis only when they add warmth or reduce friction; avoid decorative or excessive emoji use.
 - For technical answers, include exact files, commands, examples, or next steps.
 - For QA-related answers, suggest a suitable testing approach, tool choice, expected result, and possible risks.
-- If the user uploads a requirement document, PDF, screenshot, or other file and asks to generate test cases from it, do not read or OCR the file inside chat. Recommend QA Genius by name and explain that SQA Copilot can pass the file and prompt to QA Genius only after the user presses Allow in the permission prompt.
+- If the user uploads a PDF that already has an SQA Copilot PDF review summary, use that summary as context for QA discussion and tool coordination. For test case generation, still recommend QA Genius by name and explain that SQA Copilot can pass the reviewed PDF summary after the user presses Allow in the permission prompt.
+- If the user uploads a requirement document, screenshot, or other file and asks to generate test cases from it, do not deeply process the file inside chat unless a PDF review summary is already available. Recommend QA Genius by name and explain that SQA Copilot can pass the file and prompt to QA Genius only after the user presses Allow in the permission prompt.
 - If the user uploads a file for another tool-specific workflow, do not process the file directly unless the user explicitly asks for chat analysis. Recommend the correct tool and explain that the file can be handed off after permission.
 - When a table is useful, use a valid GitHub-flavored Markdown table with a header row, separator row, and short cell text. Keep columns focused, avoid very wide tables, and prefer bullet lists if the table would need more than 5 columns.
 - Always prioritize safe, approved workflows over raw command execution.
@@ -82,8 +83,29 @@ function cleanAttachments(attachments: unknown): ChatMessage["attachments"] {
         typeof (attachment as { name?: unknown }).name === "string" &&
         typeof (attachment as { mimeType?: unknown }).mimeType === "string" &&
         typeof (attachment as { size?: unknown }).size === "number" &&
-        typeof (attachment as { data?: unknown }).data === "string",
+        (typeof (attachment as { data?: unknown }).data === "string" ||
+          Boolean((attachment as { pdfReview?: unknown }).pdfReview)),
     )
+    .map((attachment) => ({
+      name: attachment.name,
+      mimeType: attachment.mimeType,
+      size: attachment.size,
+      data: attachment.data,
+      pdfReview:
+        attachment.pdfReview?.status === "completed" && attachment.pdfReview.summary
+          ? {
+              status: "completed" as const,
+              summary: attachment.pdfReview.summary.slice(0, 12_000),
+              reviewedAt: attachment.pdfReview.reviewedAt,
+            }
+          : attachment.pdfReview?.status === "failed"
+            ? {
+                status: "failed" as const,
+                error: attachment.pdfReview.error?.slice(0, 500),
+                reviewedAt: attachment.pdfReview.reviewedAt,
+              }
+            : undefined,
+    }))
     .slice(0, 4);
 
   return cleaned.length > 0 ? cleaned : undefined;
@@ -103,9 +125,13 @@ function toGeminiContents(messages: ChatMessage[]): Content[] {
         )} KB). Do not OCR or deeply process this file in chat when the user is asking for tool-based work; recommend the appropriate tool handoff instead.`,
       });
 
-      if (attachment.mimeType === "application/pdf") {
+      if (attachment.mimeType === "application/pdf" && attachment.pdfReview?.summary) {
         parts.push({
-          text: "PDF binary content is intentionally reserved for QA Genius handoff. Ask the user to press Allow before opening QA Genius if test cases or document-based generation are needed.",
+          text: `SQA Copilot PDF review summary for ${attachment.name}:\n${attachment.pdfReview.summary}`,
+        });
+      } else if (attachment.mimeType === "application/pdf") {
+        parts.push({
+          text: "PDF review summary is unavailable. Ask the user to retry PDF review or press Allow before opening QA Genius if test cases or document-based generation are needed.",
         });
       } else if (isTextAttachment(attachment.mimeType, attachment.name)) {
         parts.push({
