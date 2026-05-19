@@ -15,6 +15,21 @@ import { useEventTick } from "@/shared/state";
 import { useRef, useState } from "react";
 import { Plus, Search, Users, FolderOpen, Upload, X, Trash2, Check } from "lucide-react";
 
+type ProjectCard = {
+  id: string;
+  name: string;
+  description?: string;
+  type: "Test Automation" | "RPA";
+  color: string;
+  initials: string;
+  cases: number;
+  passRate: number;
+  runs: unknown[];
+  members: number;
+  photo: string | null;
+  isUser: boolean;
+};
+
 function ProjectsPage() {
   useEventTick("qe-hub.user-projects-changed");
   const [open, setOpen] = useState(false);
@@ -48,12 +63,14 @@ function ProjectsPage() {
             Folder-style workspaces for your automation suites and RPA bots.
           </p>
         </div>
-        <button
-          onClick={() => setOpen(true)}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[image:var(--gradient-primary)] text-white text-sm font-medium shadow-lg hover:opacity-95"
-        >
-          <Plus className="h-4 w-4" /> Create project
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => setOpen(true)}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[image:var(--gradient-primary)] text-white text-sm font-medium shadow-lg hover:opacity-95"
+          >
+            <Plus className="h-4 w-4" /> Create project
+          </button>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-3 mb-5">
@@ -85,81 +102,7 @@ function ProjectsPage() {
 
       <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
         {visible.map((p) => (
-          <div key={p.id} className="rounded-3xl glass glass-hover p-6 block group relative">
-            {p.isUser && (
-              <button
-                onClick={() => {
-                  if (confirm(`Delete "${p.name}"? This cannot be undone.`)) {
-                    deleteUserProject(p.id);
-                  }
-                }}
-                className="absolute top-4 right-4 h-8 w-8 grid place-items-center rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive z-10"
-                aria-label="Delete project"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            )}
-            <Link href={`/projects/${p.id}`} className="block">
-              <div className="flex items-start justify-between">
-                {p.photo ? (
-                  <img
-                    src={p.photo}
-                    alt=""
-                    className="h-14 w-14 rounded-2xl object-cover shadow-lg"
-                  />
-                ) : (
-                  <div
-                    className={`h-14 w-14 rounded-2xl bg-gradient-to-br ${p.color} grid place-items-center text-white text-lg font-bold shadow-lg`}
-                  >
-                    {p.initials}
-                  </div>
-                )}
-                <span className="text-xs px-2 py-1 rounded-full bg-white/60 border border-white/70 text-muted-foreground mt-1 mr-7">
-                  {p.type}
-                </span>
-              </div>
-              <h3 className="mt-4 text-xl font-semibold group-hover:text-primary transition">
-                {p.name}
-              </h3>
-              <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
-                {p.description || "—"}
-              </p>
-
-              <div className="mt-5 grid grid-cols-3 gap-2 text-center">
-                <div className="rounded-xl bg-white/50 border border-white/60 py-2">
-                  <div className="text-base font-semibold">{p.cases}</div>
-                  <div className="text-[10px] uppercase text-muted-foreground tracking-wider">
-                    Cases
-                  </div>
-                </div>
-                <div className="rounded-xl bg-white/50 border border-white/60 py-2">
-                  <div className="text-base font-semibold text-success">{p.passRate}%</div>
-                  <div className="text-[10px] uppercase text-muted-foreground tracking-wider">
-                    Pass
-                  </div>
-                </div>
-                <div className="rounded-xl bg-white/50 border border-white/60 py-2">
-                  <div className="text-base font-semibold">{p.runs.length}</div>
-                  <div className="text-[10px] uppercase text-muted-foreground tracking-wider">
-                    Runs
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-                <span className="inline-flex items-center gap-1.5">
-                  <Users className="h-3.5 w-3.5" /> {p.members} members
-                </span>
-                {p.isUser ? (
-                  <span className="inline-flex items-center gap-1 text-primary font-medium">
-                    <Check className="h-3 w-3" /> Yours
-                  </span>
-                ) : (
-                  <span>Last run · {(p as { lastRun?: string }).lastRun}</span>
-                )}
-              </div>
-            </Link>
-          </div>
+          <ProjectCardItem key={p.id} project={p} onDelete={deleteUserProject} />
         ))}
 
         <button
@@ -178,6 +121,78 @@ function ProjectsPage() {
 
       {open && <CreateProjectModal onClose={() => setOpen(false)} />}
     </Shell>
+  );
+}
+
+function ProjectCardItem({
+  project: p,
+  onDelete,
+}: {
+  project: ProjectCard;
+  onDelete: (id: string) => void;
+}) {
+  return (
+    <div className="rounded-3xl glass glass-hover p-6 block group relative">
+      {p.isUser && (
+        <button
+          onClick={() => {
+            if (confirm(`Delete "${p.name}"? This cannot be undone.`)) {
+              onDelete(p.id);
+            }
+          }}
+          className="absolute top-4 right-4 h-8 w-8 grid place-items-center rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive z-10"
+          aria-label="Delete project"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
+      )}
+      <Link href={`/projects/${p.id}`} className="block">
+        <div className="flex items-start justify-between">
+          {p.photo ? (
+            <img src={p.photo} alt="" className="h-14 w-14 rounded-2xl object-cover shadow-lg" />
+          ) : (
+            <div
+              className={`h-14 w-14 rounded-2xl bg-gradient-to-br ${p.color} grid place-items-center text-white text-lg font-bold shadow-lg`}
+            >
+              {p.initials}
+            </div>
+          )}
+          <span className="text-xs px-2 py-1 rounded-full bg-white/60 border border-white/70 text-muted-foreground mt-1 mr-7">
+            {p.type}
+          </span>
+        </div>
+        <h3 className="mt-4 text-xl font-semibold group-hover:text-primary transition">{p.name}</h3>
+        <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{p.description || "—"}</p>
+
+        <div className="mt-5 grid grid-cols-3 gap-2 text-center">
+          <div className="rounded-xl bg-white/50 border border-white/60 py-2">
+            <div className="text-base font-semibold">{p.cases}</div>
+            <div className="text-[10px] uppercase text-muted-foreground tracking-wider">Cases</div>
+          </div>
+          <div className="rounded-xl bg-white/50 border border-white/60 py-2">
+            <div className="text-base font-semibold text-success">{p.passRate}%</div>
+            <div className="text-[10px] uppercase text-muted-foreground tracking-wider">Pass</div>
+          </div>
+          <div className="rounded-xl bg-white/50 border border-white/60 py-2">
+            <div className="text-base font-semibold">{p.runs.length}</div>
+            <div className="text-[10px] uppercase text-muted-foreground tracking-wider">Runs</div>
+          </div>
+        </div>
+
+        <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5">
+            <Users className="h-3.5 w-3.5" /> {p.members} members
+          </span>
+          {p.isUser ? (
+            <span className="inline-flex items-center gap-1 text-primary font-medium">
+              <Check className="h-3 w-3" /> Yours
+            </span>
+          ) : (
+            <span>Last run · {(p as { lastRun?: string }).lastRun}</span>
+          )}
+        </div>
+      </Link>
+    </div>
   );
 }
 

@@ -34,6 +34,7 @@ import {
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { ChatMessage } from "@/shared/lib/chat-types";
+import { useLiveTranscription } from "@/shared/hooks/use-live-transcription";
 import { useAuth, useLocalStorage } from "@/shared/state";
 
 const SUGGESTIONS = [
@@ -192,7 +193,6 @@ function ChatPage() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [attachments, setAttachments] = useState<AttachmentDraft[]>([]);
-  const [recording, setRecording] = useState(false);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
   const [editingPromptId, setEditingPromptId] = useState<string | null>(null);
@@ -210,12 +210,18 @@ function ChatPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const recordingChunksRef = useRef<Blob[]>([]);
-  const recordingStreamRef = useRef<MediaStream | null>(null);
   const remoteMemoryReadyRef = useRef(false);
   const saveTimerRef = useRef<number | null>(null);
   const titleRefreshKeysRef = useRef<Record<string, string>>({});
+  const {
+    listening: recording,
+    error: transcriptionError,
+    toggle: toggleRecording,
+    stop: stopTranscription,
+  } = useLiveTranscription({
+    value: input,
+    onChange: setInput,
+  });
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -223,12 +229,15 @@ function ChatPage() {
 
   useEffect(
     () => () => {
-      recordingStreamRef.current?.getTracks().forEach((track) => track.stop());
-      recordingStreamRef.current = null;
+      stopTranscription();
       if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current);
     },
-    [],
+    [stopTranscription],
   );
+
+  useEffect(() => {
+    if (transcriptionError) setError(transcriptionError);
+  }, [transcriptionError]);
 
   useEffect(() => {
     remoteMemoryReadyRef.current = false;
@@ -650,59 +659,6 @@ function ChatPage() {
     setAttachments((prev) => prev.filter((attachment) => attachment.id !== id));
   }
 
-  async function toggleRecording() {
-    if (recording) {
-      mediaRecorderRef.current?.stop();
-      setRecording(false);
-      return;
-    }
-
-    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
-      setError("Voice recording is not supported in this browser.");
-      return;
-    }
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mimeType = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "";
-      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
-      recordingChunksRef.current = [];
-      recordingStreamRef.current = stream;
-      mediaRecorderRef.current = recorder;
-
-      recorder.ondataavailable = (event) => {
-        if (event.data.size > 0) recordingChunksRef.current.push(event.data);
-      };
-      recorder.onstop = async () => {
-        const type = recorder.mimeType || "audio/webm";
-        const blob = new Blob(recordingChunksRef.current, { type });
-        stopRecordingStream();
-        if (blob.size > 0) {
-          const file = new File(
-            [blob],
-            `voice-note-${new Date().toISOString().slice(0, 19)}.webm`,
-            {
-              type,
-            },
-          );
-          await addFiles([file]);
-        }
-      };
-
-      recorder.start();
-      setRecording(true);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to start voice recording.");
-      stopRecordingStream();
-      setRecording(false);
-    }
-  }
-
-  function stopRecordingStream() {
-    recordingStreamRef.current?.getTracks().forEach((track) => track.stop());
-    recordingStreamRef.current = null;
-  }
-
   function newChat() {
     const c = newConversation();
     setConversations([c, ...conversations]);
@@ -992,9 +948,12 @@ function ChatPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => void toggleRecording()}
+                  onClick={() => {
+                    setError(null);
+                    toggleRecording();
+                  }}
                   disabled={sending}
-                  title={recording ? "Stop voice recording" : "Record voice"}
+                  title={recording ? "Stop live transcription" : "Start live transcription"}
                   className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${
                     recording
                       ? "bg-destructive/15 text-destructive"
@@ -1035,7 +994,7 @@ function ChatPage() {
               <div className="mt-2 px-2 text-[11px] text-muted-foreground flex items-center justify-between">
                 <span>
                   {recording
-                    ? "Recording voice... press stop when finished"
+                    ? "Listening live... your speech is transcribed into the prompt box"
                     : reviewingPdf
                       ? "Reviewing PDF... summary will be saved with this chat"
                       : "Press Enter to send | Shift + Enter for new line"}

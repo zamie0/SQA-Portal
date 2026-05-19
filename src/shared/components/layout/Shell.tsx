@@ -34,6 +34,7 @@ import {
   pendingUserCount,
   AUTH_EVENT,
 } from "@/shared/lib/auth";
+import { SqaCopilotSidePanel } from "@/shared/components/layout/SqaCopilotSidePanel";
 
 type NavItem = {
   to: string;
@@ -227,6 +228,7 @@ export function Shell({ children }: { children: ReactNode }) {
           {children}
         </main>
       </div>
+      <SqaCopilotSidePanel disabled={isCopilotPage} />
     </div>
   );
 }
